@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League Table - Crawley Darts League</title>
+    <title>Singles Ranking - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,8 +13,8 @@
 
     <nav class="nav">
         <ul>
-            <li><a href="index.html" class="active">League Table</a></li>
-            <li><a href="singlesrankings.html">Singles Ranking</a></li>
+            <li><a href="index.html">League Table</a></li>
+            <li><a href="singlesrankings.html" class="active">Singles Ranking</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html">League Results</a></li>
             <li><a href="cupfixtures.html">Cup Fixtures</a></li>
@@ -26,29 +26,26 @@
     </nav>
 
     <div class="container">
-        <!-- League Table Page -->
-        <div id="league-table" class="page">
+        <!-- Singles Ranking Page -->
+        <div id="singles-ranking" class="page">
             <div class="card">
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <table>
+                <table class="singles-table">
                     <thead>
                         <tr>
-                            <th>Pos</th>
+                            <th>Rank</th>
+                            <th>Player</th>
                             <th>Team</th>
-                            <th>P</th>
-                            <th>W</th>
-                            <th>D</th>
-                            <th>L</th>
-                            <th>F</th>
-                            <th>A</th>
-                            <th>GD</th>
-                            <th>Pts</th>
+                            <th>Played</th>
+                            <th>Won</th>
+                            <th>Lost</th>
+                            <th>Points</th>
                         </tr>
                     </thead>
-                    <tbody id="league-table-body">
+                    <tbody id="singles-ranking-body">
                         <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
@@ -73,7 +70,7 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadLeagueTable(division);
+                loadSinglesRanking(division);
             });
         });
 
@@ -91,31 +88,28 @@
             }
         }
 
-        async function loadLeagueTable(division) {
-            const data = await fetchApi('league-table', { division });
-            const tbody = document.getElementById('league-table-body');
+        async function loadSinglesRanking(division) {
+            const data = await fetchApi('singles-ranking', { division });
+            const tbody = document.getElementById('singles-ranking-body');
             tbody.innerHTML = '';
             
-            data.forEach((team, index) => {
+            data.forEach((player, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td>${team.team_name}</td>
-                    <td>${team.played}</td>
-                    <td>${team.won}</td>
-                    <td>${team.drawn}</td>
-                    <td>${team.lost}</td>
-                    <td>${team.games_for}</td>
-                    <td>${team.games_against}</td>
-                    <td>${team.goal_diff}</td>
-                    <td>${team.points}</td>
+                    <td>${player.player_name}</td>
+                    <td>${player.team_name}</td>
+                    <td>${player.played}</td>
+                    <td>${player.won}</td>
+                    <td>${player.lost}</td>
+                    <td>${player.points}</td>
                 `;
                 tbody.appendChild(row);
             });
         }
 
-        // Initially load the league table
-        loadLeagueTable(getCurrentDivision());
+        // Initially load the singles ranking
+        loadSinglesRanking(getCurrentDivision());
     </script>
 </body>
 </html>

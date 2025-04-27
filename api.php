@@ -165,12 +165,12 @@ function getLeagueFixtures() {
         SELECT 
             m.match_id,
             m.match_date,
-            ht.team_name as home_team,
-            at.team_name as away_team,
+            COALESCE(ht.team_name, 'TBD') as home_team,
+            COALESCE(at.team_name, 'TBD') as away_team,
             m.status
         FROM matches m
-        JOIN teams ht ON m.home_team_id = ht.team_id
-        JOIN teams at ON m.away_team_id = at.team_id
+        LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+        LEFT JOIN teams at ON m.away_team_id = at.team_id
         WHERE m.division = ? AND m.match_type = 'league' AND m.status = 'scheduled'
         ORDER BY m.match_date ASC
     ");
@@ -187,14 +187,14 @@ function getLeagueResults() {
         SELECT 
             m.match_id,
             m.match_date,
-            ht.team_name as home_team,
-            at.team_name as away_team,
+            COALESCE(ht.team_name, 'TBD') as home_team,
+            COALESCE(at.team_name, 'TBD') as away_team,
             m.home_score,
             m.away_score,
             m.status
         FROM matches m
-        JOIN teams ht ON m.home_team_id = ht.team_id
-        JOIN teams at ON m.away_team_id = at.team_id
+        LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+        LEFT JOIN teams at ON m.away_team_id = at.team_id
         WHERE m.division = ? AND m.match_type = 'league' AND m.status = 'completed'
         ORDER BY m.match_date DESC
     ");
@@ -211,14 +211,15 @@ function getCupFixtures() {
         SELECT 
             m.match_id,
             m.match_date,
-            ht.team_name as home_team,
-            at.team_name as away_team,
+            COALESCE(ht.team_name, 'TBD') as home_team,
+            COALESCE(at.team_name, 'TBD') as away_team,
+            m.cup_round,
             m.status
         FROM matches m
-        JOIN teams ht ON m.home_team_id = ht.team_id
-        JOIN teams at ON m.away_team_id = at.team_id
-        WHERE m.division = ? AND m.match_type = 'cup' AND m.status = 'scheduled'
-        ORDER BY m.match_date ASC
+        LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+        LEFT JOIN teams at ON m.away_team_id = at.team_id
+        WHERE m.division = ? AND m.match_type = 'cup' AND m.status IN ('scheduled', 'pending')
+        ORDER BY m.match_date ASC, m.match_id ASC
     ");
     
     $stmt->execute([$division]);
@@ -233,14 +234,15 @@ function getCupResults() {
         SELECT 
             m.match_id,
             m.match_date,
-            ht.team_name as home_team,
-            at.team_name as away_team,
+            COALESCE(ht.team_name, 'TBD') as home_team,
+            COALESCE(at.team_name, 'TBD') as away_team,
             m.home_score,
             m.away_score,
+            m.cup_round,
             m.status
         FROM matches m
-        JOIN teams ht ON m.home_team_id = ht.team_id
-        JOIN teams at ON m.away_team_id = at.team_id
+        LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+        LEFT JOIN teams at ON m.away_team_id = at.team_id
         WHERE m.division = ? AND m.match_type = 'cup' AND m.status = 'completed'
         ORDER BY m.match_date DESC
     ");
@@ -562,6 +564,22 @@ function submitMatch() {
             } catch (Exception $e) {
                 error_log("Error updating league standings: " . $e->getMessage());
                 // Continue anyway - standings can be updated manually
+            }
+        }
+        
+        // If it's a cup match, advance winner to next round
+        if ($data['matchType'] === 'cup') {
+            try {
+                // First check if the stored procedure exists
+                $stmt = $pdo->query("SHOW PROCEDURE STATUS WHERE Db = DATABASE() AND Name = 'advance_cup_winner'");
+                if ($stmt->rowCount() > 0) {
+                    $pdo->exec("CALL advance_cup_winner($matchId)");
+                } else {
+                    error_log("Stored procedure 'advance_cup_winner' not found");
+                }
+            } catch (Exception $e) {
+                error_log("Error advancing cup winner: " . $e->getMessage());
+                // Continue anyway - cup progression can be handled manually
             }
         }
         

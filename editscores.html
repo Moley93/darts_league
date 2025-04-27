@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Scores - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="header">
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">League Table</a></li>
+            <li><a href="singlesrankings.html">Singles Ranking</a></li>
+            <li><a href="leaguefixtures.html">League Fixtures</a></li>
+            <li><a href="leagueresults.html">League Results</a></li>
+            <li><a href="cupfixtures.html">Cup Fixtures</a></li>
+            <li><a href="cupresults.html">Cup Results</a></li>
+            <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+            <li><a href="scoreinput.html">Score Input</a></li>
+            <li><a href="editscores.html" class="active">Edit Scores</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Edit Scores Page -->
+        <div id="edit-scores" class="page">
+            <div id="edit-login-form" class="card login-form">
+                <h2>Team Captain Login</h2>
+                <form id="edit-login-form-element">
+                    <div class="form-group">
+                        <label for="edit-username">Username</label>
+                        <input type="text" id="edit-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-password">Password</label>
+                        <input type="password" id="edit-password" required>
+                    </div>
+                    <button type="submit" class="btn">Login</button>
+                </form>
+            </div>
+
+            <div id="edit-scores-container" class="card hidden">
+                <h2>Edit Match Scores</h2>
+                <div class="division-toggle">
+                    <button class="active" data-division="premier">Premier Division</button>
+                    <button data-division="a">A Division</button>
+                </div>
+                <div class="form-group">
+                    <label for="match-select">Select Match to Edit</label>
+                    <select id="match-select">
+                        <option value="">Select a match...</option>
+                    </select>
+                </div>
+                
+                <div id="edit-match-form-container" class="hidden">
+                    <form id="edit-match-form">
+                        <div class="form-group">
+                            <label for="edit-match-type">Match Type</label>
+                            <select id="edit-match-type" disabled>
+                                <option value="league">League</option>
+                                <option value="cup">Cup</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-home-team">Home Team</label>
+                            <select id="edit-home-team" disabled>
+                                <!-- Team options will be loaded dynamically -->
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-away-team">Away Team</label>
+                            <select id="edit-away-team" disabled>
+                                <!-- Team options will be loaded dynamically -->
+                            </select>
+                        </div>
+                        
+                        <h3>Doubles Matches (3 games)</h3>
+                        <div id="edit-doubles-matches">
+                            <!-- Doubles match inputs will be generated dynamically -->
+                        </div>
+                        
+                        <h3>Singles Matches (6 games)</h3>
+                        <div id="edit-singles-matches">
+                            <!-- Singles match inputs will be generated dynamically -->
+                        </div>
+                        
+                        <h3>180s</h3>
+                        <div id="edit-one-eighties-section" class="stats-section">
+                            <!-- 180s inputs will be generated dynamically -->
+                        </div>
+                        
+                        <h3>High Finishes</h3>
+                        <div id="edit-high-finishes-section" class="stats-section">
+                            <!-- High finishes inputs will be generated dynamically -->
+                        </div>
+                        
+                        <button type="submit" class="btn">Update Score</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API configuration
+        const API_URL = 'api.php'; // Change this to your actual API endpoint
+
+        function getCurrentDivision() {
+            const divisionToggle = document.querySelector('.division-toggle button.active');
+            return divisionToggle ? divisionToggle.dataset.division : 'premier';
+        }
+
+        // Division toggle handling
+        document.querySelectorAll('.division-toggle button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const division = e.target.dataset.division;
+                const parent = e.target.closest('.division-toggle');
+                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                loadEditMatchesSelect(division);
+            });
+        });
+
+        // API functions
+        async function fetchApi(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
+            
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
+            }
+        }
+
+        async function postApi(endpoint, data) {
+            try {
+                const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText); // Debug output
+                
+                try {
+                    return JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response text:', responseText);
+                    return { success: false, error: 'Invalid JSON response from server' };
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
+            }
+        }
+
+        // Edit Score Login form handling
+        document.getElementById('edit-login-form-element').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const username = document.getElementById('edit-username').value;
+            const password = document.getElementById('edit-password').value;
+            
+            const result = await postApi('login', { username, password });
+            
+            if (result.success) {
+                document.getElementById('edit-login-form').classList.add('hidden');
+                document.getElementById('edit-scores-container').classList.remove('hidden');
+                loadEditMatchesSelect(getCurrentDivision());
+            } else {
+                alert('Login failed: ' + result.error);
+            }
+        });
+
+        // Edit Scores functionality
+        async function loadEditMatchesSelect(division) {
+            const select = document.getElementById('match-select');
+            
+            // Clear existing options
+            select.innerHTML = '<option value="">Select a match to edit...</option>';
+            
+            // Fetch both league and cup results
+            const leagueResults = await fetchApi('league-results', { division });
+            const cupResults = await fetchApi('cup-results', { division });
+            
+            // Add league matches
+            const leagueGroup = document.createElement('optgroup');
+            leagueGroup.label = 'League Matches';
+            leagueResults.forEach(match => {
+                const option = document.createElement('option');
+                option.value = match.match_id;
+                option.dataset.matchType = 'league';
+                option.dataset.division = division;
+                option.dataset.homeTeam = match.home_team;
+                option.dataset.awayTeam = match.away_team;
+                option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
+                leagueGroup.appendChild(option);
+            });
+            select.appendChild(leagueGroup);
+            
+            // Add cup matches
+            const cupGroup = document.createElement('optgroup');
+            cupGroup.label = 'Cup Matches';
+            cupResults.forEach(match => {
+                const option = document.createElement('option');
+                option.value = match.match_id;
+                option.dataset.matchType = 'cup';
+                option.dataset.division = division;
+                option.dataset.homeTeam = match.home_team;
+                option.dataset.awayTeam = match.away_team;
+                option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
+                cupGroup.appendChild(option);
+            });
+            select.appendChild(cupGroup);
+        }
+
+        // Handle match selection for editing
+        document.getElementById('match-select').addEventListener('change', async function() {
+            const matchId = this.value;
+            if (!matchId) {
+                document.getElementById('edit-match-form-container').classList.add('hidden');
+                return;
+            }
+            
+            const selectedOption = this.options[this.selectedIndex];
+            const matchType = selectedOption.dataset.matchType;
+            const division = selectedOption.dataset.division;
+            const homeTeam = selectedOption.dataset.homeTeam;
+            const awayTeam = selectedOption.dataset.awayTeam;
+            
+            // Show the form container
+            document.getElementById('edit-match-form-container').classList.remove('hidden');
+            
+            // Set form values
+            document.getElementById('edit-match-type').value = matchType;
+            
+            // Load teams for the selects
+            await loadEditTeamOptions(division);
+            
+            document.getElementById('edit-home-team').value = homeTeam;
+            document.getElementById('edit-away-team').value = awayTeam;
+            
+            // Generate form fields
+            generateEditDoublesMatches(division);
+            generateEditSinglesMatches(division);
+            generateEditOneEightiesInputs();
+            generateEditHighFinishesInputs();
+            
+            // Load existing match data
+            await loadExistingMatchData(matchId);
+        });
+
+        async function loadEditTeamOptions(division) {
+            const teams = await fetchApi('teams', { division });
+            
+            const homeSelect = document.getElementById('edit-home-team');
+            const awaySelect = document.getElementById('edit-away-team');
+            
+            homeSelect.innerHTML = '';
+            awaySelect.innerHTML = '';
+            
+            teams.forEach(team => {
+                homeSelect.add(new Option(team.team_name, team.team_name));
+                awaySelect.add(new Option(team.team_name, team.team_name));
+            });
+        }
+
+        async function loadExistingMatchData(matchId) {
+            // Fetch match details including singles and doubles results
+            const matchData = await fetchApi('match-details', { match_id: matchId });
+            
+            if (!matchData || !matchData.success) {
+                console.error('Failed to load match data');
+                return;
+            }
+            
+            // Load players for both teams
+            const homeTeam = document.getElementById('edit-home-team').value;
+            const awayTeam = document.getElementById('edit-away-team').value;
+            
+            // Update player selects
+            await updateEditPlayerSelects('home');
+            await updateEditPlayerSelects('away');
+            
+            // Populate existing data
+            if (matchData.doubles && matchData.doubles.length > 0) {
+                matchData.doubles.forEach((doubles, index) => {
+                    const container = document.querySelectorAll('#edit-doubles-matches .doubles-match')[index];
+                    if (container) {
+                        container.querySelector('.home-player1').value = doubles.home_player1_name;
+                        container.querySelector('.home-player2').value = doubles.home_player2_name;
+                        container.querySelector('.away-player1').value = doubles.away_player1_name;
+                        container.querySelector('.away-player2').value = doubles.away_player2_name;
+                        container.querySelector('.score-select').value = `${doubles.home_score}-${doubles.away_score}`;
+                    }
+                });
+            }
+            
+            if (matchData.singles && matchData.singles.length > 0) {
+                matchData.singles.forEach((singles, index) => {
+                    const container = document.querySelectorAll('#edit-singles-matches .singles-match')[index];
+                    if (container) {
+                        container.querySelector('.home-player').value = singles.home_player_name;
+                        container.querySelector('.away-player').value = singles.away_player_name;
+                        container.querySelector('.score-select').value = `${singles.home_score}-${singles.away_score}`;
+                    }
+                });
+            }
+            
+            // Populate 180s
+            if (matchData.oneEighties && matchData.oneEighties.length > 0) {
+                const container = document.getElementById('edit-one-eighties-section');
+                // Clear existing rows except the add button
+                container.querySelectorAll('.stats-row').forEach(row => row.remove());
+                
+                matchData.oneEighties.forEach((oneEighty, index) => {
+                    addEditOneEightyInputRow();
+                    const row = container.querySelectorAll('.stats-row')[index];
+                    if (row) {
+                        row.querySelector('.one-eighty-player').value = oneEighty.player_name;
+                        row.querySelector('.one-eighty-count').value = oneEighty.count;
+                    }
+                });
+            }
+            
+            // Populate high finishes
+            if (matchData.highFinishes && matchData.highFinishes.length > 0) {
+                const container = document.getElementById('edit-high-finishes-section');
+                // Clear existing rows except the add button
+                container.querySelectorAll('.stats-row').forEach(row => row.remove());
+                
+                matchData.highFinishes.forEach((highFinish, index) => {
+                    addEditHighFinishInputRow();
+                    const row = container.querySelectorAll('.stats-row')[index];
+                    if (row) {
+                        row.querySelector('.high-finish-player').value = highFinish.player_name;
+                        row.querySelector('.high-finish-value').value = highFinish.finish_value;
+                    }
+                });
+            }
+        }
+
+        function generateEditDoublesMatches(division) {
+            const doublesMatchesDiv = document.getElementById('edit-doubles-matches');
+            doublesMatchesDiv.innerHTML = '';
+            
+            for (let i = 1; i <= 3; i++) {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'doubles-match';
+                
+                let scoreOptions = '';
+                if (division === 'premier') {
+                    scoreOptions = `
+                        <option value="3-0">3-0 (Home Win)</option>
+                        <option value="3-1">3-1 (Home Win)</option>
+                        <option value="3-2">3-2 (Home Win)</option>
+                        <option value="2-3">2-3 (Away Win)</option>
+                        <option value="1-3">1-3 (Away Win)</option>
+                        <option value="0-3">0-3 (Away Win)</option>
+                    `;
+                } else {
+                    scoreOptions = `
+                        <option value="2-0">2-0 (Home Win)</option>
+                        <option value="2-1">2-1 (Home Win)</option>
+                        <option value="1-2">1-2 (Away Win)</option>
+                        <option value="0-2">0-2 (Away Win)</option>
+                    `;
+                }
+                
+                matchDiv.innerHTML = `
+                    <div class="match-header">Doubles Game ${i}</div>
+                    <div class="doubles-players">
+                        <div class="home-side">
+                            <select class="player-select home-player1" data-match="${i}">
+                                <option value="">Select Home Player 1</option>
+                            </select>
+                            <select class="player-select home-player2" data-match="${i}">
+                                <option value="">Select Home Player 2</option>
+                            </select>
+                        </div>
+                        <select class="score-select" data-match="${i}">
+                            ${scoreOptions}
+                        </select>
+                        <div class="away-side">
+                            <select class="player-select away-player1" data-match="${i}">
+                                <option value="">Select Away Player 1</option>
+                            </select>
+                            <select class="player-select away-player2" data-match="${i}">
+                                <option value="">Select Away Player 2</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                doublesMatchesDiv.appendChild(matchDiv);
+            }
+        }
+
+        function generateEditSinglesMatches(division) {
+            const singlesMatchesDiv = document.getElementById('edit-singles-matches');
+            singlesMatchesDiv.innerHTML = '';
+            
+            for (let i = 1; i <= 6; i++) {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'singles-match';
+                
+                let scoreOptions = '';
+                if (division === 'premier') {
+                    scoreOptions = `
+                        <option value="3-0">3-0 (Home Win)</option>
+                        <option value="3-1">3-1 (Home Win)</option>
+                        <option value="3-2">3-2 (Home Win)</option>
+                        <option value="2-3">2-3 (Away Win)</option>
+                        <option value="1-3">1-3 (Away Win)</option>
+                        <option value="0-3">0-3 (Away Win)</option>
+                    `;
+                } else {
+                    scoreOptions = `
+                        <option value="2-0">2-0 (Home Win)</option>
+                        <option value="2-1">2-1 (Home Win)</option>
+                        <option value="1-2">1-2 (Away Win)</option>
+                        <option value="0-2">0-2 (Away Win)</option>
+                    `;
+                }
+                
+                matchDiv.innerHTML = `
+                    <div class="match-header">Singles Game ${i}</div>
+                    <div class="singles-players">
+                        <div class="home-side">
+                            <select class="player-select home-player" data-match="${i}">
+                                <option value="">Select Home Player</option>
+                            </select>
+                        </div>
+                        <select class="score-select" data-match="${i}">
+                            ${scoreOptions}
+                        </select>
+                        <div class="away-side">
+                            <select class="player-select away-player" data-match="${i}">
+                                <option value="">Select Away Player</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                singlesMatchesDiv.appendChild(matchDiv);
+            }
+        }
+
+        function generateEditOneEightiesInputs() {
+            const container = document.getElementById('edit-one-eighties-section');
+            container.innerHTML = '';
+            
+            // Add initial input row
+            addEditOneEightyInputRow();
+            
+            // Add button to add more rows
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'add-stat-btn';
+            addButton.textContent = 'Add Another 180';
+            addButton.addEventListener('click', addEditOneEightyInputRow);
+            container.appendChild(addButton);
+        }
+
+        function addEditOneEightyInputRow() {
+            const container = document.getElementById('edit-one-eighties-section');
+            const rowCount = container.querySelectorAll('.stats-row').length;
+            
+            const row = document.createElement('div');
+            row.className = 'stats-row';
+            row.innerHTML = `
+                <select class="player-select one-eighty-player" data-row="${rowCount + 1}">
+                    <option value="">Select Player</option>
+                </select>
+                <input type="number" class="one-eighty-count" value="1" min="1" placeholder="Number of 180s">
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
+            `;
+            
+            // Add before the add button
+            const addButton = container.querySelector('.add-stat-btn');
+            container.insertBefore(row, addButton);
+            
+            // Add remove functionality
+            const removeBtn = row.querySelector('.remove-stat-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => row.remove());
+            }
+            
+            // Populate player options
+            populateEditStatPlayerOptions(row.querySelector('.one-eighty-player'));
+        }
+
+        function generateEditHighFinishesInputs() {
+            const container = document.getElementById('edit-high-finishes-section');
+            container.innerHTML = '';
+            
+            // Add initial input row
+            addEditHighFinishInputRow();
+            
+            // Add button to add more rows
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'add-stat-btn';
+            addButton.textContent = 'Add Another High Finish';
+            addButton.addEventListener('click', addEditHighFinishInputRow);
+            container.appendChild(addButton);
+        }
+
+        function addEditHighFinishInputRow() {
+            const container = document.getElementById('edit-high-finishes-section');
+            const rowCount = container.querySelectorAll('.stats-row').length;
+            
+            const row = document.createElement('div');
+            row.className = 'stats-row';
+            row.innerHTML = `
+                <select class="player-select high-finish-player" data-row="${rowCount + 1}">
+                    <option value="">Select Player</option>
+                </select>
+                <input type="number" class="high-finish-value" min="100" placeholder="Finish value">
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
+            `;
+            
+            // Add before the add button
+            const addButton = container.querySelector('.add-stat-btn');
+            container.insertBefore(row, addButton);
+            
+            // Add remove functionality
+            const removeBtn = row.querySelector('.remove-stat-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => row.remove());
+            }
+            
+            // Populate player options
+            populateEditStatPlayerOptions(row.querySelector('.high-finish-player'));
+        }
+
+        async function populateEditStatPlayerOptions(select) {
+            const homeTeam = document.getElementById('edit-home-team').value;
+            const awayTeam = document.getElementById('edit-away-team').value;
+            
+            if (homeTeam) {
+                const homePlayers = await fetchApi('players', { team_name: homeTeam });
+                homePlayers.forEach(player => {
+                    select.add(new Option(`${player.player_name} (${homeTeam})`, player.player_name));
+                });
+            }
+            
+            if (awayTeam) {
+                const awayPlayers = await fetchApi('players', { team_name: awayTeam });
+                awayPlayers.forEach(player => {
+                    select.add(new Option(`${player.player_name} (${awayTeam})`, player.player_name));
+                });
+            }
+        }
+
+        async function updateEditPlayerSelects(side) {
+            const teamName = document.getElementById(`edit-${side}-team`).value;
+            if (!teamName) {
+                return;
+            }
+            
+            // Fetch players for the selected team
+            const players = await fetchApi('players', { team_name: teamName });
+            
+            // Update all player selects for this side
+            const container = document.getElementById('edit-match-form-container');
+            
+            // Update doubles player selects
+            container.querySelectorAll(`.${side}-player1, .${side}-player2`).forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">Select Player</option>';
+                players.forEach(player => {
+                    select.add(new Option(player.player_name, player.player_name));
+                });
+                if (currentValue && players.some(p => p.player_name === currentValue)) {
+                    select.value = currentValue;
+                }
+            });
+            
+            // Update singles player selects
+            container.querySelectorAll(`.${side}-player`).forEach(select => {
+                const currentValue = select.value;
+                select.innerHTML = '<option value="">Select Player</option>';
+                players.forEach(player => {
+                    select.add(new Option(player.player_name, player.player_name));
+                });
+                if (currentValue && players.some(p => p.player_name === currentValue)) {
+                    select.value = currentValue;
+                }
+            });
+        }
+
+        // Edit match form submission
+        document.getElementById('edit-match-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const matchId = document.getElementById('match-select').value;
+            if (!matchId) {
+                alert('Please select a match to edit');
+                return;
+            }
+            
+            const matchData = {
+                matchId: matchId,
+                division: getCurrentDivision(),
+                matchType: document.getElementById('edit-match-type').value,
+                homeTeam: document.getElementById('edit-home-team').value,
+                awayTeam: document.getElementById('edit-away-team').value,
+                doubles: [],
+                singles: [],
+                oneEighties: [],
+                highFinishes: []
+            };
+            
+            // Collect doubles match data
+            document.querySelectorAll('#edit-doubles-matches .doubles-match').forEach((match, index) => {
+                const homePlayer1 = match.querySelector('.home-player1').value;
+                const homePlayer2 = match.querySelector('.home-player2').value;
+                const awayPlayer1 = match.querySelector('.away-player1').value;
+                const awayPlayer2 = match.querySelector('.away-player2').value;
+                const score = match.querySelector('.score-select').value;
+                
+                if (homePlayer1 && homePlayer2 && awayPlayer1 && awayPlayer2 && score) {
+                    matchData.doubles.push({
+                        homePlayer1,
+                        homePlayer2,
+                        awayPlayer1,
+                        awayPlayer2,
+                        score
+                    });
+                }
+            });
+
+            // Collect singles match data
+            document.querySelectorAll('#edit-singles-matches .singles-match').forEach((match, index) => {
+                const homePlayer = match.querySelector('.home-player').value;
+                const awayPlayer = match.querySelector('.away-player').value;
+                const score = match.querySelector('.score-select').value;
+                
+                if (homePlayer && awayPlayer && score) {
+                    matchData.singles.push({
+                        homePlayer,
+                        awayPlayer,
+                        score
+                    });
+                }
+            });
+            
+            // Collect 180s data
+            document.querySelectorAll('#edit-one-eighties-section .stats-row').forEach(row => {
+                const player = row.querySelector('.one-eighty-player').value;
+                const count = row.querySelector('.one-eighty-count').value;
+                
+                if (player && count) {
+                    matchData.oneEighties.push({
+                        player,
+                        count: parseInt(count)
+                    });
+                }
+            });
+            
+            // Collect high finishes data
+            document.querySelectorAll('#edit-high-finishes-section .stats-row').forEach(row => {
+                const player = row.querySelector('.high-finish-player').value;
+                const value = row.querySelector('.high-finish-value').value;
+                
+                if (player && value) {
+                    matchData.highFinishes.push({
+                        player,
+                        value: parseInt(value)
+                    });
+                }
+            });
+            
+            // Validate that at least one game is complete
+            if (matchData.doubles.length === 0 && matchData.singles.length === 0) {
+                alert('Please enter scores for at least one game.');
+                return;
+            }
+            
+            console.log('Updating match data:', matchData); // Debug output
+
+            const result = await postApi('update-match', matchData);
+            
+            if (result.success) {
+                alert('Match score updated successfully!');
+                document.getElementById('match-select').value = '';
+                document.getElementById('edit-match-form-container').classList.add('hidden');
+                // Reload the matches list
+                loadEditMatchesSelect(getCurrentDivision());
+            } else {
+                alert('Error updating match: ' + result.error);
+                console.error('Error details:', result);
+            }
+        });
+
+        // Initially check if user is logged in (for development, you might want to handle this differently)
+        // You can implement local storage or session handling as needed
+    </script>
+</body>
+</html>

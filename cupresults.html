@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League Table - Crawley Darts League</title>
+    <title>Cup Results - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -13,12 +13,12 @@
 
     <nav class="nav">
         <ul>
-            <li><a href="index.html" class="active">League Table</a></li>
+            <li><a href="index.html">League Table</a></li>
             <li><a href="singlesrankings.html">Singles Ranking</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html">League Results</a></li>
             <li><a href="cupfixtures.html">Cup Fixtures</a></li>
-            <li><a href="cupresults.html">Cup Results</a></li>
+            <li><a href="cupresults.html" class="active">Cup Results</a></li>
             <li><a href="180sfinishes.html">180s & High Finishes</a></li>
             <li><a href="scoreinput.html">Score Input</a></li>
             <li><a href="editscores.html">Edit Scores</a></li>
@@ -26,32 +26,16 @@
     </nav>
 
     <div class="container">
-        <!-- League Table Page -->
-        <div id="league-table" class="page">
+        <!-- Cup Results Page -->
+        <div id="cup-results" class="page">
             <div class="card">
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Team</th>
-                            <th>P</th>
-                            <th>W</th>
-                            <th>D</th>
-                            <th>L</th>
-                            <th>F</th>
-                            <th>A</th>
-                            <th>GD</th>
-                            <th>Pts</th>
-                        </tr>
-                    </thead>
-                    <tbody id="league-table-body">
-                        <!-- Dynamic content will be loaded here -->
-                    </tbody>
-                </table>
+                <div id="cup-results-list">
+                    <!-- Dynamic cup results will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
@@ -73,7 +57,7 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadLeagueTable(division);
+                loadCupResults(division);
             });
         });
 
@@ -91,31 +75,25 @@
             }
         }
 
-        async function loadLeagueTable(division) {
-            const data = await fetchApi('league-table', { division });
-            const tbody = document.getElementById('league-table-body');
-            tbody.innerHTML = '';
+        async function loadCupResults(division) {
+            const data = await fetchApi('cup-results', { division });
+            const resultsList = document.getElementById('cup-results-list');
+            resultsList.innerHTML = '';
             
-            data.forEach((team, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${team.team_name}</td>
-                    <td>${team.played}</td>
-                    <td>${team.won}</td>
-                    <td>${team.drawn}</td>
-                    <td>${team.lost}</td>
-                    <td>${team.games_for}</td>
-                    <td>${team.games_against}</td>
-                    <td>${team.goal_diff}</td>
-                    <td>${team.points}</td>
+            data.forEach(result => {
+                const resultCard = document.createElement('div');
+                resultCard.className = 'fixture-card';
+                resultCard.innerHTML = `
+                    <div class="team-name">${result.home_team}</div>
+                    <div class="score">${result.home_score} - ${result.away_score}</div>
+                    <div class="team-name">${result.away_team}</div>
                 `;
-                tbody.appendChild(row);
+                resultsList.appendChild(resultCard);
             });
         }
 
-        // Initially load the league table
-        loadLeagueTable(getCurrentDivision());
+        // Initially load the cup results
+        loadCupResults(getCurrentDivision());
     </script>
 </body>
 </html>
