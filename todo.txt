@@ -1,4 +1,3 @@
-fix 180s high finishes - syntax error db - a complete sql database schema
 create random league fixture list, play eachother twice
 create random cup fixture list
 create edit score input for matches already inputted that are incorrect
