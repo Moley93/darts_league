@@ -5,6 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cup Fixtures - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 80%;
+            overflow: hidden;
+        }
+        
+        .iframe-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -33,22 +55,19 @@
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <div id="cup-fixtures-list">
-                    <!-- Dynamic cup fixtures will be loaded here -->
+                
+                <div id="premier-cup-fixtures" class="iframe-container">
+                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRsttr-oTPRiXeFfi1dp7eZi5IGmvIjOkhxyGoTzWd5YfCQdWANcixrfr6IrmawfQ52YBOJ_s1KWK1D/pubhtml?widget=true&amp;headers=false"></iframe>
+                </div>
+                
+                <div id="a-cup-fixtures" class="iframe-container hidden">
+                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ39YxHlpGlZ6cP3jbkmtVQkl2DCVMLdaqb0KXKtaD3qnTdxpWxVkCJBVr4MYnCkS8Acf9a2Nj_3RJ-/pubhtml?widget=true&amp;headers=false"></iframe>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
-        }
-
         // Division toggle handling
         document.querySelectorAll('.division-toggle button').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -57,45 +76,16 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadCupFixtures(division);
+                // Toggle fixture display based on division
+                if (division === 'premier') {
+                    document.getElementById('premier-cup-fixtures').classList.remove('hidden');
+                    document.getElementById('a-cup-fixtures').classList.add('hidden');
+                } else {
+                    document.getElementById('premier-cup-fixtures').classList.add('hidden');
+                    document.getElementById('a-cup-fixtures').classList.remove('hidden');
+                }
             });
         });
-
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
-            try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
-            }
-        }
-
-        async function loadCupFixtures(division) {
-            const data = await fetchApi('cup-fixtures', { division });
-            const fixturesList = document.getElementById('cup-fixtures-list');
-            fixturesList.innerHTML = '';
-            
-            data.forEach(fixture => {
-                const fixtureCard = document.createElement('div');
-                fixtureCard.className = 'fixture-card';
-                fixtureCard.innerHTML = `
-                    <div class="team-name">${fixture.home_team}</div>
-                    <div class="fixture-date">${fixture.match_date || 'TBD'}</div>
-                    <div class="team-name">${fixture.away_team}</div>
-                `;
-                fixturesList.appendChild(fixtureCard);
-            });
-        }
-
-        // Initially load the cup fixtures
-        loadCupFixtures(getCurrentDivision());
-        
     </script>
-    
 </body>
 </html>
