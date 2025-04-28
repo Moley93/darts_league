@@ -34,7 +34,7 @@
                     <button data-division="a">A Division</button>
                 </div>
                 
-                <h2>180s Leaderboard</h2>
+                <h2>180s Leaderboard <span class="league-only-note">(League Games Only)</span></h2>
                 <table class="stats-table">
                     <thead>
                         <tr>
@@ -49,7 +49,7 @@
                     </tbody>
                 </table>
                 
-                <h2 style="margin-top: 40px;">High Finishes</h2>
+                <h2 style="margin-top: 40px;">High Finishes <span class="league-only-note">(League Games Only)</span></h2>
                 <table class="stats-table">
                     <thead>
                         <tr>
@@ -105,9 +105,20 @@
         }
 
         async function loadOneEighties(division) {
-            const data = await fetchApi('one-eighties', { division });
+            // Add match_type=league parameter to only get league 180s
+            const data = await fetchApi('one-eighties', { division, match_type: 'league' });
             const tbody = document.getElementById('one-eighties-body');
             tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                // Display a message if no data is found
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="4" style="text-align: center;">No 180s recorded for league games in this division yet.</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
             
             data.forEach((stat, index) => {
                 const row = document.createElement('tr');
@@ -122,9 +133,20 @@
         }
         
         async function loadHighFinishes(division) {
-            const data = await fetchApi('high-finishes', { division });
+            // Add match_type=league parameter to only get league high finishes
+            const data = await fetchApi('high-finishes', { division, match_type: 'league' });
             const tbody = document.getElementById('high-finishes-body');
             tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                // Display a message if no data is found
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="5" style="text-align: center;">No high finishes recorded for league games in this division yet.</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
             
             data.forEach((stat, index) => {
                 const row = document.createElement('tr');
@@ -143,5 +165,15 @@
         loadOneEighties(getCurrentDivision());
         loadHighFinishes(getCurrentDivision());
     </script>
+    
+    <style>
+        /* Additional style for the 'league only' note */
+        .league-only-note {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--secondary);
+            font-style: italic;
+        }
+    </style>
 </body>
 </html>

@@ -19,7 +19,7 @@ header('Access-Control-Allow-Headers: Content-Type');
 $db_host = 'localhost';
 $db_name = 'darts_league';
 $db_user = 'root';  // Update with your MySQL username
-$db_pass = '123';      // Update with your MySQL password
+$db_pass = '123';   // Update with your MySQL password
 
 // Function to safely return JSON
 function returnJson($data) {
@@ -30,7 +30,9 @@ function returnJson($data) {
     
     // Send JSON headers
     header('Content-Type: application/json');
-    echo json_encode($data);
+    
+    // Ensure proper encoding
+    echo json_encode($data, JSON_UNESCAPED_UNICODE);
     exit;
 }
 
@@ -207,7 +209,7 @@ function getSinglesRanking() {
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getSinglesRanking: " . $e->getMessage());
-        returnJson(['success' => false, 'error' => 'Error fetching Player Rankingss']);
+        returnJson(['success' => false, 'error' => 'Error fetching Player Rankings']);
     }
 }
 
@@ -328,9 +330,11 @@ function getCupResults() {
 function getOneEighties() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
+    $match_type = isset($_GET['match_type']) ? $_GET['match_type'] : null;
     
     try {
-        $stmt = $pdo->prepare("
+        // Base query - now joins with matches table to filter by match_type if needed
+        $sql = "
             SELECT 
                 p.player_name,
                 t.team_name,
@@ -338,12 +342,25 @@ function getOneEighties() {
             FROM one_eighties o
             JOIN players p ON o.player_id = p.player_id
             JOIN teams t ON p.team_id = t.team_id
+            JOIN matches m ON o.match_id = m.match_id
             WHERE t.division = ?
+        ";
+        
+        // Add match type filter if specified
+        $params = [$division];
+        if ($match_type) {
+            $sql .= " AND m.match_type = ?";
+            $params[] = $match_type;
+        }
+        
+        // Complete the query with GROUP BY and ORDER BY
+        $sql .= "
             GROUP BY p.player_id, p.player_name, t.team_name
             ORDER BY total_180s DESC
-        ");
+        ";
         
-        $stmt->execute([$division]);
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getOneEighties: " . $e->getMessage());
@@ -354,9 +371,11 @@ function getOneEighties() {
 function getHighFinishes() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
+    $match_type = isset($_GET['match_type']) ? $_GET['match_type'] : null;
     
     try {
-        $stmt = $pdo->prepare("
+        // Base query - now joins with matches table to filter by match_type if needed
+        $sql = "
             SELECT 
                 p.player_name,
                 t.team_name,
@@ -365,11 +384,24 @@ function getHighFinishes() {
             FROM high_finishes h
             JOIN players p ON h.player_id = p.player_id
             JOIN teams t ON p.team_id = t.team_id
+            JOIN matches m ON h.match_id = m.match_id
             WHERE t.division = ?
-            ORDER BY h.finish_value DESC, h.created_at DESC
-        ");
+        ";
         
-        $stmt->execute([$division]);
+        // Add match type filter if specified
+        $params = [$division];
+        if ($match_type) {
+            $sql .= " AND m.match_type = ?";
+            $params[] = $match_type;
+        }
+        
+        // Complete the query with ORDER BY
+        $sql .= "
+            ORDER BY h.finish_value DESC, h.created_at DESC
+        ";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getHighFinishes: " . $e->getMessage());
@@ -379,7 +411,7 @@ function getHighFinishes() {
 
 function getMatchDetails() {
     global $pdo;
-    $matchId = isset($_GET['match_id']) ? $_GET['match_id'] : 0;
+    $matchId = isset($_GET['match_id']) ? (int)$_GET['match_id'] : 0;
     
     if (!$matchId) {
         returnJson(['success' => false, 'error' => 'No match ID provided']);
@@ -387,8 +419,15 @@ function getMatchDetails() {
     }
     
     try {
-        // Start a transaction
-        $pdo->beginTransaction();
+        // Check if match exists first
+        $checkStmt = $pdo->prepare("SELECT match_type FROM matches WHERE match_id = ?");
+        $checkStmt->execute([$matchId]);
+        $matchType = $checkStmt->fetchColumn();
+        
+        if (!$matchType) {
+            returnJson(['success' => false, 'error' => 'Match not found']);
+            return;
+        }
         
         // Get basic match info
         $stmt = $pdo->prepare("
@@ -402,14 +441,9 @@ function getMatchDetails() {
         $stmt->execute([$matchId]);
         $match = $stmt->fetch();
         
-        if (!$match) {
-            $pdo->rollBack();
-            returnJson(['success' => false, 'error' => 'Match not found']);
-            return;
-        }
-        
-        // Get doubles results
-        $stmt = $pdo->prepare("
+        // Get doubles results - handle case where there might be no doubles results
+        $doubles = [];
+        $doublesStmt = $pdo->prepare("
             SELECT 
                 dr.result_id,
                 dr.home_score,
@@ -425,11 +459,15 @@ function getMatchDetails() {
             JOIN players ap2 ON dr.away_player2_id = ap2.player_id
             WHERE dr.match_id = ?
         ");
-        $stmt->execute([$matchId]);
-        $doubles = $stmt->fetchAll();
+        $doublesStmt->execute([$matchId]);
+        $doublesResults = $doublesStmt->fetchAll();
+        if ($doublesResults) {
+            $doubles = $doublesResults;
+        }
         
-        // Get singles results
-        $stmt = $pdo->prepare("
+        // Get singles results - handle case where there might be no singles results
+        $singles = [];
+        $singlesStmt = $pdo->prepare("
             SELECT 
                 sr.result_id,
                 sr.home_score,
@@ -441,11 +479,15 @@ function getMatchDetails() {
             JOIN players ap ON sr.away_player_id = ap.player_id
             WHERE sr.match_id = ?
         ");
-        $stmt->execute([$matchId]);
-        $singles = $stmt->fetchAll();
+        $singlesStmt->execute([$matchId]);
+        $singlesResults = $singlesStmt->fetchAll();
+        if ($singlesResults) {
+            $singles = $singlesResults;
+        }
         
-        // Get 180s
-        $stmt = $pdo->prepare("
+        // Get 180s - handle case where there might be no 180s
+        $oneEighties = [];
+        $oneEightiesStmt = $pdo->prepare("
             SELECT 
                 o.id,
                 p.player_name,
@@ -454,11 +496,15 @@ function getMatchDetails() {
             JOIN players p ON o.player_id = p.player_id
             WHERE o.match_id = ?
         ");
-        $stmt->execute([$matchId]);
-        $oneEighties = $stmt->fetchAll();
+        $oneEightiesStmt->execute([$matchId]);
+        $oneEightiesResults = $oneEightiesStmt->fetchAll();
+        if ($oneEightiesResults) {
+            $oneEighties = $oneEightiesResults;
+        }
         
-        // Get high finishes
-        $stmt = $pdo->prepare("
+        // Get high finishes - handle case where there might be no high finishes
+        $highFinishes = [];
+        $highFinishesStmt = $pdo->prepare("
             SELECT 
                 h.id,
                 p.player_name,
@@ -467,25 +513,31 @@ function getMatchDetails() {
             JOIN players p ON h.player_id = p.player_id
             WHERE h.match_id = ?
         ");
-        $stmt->execute([$matchId]);
-        $highFinishes = $stmt->fetchAll();
+        $highFinishesStmt->execute([$matchId]);
+        $highFinishesResults = $highFinishesStmt->fetchAll();
+        if ($highFinishesResults) {
+            $highFinishes = $highFinishesResults;
+        }
         
-        $pdo->commit();
+        // Add debug logging
+        error_log("Match details retrieved for match ID: $matchId");
+        error_log("Match type: $matchType");
+        error_log("Doubles count: " . count($doubles));
+        error_log("Singles count: " . count($singles));
         
-        returnJson([
+        $result = [
             'success' => true,
             'match' => $match,
             'doubles' => $doubles,
             'singles' => $singles,
             'oneEighties' => $oneEighties,
             'highFinishes' => $highFinishes
-        ]);
+        ];
         
+        returnJson($result);
     } catch (Exception $e) {
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
         error_log("Error in getMatchDetails: " . $e->getMessage());
+        error_log("Error trace: " . $e->getTraceAsString());
         returnJson(['success' => false, 'error' => 'Error fetching match details: ' . $e->getMessage()]);
     }
 }
@@ -605,7 +657,7 @@ function submitMatch() {
         $matchId = isset($data['matchId']) ? $data['matchId'] : null;
         
         if ($matchId) {
-            $stmt = $pdo->prepare("
+                $stmt = $pdo->prepare("
                 UPDATE matches 
                 SET home_score = 0, away_score = 0, status = 'completed' 
                 WHERE match_id = ?
@@ -862,6 +914,13 @@ function updateMatch() {
         }
         
         $matchId = $data['matchId'];
+        
+        // Verify match exists
+        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM matches WHERE match_id = ?");
+        $checkStmt->execute([$matchId]);
+        if ($checkStmt->fetchColumn() == 0) {
+            throw new Exception('Match not found with ID: ' . $matchId);
+        }
         
         // Get team IDs
         $stmt = $pdo->prepare("SELECT team_id FROM teams WHERE team_name = ?");
