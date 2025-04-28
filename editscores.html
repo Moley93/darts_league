@@ -5,6 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Scores - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Add styles for the loading indicator */
+        #loading-indicator {
+            padding: 15px;
+            background-color: #f0f8ff;
+            color: #1a237e;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        /* Add highlight style for modified data */
+        .modified {
+            background-color: #fffde7 !important;
+            transition: background-color 0.5s ease;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -57,6 +75,7 @@
                 </div>
                 
                 <div id="edit-match-form-container" class="hidden">
+                    <div id="loading-indicator" class="hidden">Loading match details...</div>
                     <form id="edit-match-form">
                         <div class="form-group">
                             <label for="edit-match-type">Match Type</label>
@@ -142,6 +161,8 @@
 
         async function postApi(endpoint, data) {
             try {
+                console.log(`Sending ${endpoint} request:`, data);
+                
                 const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -172,6 +193,8 @@
             const username = document.getElementById('edit-username').value;
             const password = document.getElementById('edit-password').value;
             
+            console.log('Login attempt with:', { username });
+            
             const result = await postApi('login', { username, password });
             
             if (result.success) {
@@ -179,7 +202,7 @@
                 document.getElementById('edit-scores-container').classList.remove('hidden');
                 loadEditMatchesSelect(getCurrentDivision());
             } else {
-                alert('Login failed: ' + result.error);
+                alert('Login failed: ' + (result.error || 'Invalid credentials'));
             }
         });
 
@@ -228,19 +251,23 @@
         // Handle match selection for editing
         document.getElementById('match-select').addEventListener('change', async function() {
             const matchId = this.value;
+            const matchFormContainer = document.getElementById('edit-match-form-container');
+            
             if (!matchId) {
-                document.getElementById('edit-match-form-container').classList.add('hidden');
+                matchFormContainer.classList.add('hidden');
                 return;
             }
+            
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.classList.remove('hidden');
+            matchFormContainer.classList.remove('hidden');
             
             const selectedOption = this.options[this.selectedIndex];
             const matchType = selectedOption.dataset.matchType;
             const division = selectedOption.dataset.division;
             const homeTeam = selectedOption.dataset.homeTeam;
             const awayTeam = selectedOption.dataset.awayTeam;
-            
-            // Show the form container
-            document.getElementById('edit-match-form-container').classList.remove('hidden');
             
             // Set form values
             document.getElementById('edit-match-type').value = matchType;
@@ -257,8 +284,11 @@
             generateEditOneEightiesInputs();
             generateEditHighFinishesInputs();
             
-            // Load existing match data
+            // Load existing match data with the new match-details endpoint
             await loadExistingMatchData(matchId);
+            
+            // Hide loading indicator
+            loadingIndicator.classList.add('hidden');
         });
 
         async function loadEditTeamOptions(division) {
@@ -277,13 +307,16 @@
         }
 
         async function loadExistingMatchData(matchId) {
-            // Fetch match details including singles and doubles results
+            // Fetch match details using the match-details endpoint
             const matchData = await fetchApi('match-details', { match_id: matchId });
             
             if (!matchData || !matchData.success) {
-                console.error('Failed to load match data');
+                console.error('Failed to load match data:', matchData);
+                alert('Failed to load match details. Please try again.');
                 return;
             }
+            
+            console.log('Loaded match data:', matchData);
             
             // Load players for both teams
             const homeTeam = document.getElementById('edit-home-team').value;
@@ -295,9 +328,11 @@
             
             // Populate existing data
             if (matchData.doubles && matchData.doubles.length > 0) {
+                const doublesContainers = document.querySelectorAll('#edit-doubles-matches .doubles-match');
+                
                 matchData.doubles.forEach((doubles, index) => {
-                    const container = document.querySelectorAll('#edit-doubles-matches .doubles-match')[index];
-                    if (container) {
+                    if (index < doublesContainers.length) {
+                        const container = doublesContainers[index];
                         container.querySelector('.home-player1').value = doubles.home_player1_name;
                         container.querySelector('.home-player2').value = doubles.home_player2_name;
                         container.querySelector('.away-player1').value = doubles.away_player1_name;
@@ -308,9 +343,11 @@
             }
             
             if (matchData.singles && matchData.singles.length > 0) {
+                const singlesContainers = document.querySelectorAll('#edit-singles-matches .singles-match');
+                
                 matchData.singles.forEach((singles, index) => {
-                    const container = document.querySelectorAll('#edit-singles-matches .singles-match')[index];
-                    if (container) {
+                    if (index < singlesContainers.length) {
+                        const container = singlesContainers[index];
                         container.querySelector('.home-player').value = singles.home_player_name;
                         container.querySelector('.away-player').value = singles.away_player_name;
                         container.querySelector('.score-select').value = `${singles.home_score}-${singles.away_score}`;
@@ -326,8 +363,9 @@
                 
                 matchData.oneEighties.forEach((oneEighty, index) => {
                     addEditOneEightyInputRow();
-                    const row = container.querySelectorAll('.stats-row')[index];
-                    if (row) {
+                    const rows = container.querySelectorAll('.stats-row');
+                    if (index < rows.length) {
+                        const row = rows[index];
                         row.querySelector('.one-eighty-player').value = oneEighty.player_name;
                         row.querySelector('.one-eighty-count').value = oneEighty.count;
                     }
@@ -342,8 +380,9 @@
                 
                 matchData.highFinishes.forEach((highFinish, index) => {
                     addEditHighFinishInputRow();
-                    const row = container.querySelectorAll('.stats-row')[index];
-                    if (row) {
+                    const rows = container.querySelectorAll('.stats-row');
+                    if (index < rows.length) {
+                        const row = rows[index];
                         row.querySelector('.high-finish-player').value = highFinish.player_name;
                         row.querySelector('.high-finish-value').value = highFinish.finish_value;
                     }
@@ -689,7 +728,15 @@
             
             console.log('Updating match data:', matchData); // Debug output
 
+            // Show loading indicator while submitting
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.textContent = 'Updating match...';
+            loadingIndicator.classList.remove('hidden');
+            
             const result = await postApi('update-match', matchData);
+            
+            // Hide loading indicator
+            loadingIndicator.classList.add('hidden');
             
             if (result.success) {
                 alert('Match score updated successfully!');
@@ -698,13 +745,10 @@
                 // Reload the matches list
                 loadEditMatchesSelect(getCurrentDivision());
             } else {
-                alert('Error updating match: ' + result.error);
+                alert('Error updating match: ' + (result.error || 'Unknown error'));
                 console.error('Error details:', result);
             }
         });
-
-        // Initially check if user is logged in (for development, you might want to handle this differently)
-        // You can implement local storage or session handling as needed
     </script>
 </body>
 </html>
