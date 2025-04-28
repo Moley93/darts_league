@@ -207,7 +207,7 @@ function getSinglesRanking() {
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getSinglesRanking: " . $e->getMessage());
-        returnJson(['success' => false, 'error' => 'Error fetching singles rankings']);
+        returnJson(['success' => false, 'error' => 'Error fetching Player Rankingss']);
     }
 }
 

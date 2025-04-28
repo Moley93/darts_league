@@ -6,3 +6,4 @@ create field in submit score for a drop down menu on for cup round
 dont add 180s and high finishes to the leaderboard if cup game
 player rankings only takes data from singles games and not doubles games
 captain/secretary/venue info locked behind login for GDPR reasons
+create new home page and league table seperate to display info/announcements
