@@ -5,8 +5,15 @@
     --text: #333;
     --bg: #f5f5f5;
     --card-bg: #ffffff;
+    --success: #4caf50;
+    --warning: #ff9800;
+    --error: #f44336;
+    --light-gray: #f0f0f0;
+    --medium-gray: #ddd;
+    --dark-gray: #666;
 }
 
+/* Base Styles */
 * {
     margin: 0;
     padding: 0;
@@ -20,6 +27,7 @@ body {
     line-height: 1.6;
 }
 
+/* Header and Navigation */
 .header {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
@@ -53,12 +61,22 @@ body {
     color: var(--primary);
     font-weight: 500;
     transition: color 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 4px;
 }
 
 .nav ul li a:hover {
     color: var(--secondary);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
+.nav ul li a.active {
+    color: var(--secondary);
+    font-weight: 600;
+    border-bottom: 2px solid var(--secondary);
+}
+
+/* Container and Cards */
 .container {
     max-width: 1200px;
     margin: 20px auto;
@@ -73,6 +91,7 @@ body {
     margin-bottom: 20px;
 }
 
+/* Division Toggle */
 .division-toggle {
     display: flex;
     justify-content: center;
@@ -99,27 +118,44 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
+/* Tables */
 table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 th, td {
     padding: 12px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--medium-gray);
 }
 
 th {
     background: var(--primary);
     color: white;
+    font-weight: 500;
 }
 
 tr:hover {
-    background: #f5f5f5;
+    background: var(--light-gray);
 }
 
+.singles-table, .stats-table, .rankings-table {
+    margin-top: 20px;
+    width: 100%;
+}
+
+.singles-table tr, .stats-table tr {
+    transition: background 0.3s ease;
+}
+
+.singles-table tr:nth-child(even), .stats-table tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+/* Forms and Inputs */
 .login-form {
     max-width: 400px;
     margin: 50px auto;
@@ -134,14 +170,22 @@ tr:hover {
     display: block;
     margin-bottom: 5px;
     font-weight: 500;
+    color: var(--text);
 }
 
 .form-group input, .form-group select {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--medium-gray);
     border-radius: 4px;
     font-size: 16px;
+    transition: border 0.3s ease;
+}
+
+.form-group input:focus, .form-group select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 188, 212, 0.2);
 }
 
 .btn {
@@ -152,55 +196,19 @@ tr:hover {
     border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
-    transition: background 0.3s ease;
+    transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .btn:hover {
     background: var(--secondary);
+    transform: translateY(-2px);
 }
 
-.fixture-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px;
-    border-bottom: 1px solid #eee;
+.btn:active {
+    transform: translateY(0);
 }
 
-.fixture-card:last-child {
-    border-bottom: none;
-}
-
-.team-name {
-    font-weight: 500;
-}
-
-.fixture-date {
-    color: #666;
-    font-size: 0.9em;
-}
-
-.score {
-    font-weight: bold;
-    font-size: 1.2em;
-}
-
-.hidden {
-    display: none;
-}
-
-.singles-table {
-    margin-top: 20px;
-}
-
-.singles-table tr {
-    transition: background 0.3s ease;
-}
-
-.singles-table tr:nth-child(even) {
-    background: #f9f9f9;
-}
-
+/* Score Input Styles */
 .score-input-container {
     max-width: 600px;
     margin: 0 auto;
@@ -213,17 +221,21 @@ tr:hover {
     margin-bottom: 20px;
 }
 
+/* Doubles and Singles Match Styles */
 .singles-match, .doubles-match {
     margin: 15px 0;
-    padding: 10px;
+    padding: 15px;
     background: #f9f9f9;
     border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .match-header {
     font-weight: bold;
     margin-bottom: 10px;
     color: var(--primary);
+    border-bottom: 1px solid var(--medium-gray);
+    padding-bottom: 5px;
 }
 
 .singles-players, .doubles-players {
@@ -240,39 +252,35 @@ tr:hover {
 .doubles-match .home-side, .doubles-match .away-side {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
     width: 40%;
 }
 
 .player-select {
     width: 100%;
-    padding: 5px;
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    font-size: 14px;
 }
 
 .score-select {
     width: 20%;
     text-align: center;
-    padding: 5px;
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
+    font-size: 14px;
+    background-color: var(--card-bg);
 }
 
-.stats-table {
-    margin-top: 20px;
-    width: 100%;
-}
-
-.stats-table tr {
-    transition: background 0.3s ease;
-}
-
-.stats-table tr:nth-child(even) {
-    background: #f9f9f9;
-}
-
+/* Stats Section Styles */
 .stats-section {
     margin-top: 20px;
     padding: 15px;
     background: #f9f9f9;
     border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .stats-row {
@@ -289,30 +297,80 @@ tr:hover {
 .stats-row input[type="number"] {
     flex: 1;
     width: 80px;
+    padding: 8px;
+    border: 1px solid var(--medium-gray);
+    border-radius: 4px;
 }
 
 .add-stat-btn {
-    padding: 5px 10px;
+    padding: 8px 15px;
     background: var(--primary);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     margin-top: 10px;
+    transition: background 0.3s ease;
+}
+
+.add-stat-btn:hover {
+    background: var(--secondary);
 }
 
 .remove-stat-btn {
     padding: 5px 10px;
-    background: var(--secondary);
+    background: var(--error);
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
+    transition: background 0.3s ease, opacity 0.3s ease;
 }
 
-/* New styles for date headers */
+.remove-stat-btn:hover {
+    background: #d32f2f;
+    opacity: 0.9;
+}
+
+/* Fixture and Results Cards */
+.fixture-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.3s ease;
+}
+
+.fixture-card:hover {
+    background: var(--light-gray);
+}
+
+.fixture-card:last-child {
+    border-bottom: none;
+}
+
+.team-name {
+    font-weight: 500;
+    flex: 2;
+}
+
+.fixture-date {
+    color: var(--dark-gray);
+    font-size: 0.9em;
+    text-align: center;
+}
+
+.score {
+    font-weight: bold;
+    font-size: 1.2em;
+    padding: 0 15px;
+    color: var(--primary);
+}
+
+/* Headers for Results and Cup Rounds */
 .results-date-header {
-    background: #f0f0f0;
+    background: var(--light-gray);
     padding: 10px 15px;
     margin: 15px 0 10px;
     border-radius: 5px;
@@ -331,6 +389,58 @@ tr:hover {
     text-align: center;
 }
 
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+/* Loading Indicator */
+#loading-indicator {
+    padding: 15px;
+    background-color: #f0f8ff;
+    color: var(--primary);
+    border-radius: 5px;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Modified Element Styles */
+.modified {
+    background-color: #fffde7 !important;
+    transition: background-color 0.5s ease;
+}
+
+/* iFrame Container for Google Sheets Embedding */
+.iframe-container {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 80%;
+    overflow: hidden;
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.iframe-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+/* Responsive Styles */
 @media (max-width: 768px) {
     .nav ul {
         flex-direction: column;
@@ -346,11 +456,67 @@ tr:hover {
         width: 100%;
     }
 
+    .singles-players, .doubles-players {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .singles-match .home-side, 
+    .singles-match .away-side,
+    .doubles-match .home-side, 
+    .doubles-match .away-side {
+        width: 100%;
+    }
+
+    .score-select {
+        width: 100%;
+        margin: 10px 0;
+    }
+
+    .stats-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .stats-row input[type="number"] {
+        width: 100%;
+    }
+
     table {
         font-size: 14px;
     }
 
     th, td {
         padding: 8px;
+    }
+    
+    .fixture-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .team-name {
+        flex: none;
+        margin-bottom: 5px;
+    }
+}
+
+@media (max-width: 480px) {
+    .card {
+        padding: 15px 10px;
+    }
+    
+    th, td {
+        padding: 6px 4px;
+        font-size: 12px;
+    }
+    
+    .login-form {
+        padding: 20px 15px;
+    }
+    
+    .header h1 {
+        font-size: 24px;
     }
 }

@@ -5,29 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Scores - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Add styles for the loading indicator */
-        #loading-indicator {
-            padding: 15px;
-            background-color: #f0f8ff;
-            color: #1a237e;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        /* Add highlight style for modified data */
-        .modified {
-            background-color: #fffde7 !important;
-            transition: background-color 0.5s ease;
-        }
-
-        /* Ensure hidden class properly hides elements */
-        .hidden {
-            display: none !important;
-        }
-    </style>
 </head>
 <body>
     <header class="header">
@@ -647,23 +624,22 @@
                 });
             }
             
-            // Populate high finishes
-            if (matchData.highFinishes && matchData.highFinishes.length > 0) {
-                const container = document.getElementById('edit-high-finishes-section');
-                // Clear existing rows except the add button
-                container.querySelectorAll('.stats-row').forEach(row => row.remove());
-                
-                matchData.highFinishes.forEach((highFinish, index) => {
-                    addEditHighFinishInputRow();
-                    const rows = container.querySelectorAll('.stats-row');
-                    if (index < rows.length) {
-                        const row = rows[index];
-                        row.querySelector('.high-finish-player').value = highFinish.player_name;
-                        row.querySelector('.high-finish-value').value = highFinish.finish_value;
-                    }
-                });
-            }
+// Populate high finishes
+if (matchData.highFinishes && matchData.highFinishes.length > 0) {
+    const container = document.getElementById('edit-high-finishes-section');
+    // Clear existing rows except the add button
+    container.querySelectorAll('.stats-row').forEach(row => row.remove());
+   
+    matchData.highFinishes.forEach((highFinish, index) => {
+        addEditHighFinishInputRow();
+        const rows = container.querySelectorAll('.stats-row');
+        if (index < rows.length) {
+            const row = rows[index];
+            row.querySelector('.high-finish-player').value = highFinish.player_name;
+            row.querySelector('.high-finish-value').value = highFinish.finish_value;
         }
+    });
+}        }
 
         // Modify the generateEditDoublesMatches function to add event listeners to all player selects
         function generateEditDoublesMatches(division) {
