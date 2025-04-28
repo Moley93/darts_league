@@ -22,6 +22,11 @@
             background-color: #fffde7 !important;
             transition: background-color 0.5s ease;
         }
+
+        /* Ensure hidden class properly hides elements */
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
@@ -163,6 +168,9 @@
             try {
                 console.log(`Sending ${endpoint} request:`, data);
                 
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (loadingIndicator) loadingIndicator.classList.remove('hidden');
+                
                 const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
                     method: 'POST',
                     headers: {
@@ -172,6 +180,9 @@
                 });
                 
                 const responseText = await response.text();
+                
+                if (loadingIndicator) loadingIndicator.classList.add('hidden');
+                
                 console.log('Raw response:', responseText); // Debug output
                 
                 try {
@@ -182,27 +193,46 @@
                     return { success: false, error: 'Invalid JSON response from server' };
                 }
             } catch (error) {
+                document.getElementById('loading-indicator').classList.add('hidden');
                 console.error('API Error:', error);
                 return { success: false, error: error.message };
             }
         }
 
-        // Edit Score Login form handling
-        document.getElementById('edit-login-form-element').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('edit-username').value;
-            const password = document.getElementById('edit-password').value;
-            
-            console.log('Login attempt with:', { username });
-            
-            const result = await postApi('login', { username, password });
-            
-            if (result.success) {
-                document.getElementById('edit-login-form').classList.add('hidden');
-                document.getElementById('edit-scores-container').classList.remove('hidden');
-                loadEditMatchesSelect(getCurrentDivision());
+        // Enhanced login function with better error handling
+        document.addEventListener('DOMContentLoaded', function() {
+            // Make sure the form exists before adding the event listener
+            const loginForm = document.getElementById('edit-login-form-element');
+            if (loginForm) {
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const username = document.getElementById('edit-username').value;
+                    const password = document.getElementById('edit-password').value;
+                    
+                    console.log('Login attempt with:', { username });
+                    console.log('Sending login request to:', `${API_URL}?endpoint=login`);
+                    
+                    try {
+                        const result = await postApi('login', { username, password });
+                        
+                        console.log('Login response received:', result);
+                        
+                        if (result && result.success) {
+                            document.getElementById('edit-login-form').classList.add('hidden');
+                            document.getElementById('edit-scores-container').classList.remove('hidden');
+                            loadEditMatchesSelect(getCurrentDivision());
+                        } else {
+                            const errorMsg = result ? (result.error || 'Invalid credentials') : 'No response received';
+                            alert('Login failed: ' + errorMsg);
+                            console.error('Login error details:', result);
+                        }
+                    } catch (error) {
+                        console.error('Login exception:', error);
+                        alert('Login error: ' + error.message);
+                    }
+                });
             } else {
-                alert('Login failed: ' + (result.error || 'Invalid credentials'));
+                console.error('Edit login form element not found!');
             }
         });
 
@@ -306,6 +336,225 @@
             });
         }
 
+        /**
+         * Gets players selected for doubles games only
+         * @returns {Object} Object with home and away player sets
+         */
+        function getSelectedDoublesPlayers() {
+            const selectedPlayers = {
+                home: new Set(),
+                away: new Set()
+            };
+            
+            // Get all selected home players from doubles only
+            document.querySelectorAll('.home-player1, .home-player2').forEach(select => {
+                if (select.value) {
+                    selectedPlayers.home.add(select.value);
+                }
+            });
+            
+            // Get all selected away players from doubles only
+            document.querySelectorAll('.away-player1, .away-player2').forEach(select => {
+                if (select.value) {
+                    selectedPlayers.away.add(select.value);
+                }
+            });
+            
+            return selectedPlayers;
+        }
+
+        /**
+         * Gets players selected for singles games only
+         * @returns {Object} Object with home and away player sets
+         */
+        function getSelectedSinglesPlayers() {
+            const selectedPlayers = {
+                home: new Set(),
+                away: new Set()
+            };
+            
+            // Get all selected home players from singles only
+            document.querySelectorAll('.home-player').forEach(select => {
+                if (select.value) {
+                    selectedPlayers.home.add(select.value);
+                }
+            });
+            
+            // Get all selected away players from singles only
+            document.querySelectorAll('.away-player').forEach(select => {
+                if (select.value) {
+                    selectedPlayers.away.add(select.value);
+                }
+            });
+            
+            return selectedPlayers;
+        }
+
+        async function updateEditPlayerSelects(side) {
+            const teamName = document.getElementById(`edit-${side}-team`).value;
+            if (!teamName) {
+                // Clear player selects if no team is selected
+                document.querySelectorAll(`.${side}-player, .${side}-player1, .${side}-player2`).forEach(select => {
+                    select.innerHTML = '<option value="">Select Player</option>';
+                });
+                return;
+            }
+            
+            // Update both singles and doubles player options
+            await updateAllPlayerSelects();
+        }
+
+        /**
+         * Updates player options for both singles and doubles matches
+         */
+        async function updateAllPlayerSelects() {
+            await updateDoublesPlayerOptions();
+            await updateSinglesPlayerOptions();
+        }
+
+        /**
+         * Updates player options for doubles matches to exclude already selected players in doubles only
+         */
+        async function updateDoublesPlayerOptions() {
+            const homeTeamName = document.getElementById('edit-home-team').value;
+            const awayTeamName = document.getElementById('edit-away-team').value;
+            
+            if (!homeTeamName && !awayTeamName) return;
+            
+            // Get players selected in doubles matches only
+            const selectedPlayers = getSelectedDoublesPlayers();
+            
+            if (homeTeamName) {
+                const homePlayers = await fetchApi('players', { team_name: homeTeamName });
+                
+                document.querySelectorAll('.home-player1, .home-player2').forEach(select => {
+                    const currentValue = select.value;
+                    const currentSelectionExcludingThisOne = new Set(selectedPlayers.home);
+                    
+                    // Remove this element's selection from the list of excluded players
+                    if (currentValue) {
+                        currentSelectionExcludingThisOne.delete(currentValue);
+                    }
+                    
+                    select.innerHTML = '<option value="">Select Player</option>';
+                    
+                    homePlayers.forEach(player => {
+                        // Only add player if they're not already selected in another doubles match
+                        // or if they're the currently selected player in this dropdown
+                        if (!currentSelectionExcludingThisOne.has(player.player_name)) {
+                            select.add(new Option(player.player_name, player.player_name));
+                        }
+                    });
+                    
+                    // Restore current value if still valid
+                    if (currentValue && homePlayers.some(p => p.player_name === currentValue)) {
+                        select.value = currentValue;
+                    }
+                });
+            }
+            
+            if (awayTeamName) {
+                const awayPlayers = await fetchApi('players', { team_name: awayTeamName });
+                
+                document.querySelectorAll('.away-player1, .away-player2').forEach(select => {
+                    const currentValue = select.value;
+                    const currentSelectionExcludingThisOne = new Set(selectedPlayers.away);
+                    
+                    // Remove this element's selection from the list of excluded players
+                    if (currentValue) {
+                        currentSelectionExcludingThisOne.delete(currentValue);
+                    }
+                    
+                    select.innerHTML = '<option value="">Select Player</option>';
+                    
+                    awayPlayers.forEach(player => {
+                        // Only add player if they're not already selected in another doubles match
+                        // or if they're the currently selected player in this dropdown
+                        if (!currentSelectionExcludingThisOne.has(player.player_name)) {
+                            select.add(new Option(player.player_name, player.player_name));
+                        }
+                    });
+                    
+                    // Restore current value if still valid
+                    if (currentValue && awayPlayers.some(p => p.player_name === currentValue)) {
+                        select.value = currentValue;
+                    }
+                });
+            }
+        }
+
+        /**
+         * Updates player options for singles matches to exclude already selected players in singles only
+         */
+        async function updateSinglesPlayerOptions() {
+            const homeTeamName = document.getElementById('edit-home-team').value;
+            const awayTeamName = document.getElementById('edit-away-team').value;
+            
+            if (!homeTeamName && !awayTeamName) return;
+            
+            // Get players selected in singles matches only
+            const selectedPlayers = getSelectedSinglesPlayers();
+            
+            if (homeTeamName) {
+                const homePlayers = await fetchApi('players', { team_name: homeTeamName });
+                
+                document.querySelectorAll('.home-player').forEach(select => {
+                    const currentValue = select.value;
+                    const currentSelectionExcludingThisOne = new Set(selectedPlayers.home);
+                    
+                    // Remove this element's selection from the list of excluded players
+                    if (currentValue) {
+                        currentSelectionExcludingThisOne.delete(currentValue);
+                    }
+                    
+                    select.innerHTML = '<option value="">Select Home Player</option>';
+                    
+                    homePlayers.forEach(player => {
+                        // Only add player if they're not already selected in another singles match
+                        // or if they're the currently selected player in this dropdown
+                        if (!currentSelectionExcludingThisOne.has(player.player_name)) {
+                            select.add(new Option(player.player_name, player.player_name));
+                        }
+                    });
+                    
+                    // Restore current value if still valid
+                    if (currentValue && homePlayers.some(p => p.player_name === currentValue)) {
+                        select.value = currentValue;
+                    }
+                });
+            }
+            
+            if (awayTeamName) {
+                const awayPlayers = await fetchApi('players', { team_name: awayTeamName });
+                
+                document.querySelectorAll('.away-player').forEach(select => {
+                    const currentValue = select.value;
+                    const currentSelectionExcludingThisOne = new Set(selectedPlayers.away);
+                    
+                    // Remove this element's selection from the list of excluded players
+                    if (currentValue) {
+                        currentSelectionExcludingThisOne.delete(currentValue);
+                    }
+                    
+                    select.innerHTML = '<option value="">Select Away Player</option>';
+                    
+                    awayPlayers.forEach(player => {
+                        // Only add player if they're not already selected in another singles match
+                        // or if they're the currently selected player in this dropdown
+                        if (!currentSelectionExcludingThisOne.has(player.player_name)) {
+                            select.add(new Option(player.player_name, player.player_name));
+                        }
+                    });
+                    
+                    // Restore current value if still valid
+                    if (currentValue && awayPlayers.some(p => p.player_name === currentValue)) {
+                        select.value = currentValue;
+                    }
+                });
+            }
+        }
+
+        // Modify how the match data is loaded to ensure proper player selection syncing
         async function loadExistingMatchData(matchId) {
             // Fetch match details using the match-details endpoint
             const matchData = await fetchApi('match-details', { match_id: matchId });
@@ -326,33 +575,59 @@
             await updateEditPlayerSelects('home');
             await updateEditPlayerSelects('away');
             
-            // Populate existing data
+            // Populate existing data - do doubles first
             if (matchData.doubles && matchData.doubles.length > 0) {
                 const doublesContainers = document.querySelectorAll('#edit-doubles-matches .doubles-match');
                 
-                matchData.doubles.forEach((doubles, index) => {
-                    if (index < doublesContainers.length) {
-                        const container = doublesContainers[index];
-                        container.querySelector('.home-player1').value = doubles.home_player1_name;
-                        container.querySelector('.home-player2').value = doubles.home_player2_name;
-                        container.querySelector('.away-player1').value = doubles.away_player1_name;
-                        container.querySelector('.away-player2').value = doubles.away_player2_name;
+                // First, set up the structure
+                for (let i = 0; i < matchData.doubles.length; i++) {
+                    if (i < doublesContainers.length) {
+                        const doubles = matchData.doubles[i];
+                        const container = doublesContainers[i];
+                        
+                        // Set values one by one and trigger change events to update player options properly
+                        const homePlayer1Select = container.querySelector('.home-player1');
+                        homePlayer1Select.value = doubles.home_player1_name;
+                        homePlayer1Select.dispatchEvent(new Event('change'));
+                        
+                        const homePlayer2Select = container.querySelector('.home-player2');
+                        homePlayer2Select.value = doubles.home_player2_name;
+                        homePlayer2Select.dispatchEvent(new Event('change'));
+                        
+                        const awayPlayer1Select = container.querySelector('.away-player1');
+                        awayPlayer1Select.value = doubles.away_player1_name;
+                        awayPlayer1Select.dispatchEvent(new Event('change'));
+                        
+                        const awayPlayer2Select = container.querySelector('.away-player2');
+                        awayPlayer2Select.value = doubles.away_player2_name;
+                        awayPlayer2Select.dispatchEvent(new Event('change'));
+                        
                         container.querySelector('.score-select').value = `${doubles.home_score}-${doubles.away_score}`;
                     }
-                });
+                }
             }
             
+            // Then do singles matches after doubles
             if (matchData.singles && matchData.singles.length > 0) {
                 const singlesContainers = document.querySelectorAll('#edit-singles-matches .singles-match');
                 
-                matchData.singles.forEach((singles, index) => {
-                    if (index < singlesContainers.length) {
-                        const container = singlesContainers[index];
-                        container.querySelector('.home-player').value = singles.home_player_name;
-                        container.querySelector('.away-player').value = singles.away_player_name;
+                for (let i = 0; i < matchData.singles.length; i++) {
+                    if (i < singlesContainers.length) {
+                        const singles = matchData.singles[i];
+                        const container = singlesContainers[i];
+                        
+                        // Set values one by one and trigger change events to update player options properly
+                        const homePlayerSelect = container.querySelector('.home-player');
+                        homePlayerSelect.value = singles.home_player_name;
+                        homePlayerSelect.dispatchEvent(new Event('change'));
+                        
+                        const awayPlayerSelect = container.querySelector('.away-player');
+                        awayPlayerSelect.value = singles.away_player_name;
+                        awayPlayerSelect.dispatchEvent(new Event('change'));
+                        
                         container.querySelector('.score-select').value = `${singles.home_score}-${singles.away_score}`;
                     }
-                });
+                }
             }
             
             // Populate 180s
@@ -390,6 +665,7 @@
             }
         }
 
+        // Modify the generateEditDoublesMatches function to add event listeners to all player selects
         function generateEditDoublesMatches(division) {
             const doublesMatchesDiv = document.getElementById('edit-doubles-matches');
             doublesMatchesDiv.innerHTML = '';
@@ -442,9 +718,15 @@
                     </div>
                 `;
                 doublesMatchesDiv.appendChild(matchDiv);
+                
+                // Add change event listeners to all doubles player selects
+                matchDiv.querySelectorAll('.home-player1, .home-player2, .away-player1, .away-player2').forEach(select => {
+                    select.addEventListener('change', updateDoublesPlayerOptions);
+                });
             }
         }
 
+        // Modify the generateEditSinglesMatches function to add event listeners to all player selects
         function generateEditSinglesMatches(division) {
             const singlesMatchesDiv = document.getElementById('edit-singles-matches');
             singlesMatchesDiv.innerHTML = '';
@@ -491,6 +773,11 @@
                     </div>
                 `;
                 singlesMatchesDiv.appendChild(matchDiv);
+                
+                // Add change event listeners to all singles player selects
+                matchDiv.querySelectorAll('.home-player, .away-player').forEach(select => {
+                    select.addEventListener('change', updateSinglesPlayerOptions);
+                });
             }
         }
 
@@ -599,43 +886,6 @@
                     select.add(new Option(`${player.player_name} (${awayTeam})`, player.player_name));
                 });
             }
-        }
-
-        async function updateEditPlayerSelects(side) {
-            const teamName = document.getElementById(`edit-${side}-team`).value;
-            if (!teamName) {
-                return;
-            }
-            
-            // Fetch players for the selected team
-            const players = await fetchApi('players', { team_name: teamName });
-            
-            // Update all player selects for this side
-            const container = document.getElementById('edit-match-form-container');
-            
-            // Update doubles player selects
-            container.querySelectorAll(`.${side}-player1, .${side}-player2`).forEach(select => {
-                const currentValue = select.value;
-                select.innerHTML = '<option value="">Select Player</option>';
-                players.forEach(player => {
-                    select.add(new Option(player.player_name, player.player_name));
-                });
-                if (currentValue && players.some(p => p.player_name === currentValue)) {
-                    select.value = currentValue;
-                }
-            });
-            
-            // Update singles player selects
-            container.querySelectorAll(`.${side}-player`).forEach(select => {
-                const currentValue = select.value;
-                select.innerHTML = '<option value="">Select Player</option>';
-                players.forEach(player => {
-                    select.add(new Option(player.player_name, player.player_name));
-                });
-                if (currentValue && players.some(p => p.player_name === currentValue)) {
-                    select.value = currentValue;
-                }
-            });
         }
 
         // Edit match form submission
