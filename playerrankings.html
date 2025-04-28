@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Singles Ranking - Crawley Darts League</title>
+    <title>Player Rankings - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
     <nav class="nav">
         <ul>
             <li><a href="index.html">League Table</a></li>
-            <li><a href="singlesrankings.html" class="active">Singles Ranking</a></li>
+            <li><a href="playerrankings.html" class="active">Player Rankings</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html">League Results</a></li>
             <li><a href="cupfixtures.html">Cup Fixtures</a></li>
@@ -26,14 +26,14 @@
     </nav>
 
     <div class="container">
-        <!-- Singles Ranking Page -->
-        <div id="singles-ranking" class="page">
+        <!-- Player Rankings Page (formerly Singles Ranking) -->
+        <div id="player-rankings" class="page">
             <div class="card">
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <table class="singles-table">
+                <table class="rankings-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
@@ -45,7 +45,7 @@
                             <th>Points</th>
                         </tr>
                     </thead>
-                    <tbody id="singles-ranking-body">
+                    <tbody id="player-rankings-body">
                         <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
@@ -70,7 +70,7 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadSinglesRanking(division);
+                loadPlayerRankings(division);
             });
         });
 
@@ -88,9 +88,9 @@
             }
         }
 
-        async function loadSinglesRanking(division) {
+        async function loadPlayerRankings(division) {
             const data = await fetchApi('singles-ranking', { division });
-            const tbody = document.getElementById('singles-ranking-body');
+            const tbody = document.getElementById('player-rankings-body');
             tbody.innerHTML = '';
             
             data.forEach((player, index) => {
@@ -108,8 +108,8 @@
             });
         }
 
-        // Initially load the singles ranking
-        loadSinglesRanking(getCurrentDivision());
+        // Initially load the player rankings
+        loadPlayerRankings(getCurrentDivision());
     </script>
 </body>
 </html>

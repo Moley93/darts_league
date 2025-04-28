@@ -14,7 +14,7 @@
     <nav class="nav">
         <ul>
             <li><a href="index.html" class="active">League Table</a></li>
-            <li><a href="singlesrankings.html">Singles Ranking</a></li>
+            <li><a href="playerrankings.html">Player Rankings</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html">League Results</a></li>
             <li><a href="cupfixtures.html">Cup Fixtures</a></li>
@@ -44,7 +44,6 @@
                             <th>L</th>
                             <th>F</th>
                             <th>A</th>
-                            <th>GD</th>
                             <th>Pts</th>
                         </tr>
                     </thead>
@@ -96,7 +95,10 @@
             const tbody = document.getElementById('league-table-body');
             tbody.innerHTML = '';
             
-            data.forEach((team, index) => {
+            // Filter out the "Bye" teams
+            const filteredData = data.filter(team => team.team_name !== 'Bye' && team.team_name !== 'Division A Bye');
+            
+            filteredData.forEach((team, index) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
                     <td>${index + 1}</td>
@@ -107,7 +109,6 @@
                     <td>${team.lost}</td>
                     <td>${team.games_for}</td>
                     <td>${team.games_against}</td>
-                    <td>${team.goal_diff}</td>
                     <td>${team.points}</td>
                 `;
                 tbody.appendChild(row);

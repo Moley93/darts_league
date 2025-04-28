@@ -310,6 +310,27 @@ tr:hover {
     cursor: pointer;
 }
 
+/* New styles for date headers */
+.results-date-header {
+    background: #f0f0f0;
+    padding: 10px 15px;
+    margin: 15px 0 10px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    color: var(--primary);
+    border-left: 4px solid var(--secondary);
+}
+
+.cup-round-header {
+    background: var(--primary);
+    color: white;
+    padding: 12px 15px;
+    margin: 20px 0 10px;
+    border-radius: 5px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .nav ul {
         flex-direction: column;
@@ -332,3 +353,4 @@ tr:hover {
     th, td {
         padding: 8px;
     }
+}

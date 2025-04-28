@@ -14,7 +14,7 @@
     <nav class="nav">
         <ul>
             <li><a href="index.html">League Table</a></li>
-            <li><a href="singlesrankings.html">Singles Ranking</a></li>
+            <li><a href="playerrankings.html">Singles Ranking</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html" class="active">League Results</a></li>
             <li><a href="cupfixtures.html">Cup Fixtures</a></li>
@@ -80,15 +80,57 @@
             const resultsList = document.getElementById('league-results-list');
             resultsList.innerHTML = '';
             
-            data.forEach(result => {
-                const resultCard = document.createElement('div');
-                resultCard.className = 'fixture-card';
-                resultCard.innerHTML = `
-                    <div class="team-name">${result.home_team}</div>
-                    <div class="score">${result.home_score} - ${result.away_score}</div>
-                    <div class="team-name">${result.away_team}</div>
-                `;
-                resultsList.appendChild(resultCard);
+            // Filter out matches involving "Bye" teams
+            const filteredData = data.filter(result => 
+                result.home_team !== 'Bye' && 
+                result.home_team !== 'Division A Bye' && 
+                result.away_team !== 'Bye' && 
+                result.away_team !== 'Division A Bye'
+            );
+            
+            // Group results by date
+            const resultsByDate = {};
+            filteredData.forEach(result => {
+                // Format the date for display
+                const matchDate = result.match_date ? new Date(result.match_date) : null;
+                const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : 'Date not available';
+                
+                if (!resultsByDate[formattedDate]) {
+                    resultsByDate[formattedDate] = [];
+                }
+                
+                resultsByDate[formattedDate].push(result);
+            });
+            
+            // Render results grouped by date
+            Object.keys(resultsByDate).sort((a, b) => {
+                // Sort dates in descending order (newest first)
+                const dateA = new Date(resultsByDate[a][0].match_date);
+                const dateB = new Date(resultsByDate[b][0].match_date);
+                return dateB - dateA;
+            }).forEach(date => {
+                // Create date header
+                const dateHeader = document.createElement('h3');
+                dateHeader.className = 'results-date-header';
+                dateHeader.textContent = date;
+                resultsList.appendChild(dateHeader);
+                
+                // Add results for this date
+                resultsByDate[date].forEach(result => {
+                    const resultCard = document.createElement('div');
+                    resultCard.className = 'fixture-card';
+                    resultCard.innerHTML = `
+                        <div class="team-name">${result.home_team}</div>
+                        <div class="score">${result.home_score} - ${result.away_score}</div>
+                        <div class="team-name">${result.away_team}</div>
+                    `;
+                    resultsList.appendChild(resultCard);
+                });
             });
         }
 

@@ -1,5 +1,8 @@
 create random league fixture list, play eachother twice
 create random cup fixture list
-create edit score input for matches already inputted that are incorrect
-take a look at league tables, ensure it's LD and not GD
 create team tables for each team displaying player performance
+create add fixture button for admins
+create field in submit score for a drop down menu on for cup round
+dont add 180s and high finishes to the leaderboard if cup game
+player rankings only takes data from singles games and not doubles games
+captain/secretary/venue info locked behind login for GDPR reasons
