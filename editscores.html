@@ -45,6 +45,9 @@
 
             <div id="edit-scores-container" class="card hidden">
                 <h2>Edit Match Scores</h2>
+                <div id="team-info" class="team-info">
+                    <!-- Team info will be displayed here -->
+                </div>
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
@@ -109,6 +112,9 @@
     <script>
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
+
+        // Global variables to store captain information
+        let currentCaptain = null;
 
         function getCurrentDivision() {
             const divisionToggle = document.querySelector('.division-toggle button.active');
@@ -195,6 +201,13 @@
                         console.log('Login response received:', result);
                         
                         if (result && result.success) {
+                            // Store captain info globally for later use
+                            currentCaptain = result.captain;
+                            
+                            // Display team information
+                            const teamInfoDiv = document.getElementById('team-info');
+                            teamInfoDiv.innerHTML = `<p>Logged in as: <strong>${currentCaptain.team_name}</strong> captain</p>`;
+                            
                             document.getElementById('edit-login-form').classList.add('hidden');
                             document.getElementById('edit-scores-container').classList.remove('hidden');
                             loadEditMatchesSelect(getCurrentDivision());
@@ -220,39 +233,65 @@
             // Clear existing options
             select.innerHTML = '<option value="">Select a match to edit...</option>';
             
+            if (!currentCaptain) {
+                console.error('No captain information available');
+                return;
+            }
+            
             // Fetch both league and cup results
             const leagueResults = await fetchApi('league-results', { division });
             const cupResults = await fetchApi('cup-results', { division });
             
+            // Filter results to only show matches where this captain's team was the home team
+            const filteredLeagueResults = leagueResults.filter(match => 
+                match.home_team === currentCaptain.team_name
+            );
+            
+            const filteredCupResults = cupResults.filter(match => 
+                match.home_team === currentCaptain.team_name
+            );
+            
             // Add league matches
-            const leagueGroup = document.createElement('optgroup');
-            leagueGroup.label = 'League Matches';
-            leagueResults.forEach(match => {
-                const option = document.createElement('option');
-                option.value = match.match_id;
-                option.dataset.matchType = 'league';
-                option.dataset.division = division;
-                option.dataset.homeTeam = match.home_team;
-                option.dataset.awayTeam = match.away_team;
-                option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
-                leagueGroup.appendChild(option);
-            });
-            select.appendChild(leagueGroup);
+            if (filteredLeagueResults.length > 0) {
+                const leagueGroup = document.createElement('optgroup');
+                leagueGroup.label = 'League Matches';
+                filteredLeagueResults.forEach(match => {
+                    const option = document.createElement('option');
+                    option.value = match.match_id;
+                    option.dataset.matchType = 'league';
+                    option.dataset.division = division;
+                    option.dataset.homeTeam = match.home_team;
+                    option.dataset.awayTeam = match.away_team;
+                    option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
+                    leagueGroup.appendChild(option);
+                });
+                select.appendChild(leagueGroup);
+            }
             
             // Add cup matches
-            const cupGroup = document.createElement('optgroup');
-            cupGroup.label = 'Cup Matches';
-            cupResults.forEach(match => {
-                const option = document.createElement('option');
-                option.value = match.match_id;
-                option.dataset.matchType = 'cup';
-                option.dataset.division = division;
-                option.dataset.homeTeam = match.home_team;
-                option.dataset.awayTeam = match.away_team;
-                option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
-                cupGroup.appendChild(option);
-            });
-            select.appendChild(cupGroup);
+            if (filteredCupResults.length > 0) {
+                const cupGroup = document.createElement('optgroup');
+                cupGroup.label = 'Cup Matches';
+                filteredCupResults.forEach(match => {
+                    const option = document.createElement('option');
+                    option.value = match.match_id;
+                    option.dataset.matchType = 'cup';
+                    option.dataset.division = division;
+                    option.dataset.homeTeam = match.home_team;
+                    option.dataset.awayTeam = match.away_team;
+                    option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
+                    cupGroup.appendChild(option);
+                });
+                select.appendChild(cupGroup);
+            }
+            
+            // Display message if no matches to edit
+            if (filteredLeagueResults.length === 0 && filteredCupResults.length === 0) {
+                const noMatchesOption = document.createElement('option');
+                noMatchesOption.disabled = true;
+                noMatchesOption.textContent = `No ${division} division matches to edit for ${currentCaptain.team_name}`;
+                select.appendChild(noMatchesOption);
+            }
         }
 
         // Handle match selection for editing
@@ -624,22 +663,23 @@
                 });
             }
             
-// Populate high finishes
-if (matchData.highFinishes && matchData.highFinishes.length > 0) {
-    const container = document.getElementById('edit-high-finishes-section');
-    // Clear existing rows except the add button
-    container.querySelectorAll('.stats-row').forEach(row => row.remove());
-   
-    matchData.highFinishes.forEach((highFinish, index) => {
-        addEditHighFinishInputRow();
-        const rows = container.querySelectorAll('.stats-row');
-        if (index < rows.length) {
-            const row = rows[index];
-            row.querySelector('.high-finish-player').value = highFinish.player_name;
-            row.querySelector('.high-finish-value').value = highFinish.finish_value;
+            // Populate high finishes
+            if (matchData.highFinishes && matchData.highFinishes.length > 0) {
+                const container = document.getElementById('edit-high-finishes-section');
+                // Clear existing rows except the add button
+                container.querySelectorAll('.stats-row').forEach(row => row.remove());
+               
+                matchData.highFinishes.forEach((highFinish, index) => {
+                    addEditHighFinishInputRow();
+                    const rows = container.querySelectorAll('.stats-row');
+                    if (index < rows.length) {
+                        const row = rows[index];
+                        row.querySelector('.high-finish-player').value = highFinish.player_name;
+                        row.querySelector('.high-finish-value').value = highFinish.finish_value;
+                    }
+                });
+            }
         }
-    });
-}        }
 
         // Modify the generateEditDoublesMatches function to add event listeners to all player selects
         function generateEditDoublesMatches(division) {
@@ -976,5 +1016,21 @@ if (matchData.highFinishes && matchData.highFinishes.length > 0) {
             }
         });
     </script>
+
+    <style>
+        /* Additional style for team info section */
+        .team-info {
+            background-color: #e8f5e9;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 4px solid var(--success);
+            font-size: 0.95em;
+        }
+        
+        .team-info p {
+            margin: 0;
+        }
+    </style>
 </body>
 </html>

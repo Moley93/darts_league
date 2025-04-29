@@ -9,3 +9,9 @@ captain/secretary/venue info locked behind login for GDPR reasons
 create new home page and league table seperate to display info/announcements
 
 add dart icon & page metadata
+
+edit scores only shows premier division games
+
+format results pages with columns so it looks nice
+
+remove draws from league tables
