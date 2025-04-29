@@ -48,10 +48,7 @@
                 <div id="team-info" class="team-info">
                     <!-- Team info will be displayed here -->
                 </div>
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
+                
                 <div class="form-group">
                     <label for="match-select">Select Match to Edit</label>
                     <select id="match-select">
@@ -115,23 +112,7 @@
 
         // Global variables to store captain information
         let currentCaptain = null;
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
-        }
-
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                loadEditMatchesSelect(division);
-            });
-        });
+        let captainDivision = null;
 
         // API functions
         async function fetchApi(endpoint, params = {}) {
@@ -204,13 +185,21 @@
                             // Store captain info globally for later use
                             currentCaptain = result.captain;
                             
+                            // Get division for the team
+                            await determineTeamDivision();
+                            
                             // Display team information
                             const teamInfoDiv = document.getElementById('team-info');
-                            teamInfoDiv.innerHTML = `<p>Logged in as: <strong>${currentCaptain.team_name}</strong> captain</p>`;
+                            teamInfoDiv.innerHTML = `
+                                <p>Logged in as: <strong>${currentCaptain.team_name}</strong> captain</p>
+                                <p>Division: <strong>${captainDivision.toUpperCase()}</strong></p>
+                            `;
                             
                             document.getElementById('edit-login-form').classList.add('hidden');
                             document.getElementById('edit-scores-container').classList.remove('hidden');
-                            loadEditMatchesSelect(getCurrentDivision());
+                            
+                            // Load matches for captain's division
+                            loadEditMatchesSelect();
                         } else {
                             const errorMsg = result ? (result.error || 'Invalid credentials') : 'No response received';
                             alert('Login failed: ' + errorMsg);
@@ -226,8 +215,74 @@
             }
         });
 
+        // Determine the division of the captain's team
+        async function determineTeamDivision() {
+            if (!currentCaptain) {
+                console.error('No captain information available');
+                captainDivision = 'premier'; // Default fallback
+                return;
+            }
+            
+            try {
+                // Call the teams endpoint without any division filter to get ALL teams
+                const allTeams = await fetchApi('teams');
+                console.log('All teams loaded for division check:', allTeams.length);
+                
+                // First try to find the team by team_id (most reliable method)
+                if (currentCaptain.team_id) {
+                    const teamById = allTeams.find(team => parseInt(team.team_id) === parseInt(currentCaptain.team_id));
+                    if (teamById && teamById.division) {
+                        captainDivision = teamById.division.toLowerCase();
+                        console.log(`Captain's team division found by ID: ${captainDivision}`);
+                        return;
+                    }
+                }
+                
+                // If team_id doesn't work, try by team name
+                if (currentCaptain.team_name) {
+                    const teamByName = allTeams.find(team => 
+                        team.team_name.toLowerCase() === currentCaptain.team_name.toLowerCase()
+                    );
+                    if (teamByName && teamByName.division) {
+                        captainDivision = teamByName.division.toLowerCase();
+                        console.log(`Captain's team division found by name: ${captainDivision}`);
+                        return;
+                    }
+                }
+                
+                // If we still don't have a division, use known A division team names
+                const aDivisionTeams = [
+                    'Ewhurst Arrows', 'Dingles', 'Johnson', 'Disappointers', 
+                    'APV', 'Ewhurst Woodys', 'Pelham', 'Division A Bye'
+                ];
+                
+                if (currentCaptain.team_name && 
+                    aDivisionTeams.some(name => 
+                        name.toLowerCase() === currentCaptain.team_name.toLowerCase()
+                    )) {
+                    captainDivision = 'a';
+                    console.log("Team found in A division list");
+                    return;
+                }
+                
+                // Team IDs 9-16 are A division based on the schema
+                if (currentCaptain.team_id && parseInt(currentCaptain.team_id) >= 9 && parseInt(currentCaptain.team_id) <= 16) {
+                    captainDivision = 'a';
+                    console.log("Team identified as A division by ID range");
+                    return;
+                }
+                
+                // Default to premier if all checks fail
+                captainDivision = 'premier';
+                console.warn(`Could not determine team division, defaulting to: ${captainDivision}`);
+            } catch (error) {
+                console.error('Error determining team division:', error);
+                captainDivision = 'premier'; // Default to premier division
+            }
+        }
+
         // Edit Scores functionality
-        async function loadEditMatchesSelect(division) {
+        async function loadEditMatchesSelect() {
             const select = document.getElementById('match-select');
             
             // Clear existing options
@@ -238,9 +293,12 @@
                 return;
             }
             
-            // Fetch both league and cup results
-            const leagueResults = await fetchApi('league-results', { division });
-            const cupResults = await fetchApi('cup-results', { division });
+            // Show loading state
+            select.innerHTML = '<option value="">Loading matches...</option>';
+            
+            // Fetch both league and cup results for the captain's division
+            const leagueResults = await fetchApi('league-results', { division: captainDivision });
+            const cupResults = await fetchApi('cup-results', { division: captainDivision });
             
             // Filter results to only show matches where this captain's team was the home team
             const filteredLeagueResults = leagueResults.filter(match => 
@@ -251,6 +309,9 @@
                 match.home_team === currentCaptain.team_name
             );
             
+            // Reset select
+            select.innerHTML = '<option value="">Select a match to edit...</option>';
+            
             // Add league matches
             if (filteredLeagueResults.length > 0) {
                 const leagueGroup = document.createElement('optgroup');
@@ -259,7 +320,7 @@
                     const option = document.createElement('option');
                     option.value = match.match_id;
                     option.dataset.matchType = 'league';
-                    option.dataset.division = division;
+                    option.dataset.division = captainDivision;
                     option.dataset.homeTeam = match.home_team;
                     option.dataset.awayTeam = match.away_team;
                     option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
@@ -276,7 +337,7 @@
                     const option = document.createElement('option');
                     option.value = match.match_id;
                     option.dataset.matchType = 'cup';
-                    option.dataset.division = division;
+                    option.dataset.division = captainDivision;
                     option.dataset.homeTeam = match.home_team;
                     option.dataset.awayTeam = match.away_team;
                     option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
@@ -289,7 +350,7 @@
             if (filteredLeagueResults.length === 0 && filteredCupResults.length === 0) {
                 const noMatchesOption = document.createElement('option');
                 noMatchesOption.disabled = true;
-                noMatchesOption.textContent = `No ${division} division matches to edit for ${currentCaptain.team_name}`;
+                noMatchesOption.textContent = `No ${captainDivision} division matches to edit for ${currentCaptain.team_name}`;
                 select.appendChild(noMatchesOption);
             }
         }
@@ -311,7 +372,7 @@
             
             const selectedOption = this.options[this.selectedIndex];
             const matchType = selectedOption.dataset.matchType;
-            const division = selectedOption.dataset.division;
+            const division = captainDivision; // Use the captain's division
             const homeTeam = selectedOption.dataset.homeTeam;
             const awayTeam = selectedOption.dataset.awayTeam;
             
@@ -319,14 +380,14 @@
             document.getElementById('edit-match-type').value = matchType;
             
             // Load teams for the selects
-            await loadEditTeamOptions(division);
+            await loadEditTeamOptions();
             
             document.getElementById('edit-home-team').value = homeTeam;
             document.getElementById('edit-away-team').value = awayTeam;
             
             // Generate form fields
-            generateEditDoublesMatches(division);
-            generateEditSinglesMatches(division);
+            generateEditDoublesMatches();
+            generateEditSinglesMatches();
             generateEditOneEightiesInputs();
             generateEditHighFinishesInputs();
             
@@ -337,8 +398,8 @@
             loadingIndicator.classList.add('hidden');
         });
 
-        async function loadEditTeamOptions(division) {
-            const teams = await fetchApi('teams', { division });
+        async function loadEditTeamOptions() {
+            const teams = await fetchApi('teams', { division: captainDivision });
             
             const homeSelect = document.getElementById('edit-home-team');
             const awaySelect = document.getElementById('edit-away-team');
@@ -681,8 +742,8 @@
             }
         }
 
-        // Modify the generateEditDoublesMatches function to add event listeners to all player selects
-        function generateEditDoublesMatches(division) {
+        // Generate doubles matches with captain's division
+        function generateEditDoublesMatches() {
             const doublesMatchesDiv = document.getElementById('edit-doubles-matches');
             doublesMatchesDiv.innerHTML = '';
             
@@ -691,7 +752,7 @@
                 matchDiv.className = 'doubles-match';
                 
                 let scoreOptions = '';
-                if (division === 'premier') {
+                if (captainDivision === 'premier') {
                     scoreOptions = `
                         <option value="3-0">3-0 (Home Win)</option>
                         <option value="3-1">3-1 (Home Win)</option>
@@ -742,8 +803,8 @@
             }
         }
 
-        // Modify the generateEditSinglesMatches function to add event listeners to all player selects
-        function generateEditSinglesMatches(division) {
+        // Generate singles matches with captain's division
+        function generateEditSinglesMatches() {
             const singlesMatchesDiv = document.getElementById('edit-singles-matches');
             singlesMatchesDiv.innerHTML = '';
             
@@ -752,7 +813,7 @@
                 matchDiv.className = 'singles-match';
                 
                 let scoreOptions = '';
-                if (division === 'premier') {
+                if (captainDivision === 'premier') {
                     scoreOptions = `
                         <option value="3-0">3-0 (Home Win)</option>
                         <option value="3-1">3-1 (Home Win)</option>
@@ -916,7 +977,7 @@
             
             const matchData = {
                 matchId: matchId,
-                division: getCurrentDivision(),
+                division: captainDivision,
                 matchType: document.getElementById('edit-match-type').value,
                 homeTeam: document.getElementById('edit-home-team').value,
                 awayTeam: document.getElementById('edit-away-team').value,
@@ -1009,7 +1070,7 @@
                 document.getElementById('match-select').value = '';
                 document.getElementById('edit-match-form-container').classList.add('hidden');
                 // Reload the matches list
-                loadEditMatchesSelect(getCurrentDivision());
+                loadEditMatchesSelect();
             } else {
                 alert('Error updating match: ' + (result.error || 'Unknown error'));
                 console.error('Error details:', result);
@@ -1030,6 +1091,25 @@
         
         .team-info p {
             margin: 0;
+        }
+        
+        /* Loading indicator styles */
+        #loading-indicator {
+            padding: 15px;
+            background-color: #f0f8ff;
+            color: var(--primary);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
     </style>
 </body>
