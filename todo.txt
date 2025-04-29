@@ -1,6 +1,6 @@
 create field in submit score for a drop down menu on for cup round
 
-prompt: scoreinput.html - When submitting a cup game, I want the user to specify which round of the tournament their game is in, last 16, quarter final, semi final, final, this info will show on cupresults.html once the score has submitted. If the player is submitting a league score, the cup round drop down menu will be greyed out. provide me new complete files.
+prompt: scoreinput.html - When submitting a cup game, I want the user to specify which round of the tournament their game is in, last 16, quarter final, semi final, final, this info will show on cupresults.html once the score has submitted. If the player is submitting a league score, the cup round drop down menu will be greyed the same as other greyed out drop downs. provide me new complete files.
 
 
 player rankings only takes data from singles games and not doubles games
@@ -13,10 +13,6 @@ remove draws from league tables
 prompt: remove the draw from league tables and ensure all columns and rows are evenly lined up. provide me new complete files.
 
 
-add dart icon & page metadata
-
-submit scores to do a division check when logging in
-
 create new home page and league table seperate to display info/announcements
 
 player rankings to show columns 3-0 / 3-1 / 3-2 / 2-3 / 1-3 / 0-3 rather than won/lost
@@ -24,3 +20,5 @@ player rankings to show columns 3-0 / 3-1 / 3-2 / 2-3 / 1-3 / 0-3 rather than wo
 create team tables for each team displaying player performance?
 
 captain/secretary/venue info locked behind login for GDPR reasons
+
+no show player assigned to all teams who will be exempt from player rankings

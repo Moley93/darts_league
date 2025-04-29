@@ -420,11 +420,11 @@ function getMatchDetails() {
     
     try {
         // Check if match exists first
-        $checkStmt = $pdo->prepare("SELECT match_type FROM matches WHERE match_id = ?");
+        $checkStmt = $pdo->prepare("SELECT match_type, cup_round FROM matches WHERE match_id = ?");
         $checkStmt->execute([$matchId]);
-        $matchType = $checkStmt->fetchColumn();
+        $matchInfo = $checkStmt->fetch();
         
-        if (!$matchType) {
+        if (!$matchInfo) {
             returnJson(['success' => false, 'error' => 'Match not found']);
             return;
         }
@@ -432,7 +432,7 @@ function getMatchDetails() {
         // Get basic match info
         $stmt = $pdo->prepare("
             SELECT m.match_id, m.match_type, m.division, m.home_score, m.away_score,
-                   h.team_name as home_team, a.team_name as away_team
+                   h.team_name as home_team, a.team_name as away_team, m.cup_round
             FROM matches m
             JOIN teams h ON m.home_team_id = h.team_id
             JOIN teams a ON m.away_team_id = a.team_id
@@ -521,7 +521,7 @@ function getMatchDetails() {
         
         // Add debug logging
         error_log("Match details retrieved for match ID: $matchId");
-        error_log("Match type: $matchType");
+        error_log("Match type: " . $matchInfo['match_type']);
         error_log("Doubles count: " . count($doubles));
         error_log("Singles count: " . count($singles));
         
@@ -656,19 +656,42 @@ function submitMatch() {
         // Create or update match
         $matchId = isset($data['matchId']) ? $data['matchId'] : null;
         
+        // Get cup round if it's a cup match
+        $cupRound = null;
+        if ($data['matchType'] === 'cup' && isset($data['cupRound'])) {
+            $cupRound = $data['cupRound'];
+        }
+        
         if ($matchId) {
+            if ($data['matchType'] === 'cup' && $cupRound) {
                 $stmt = $pdo->prepare("
-                UPDATE matches 
-                SET home_score = 0, away_score = 0, status = 'completed' 
-                WHERE match_id = ?
-            ");
-            $stmt->execute([$matchId]);
+                    UPDATE matches 
+                    SET home_score = 0, away_score = 0, status = 'completed', cup_round = ? 
+                    WHERE match_id = ?
+                ");
+                $stmt->execute([$cupRound, $matchId]);
+            } else {
+                $stmt = $pdo->prepare("
+                    UPDATE matches 
+                    SET home_score = 0, away_score = 0, status = 'completed' 
+                    WHERE match_id = ?
+                ");
+                $stmt->execute([$matchId]);
+            }
         } else {
-            $stmt = $pdo->prepare("
-                INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date) 
-                VALUES (?, ?, ?, ?, 'completed', NOW())
-            ");
-            $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division']]);
+            if ($data['matchType'] === 'cup' && $cupRound) {
+                $stmt = $pdo->prepare("
+                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date, cup_round) 
+                    VALUES (?, ?, ?, ?, 'completed', NOW(), ?)
+                ");
+                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division'], $cupRound]);
+            } else {
+                $stmt = $pdo->prepare("
+                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date) 
+                    VALUES (?, ?, ?, ?, 'completed', NOW())
+                ");
+                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division']]);
+            }
             $matchId = $pdo->lastInsertId();
         }
         
@@ -938,6 +961,26 @@ function updateMatch() {
             throw new Exception('Away team not found: ' . $data['awayTeam']);
         }
         
+        // Get cup round if it's a cup match
+        if ($data['matchType'] === 'cup' && isset($data['cupRound'])) {
+            $cupRound = $data['cupRound'];
+            // Update with cup round
+            $stmt = $pdo->prepare("
+                UPDATE matches 
+                SET home_team_id = ?, away_team_id = ?, cup_round = ?
+                WHERE match_id = ?
+            ");
+            $stmt->execute([$homeTeamId, $awayTeamId, $cupRound, $matchId]);
+        } else {
+            // Update without cup round
+            $stmt = $pdo->prepare("
+                UPDATE matches 
+                SET home_team_id = ?, away_team_id = ?
+                WHERE match_id = ?
+            ");
+            $stmt->execute([$homeTeamId, $awayTeamId, $matchId]);
+        }
+        
         // Delete existing match details
         $stmt = $pdo->prepare("DELETE FROM doubles_results WHERE match_id = ?");
         $stmt->execute([$matchId]);
@@ -962,7 +1005,7 @@ function updateMatch() {
         $homeScore = 0;
         $awayScore = 0;
         
-        // Process doubles matches
+        // Process doubles match data
         if (isset($data['doubles']) && is_array($data['doubles'])) {
             foreach ($data['doubles'] as $doubles) {
                 // Validate doubles data
@@ -1014,8 +1057,8 @@ function updateMatch() {
                 }
             }
         }
-        
-        // Process singles matches
+
+        // Process singles match data
         if (isset($data['singles']) && is_array($data['singles'])) {
             foreach ($data['singles'] as $singles) {
                 // Validate singles data
@@ -1068,7 +1111,7 @@ function updateMatch() {
         ");
         $stmt->execute([$homeScore, $awayScore, $matchId]);
         
-        // Process 180s
+        // Process 180s data
         if (isset($data['oneEighties']) && is_array($data['oneEighties'])) {
             foreach ($data['oneEighties'] as $oneEighty) {
                 if (!isset($oneEighty['player']) || !isset($oneEighty['count'])) {
@@ -1093,7 +1136,7 @@ function updateMatch() {
             }
         }
         
-        // Process high finishes
+        // Process high finishes data
         if (isset($data['highFinishes']) && is_array($data['highFinishes'])) {
             foreach ($data['highFinishes'] as $highFinish) {
                 if (!isset($highFinish['player']) || !isset($highFinish['value'])) {

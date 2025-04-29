@@ -6,6 +6,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Scores - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles specifically for edit page */
+        #edit-cup-round-container.disabled-field {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        #edit-cup-round-container {
+            transition: opacity 0.3s ease;
+        }
+        
+        /* Loading indicator styles */
+        #loading-indicator {
+            padding: 15px;
+            background-color: #f0f8ff;
+            color: var(--primary);
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            animation: pulse 1.5s infinite;
+        }
+        
+        /* Team info section */
+        .team-info {
+            background-color: #e8f5e9;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 4px solid var(--success);
+            font-size: 0.95em;
+        }
+        
+        .team-info p {
+            margin: 0;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -29,6 +67,8 @@
     <div class="container">
         <!-- Edit Scores Page -->
         <div id="edit-scores" class="page">
+            <div id="loading-indicator" class="hidden">Processing...</div>
+            
             <div id="edit-login-form" class="card login-form">
                 <h2>Edit Score Login</h2>
                 <form id="edit-login-form-element">
@@ -65,6 +105,16 @@
                             <select id="edit-match-type" disabled>
                                 <option value="league">League</option>
                                 <option value="cup">Cup</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="edit-cup-round-container">
+                            <label for="edit-cup-round">Cup Round</label>
+                            <select id="edit-cup-round" disabled>
+                                <option value="">Select Cup Round</option>
+                                <option value="Last 16">Last 16</option>
+                                <option value="Quarter Final">Quarter Final</option>
+                                <option value="Semi Final">Semi Final</option>
+                                <option value="Final">Final</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -166,6 +216,27 @@
 
         // Enhanced login function with better error handling
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup the match type and cup round relationship
+            const editMatchType = document.getElementById('edit-match-type');
+            const editCupRound = document.getElementById('edit-cup-round');
+            const editCupRoundContainer = document.getElementById('edit-cup-round-container');
+            
+            editMatchType.addEventListener('change', function() {
+                if (this.value === 'cup') {
+                    editCupRound.disabled = false;
+                    editCupRoundContainer.classList.remove('disabled-field');
+                } else {
+                    editCupRound.disabled = true;
+                    editCupRound.value = '';
+                    editCupRoundContainer.classList.add('disabled-field');
+                }
+            });
+            
+            // Initial state setup
+            if (editMatchType.value === 'league') {
+                editCupRoundContainer.classList.add('disabled-field');
+            }
+            
             // Make sure the form exists before adding the event listener
             const loginForm = document.getElementById('edit-login-form-element');
             if (loginForm) {
@@ -341,7 +412,8 @@
                     option.dataset.division = captainDivision;
                     option.dataset.homeTeam = match.home_team;
                     option.dataset.awayTeam = match.away_team;
-                    option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}`;
+                    option.dataset.cupRound = match.cup_round || '';  // Store cup round info
+                    option.textContent = `${match.home_team} vs ${match.away_team} (${match.match_date}) - ${match.home_score}-${match.away_score}${match.cup_round ? ' - ' + match.cup_round : ''}`;
                     cupGroup.appendChild(option);
                 });
                 select.appendChild(cupGroup);
@@ -376,9 +448,24 @@
             const division = captainDivision; // Use the captain's division
             const homeTeam = selectedOption.dataset.homeTeam;
             const awayTeam = selectedOption.dataset.awayTeam;
+            const cupRound = selectedOption.dataset.cupRound || '';
             
             // Set form values
             document.getElementById('edit-match-type').value = matchType;
+            
+            // Handle cup round field visibility
+            const editCupRound = document.getElementById('edit-cup-round');
+            const editCupRoundContainer = document.getElementById('edit-cup-round-container');
+            
+            if (matchType === 'cup') {
+                editCupRound.disabled = false;
+                editCupRound.value = cupRound;
+                editCupRoundContainer.classList.remove('disabled-field');
+            } else {
+                editCupRound.disabled = true;
+                editCupRound.value = '';
+                editCupRoundContainer.classList.add('disabled-field');
+            }
             
             // Load teams for the selects
             await loadEditTeamOptions();
@@ -644,6 +731,16 @@
             }
             
             console.log('Loaded match data:', matchData);
+            
+            // Set cup round if it's a cup match
+            if (matchData.match && matchData.match.match_type === 'cup') {
+                document.getElementById('edit-cup-round').value = matchData.match.cup_round || '';
+                document.getElementById('edit-cup-round').disabled = false;
+                document.getElementById('edit-cup-round-container').classList.remove('disabled-field');
+            } else {
+                document.getElementById('edit-cup-round').disabled = true;
+                document.getElementById('edit-cup-round-container').classList.add('disabled-field');
+            }
             
             // Load players for both teams
             const homeTeam = document.getElementById('edit-home-team').value;
@@ -976,10 +1073,12 @@
                 return;
             }
             
+            const matchType = document.getElementById('edit-match-type').value;
+            
             const matchData = {
                 matchId: matchId,
                 division: captainDivision,
-                matchType: document.getElementById('edit-match-type').value,
+                matchType: matchType,
                 homeTeam: document.getElementById('edit-home-team').value,
                 awayTeam: document.getElementById('edit-away-team').value,
                 doubles: [],
@@ -987,6 +1086,16 @@
                 oneEighties: [],
                 highFinishes: []
             };
+            
+            // Add cup round if it's a cup match
+            if (matchType === 'cup') {
+                const cupRound = document.getElementById('edit-cup-round').value;
+                if (!cupRound) {
+                    alert('Please select a Cup Round for cup matches.');
+                    return;
+                }
+                matchData.cupRound = cupRound;
+            }
             
             // Collect doubles match data
             document.querySelectorAll('#edit-doubles-matches .doubles-match').forEach((match, index) => {
@@ -1078,40 +1187,5 @@
             }
         });
     </script>
-
-    <style>
-        /* Additional style for team info section */
-        .team-info {
-            background-color: #e8f5e9;
-            padding: 10px 15px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-            border-left: 4px solid var(--success);
-            font-size: 0.95em;
-        }
-        
-        .team-info p {
-            margin: 0;
-        }
-        
-        /* Loading indicator styles */
-        #loading-indicator {
-            padding: 15px;
-            background-color: #f0f8ff;
-            color: var(--primary);
-            border-radius: 5px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: bold;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            animation: pulse 1.5s infinite;
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 0.6; }
-            50% { opacity: 1; }
-            100% { opacity: 0.6; }
-        }
-    </style>
 </body>
 </html>

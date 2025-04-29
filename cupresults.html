@@ -48,6 +48,18 @@
             border-radius: 4px !important;
         }
         
+        /* Cup round styles */
+        .cup-round-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            margin: 25px 0 15px;
+            text-align: center;
+            font-size: 1.3em;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .fixture-card {
@@ -162,62 +174,72 @@
                 resultsByRound[round].push(result);
             });
             
+            // Define the order of cup rounds for sorting
+            const roundOrder = ['Last 16', 'Quarter Final', 'Semi Final', 'Final'];
+            
             // Render results grouped by round
-            Object.keys(resultsByRound).forEach(round => {
-                // Create round header
-                const roundHeader = document.createElement('h3');
-                roundHeader.className = 'cup-round-header';
-                roundHeader.textContent = round;
-                resultsList.appendChild(roundHeader);
-                
-                // Group round matches by date
-                const matchesByDate = {};
-                resultsByRound[round].forEach(match => {
-                    // Format the date for display
-                    const matchDate = match.match_date ? new Date(match.match_date) : null;
-                    const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
-                        weekday: 'long',
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    }) : 'Date not available';
+            Object.keys(resultsByRound)
+                .sort((a, b) => {
+                    // Put rounds in the proper order
+                    const indexA = roundOrder.indexOf(a);
+                    const indexB = roundOrder.indexOf(b);
+                    return indexA - indexB;
+                })
+                .forEach(round => {
+                    // Create round header
+                    const roundHeader = document.createElement('h3');
+                    roundHeader.className = 'cup-round-header';
+                    roundHeader.textContent = round;
+                    resultsList.appendChild(roundHeader);
                     
-                    if (!matchesByDate[formattedDate]) {
-                        matchesByDate[formattedDate] = [];
-                    }
+                    // Group round matches by date
+                    const matchesByDate = {};
+                    resultsByRound[round].forEach(match => {
+                        // Format the date for display
+                        const matchDate = match.match_date ? new Date(match.match_date) : null;
+                        const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                        }) : 'Date not available';
+                        
+                        if (!matchesByDate[formattedDate]) {
+                            matchesByDate[formattedDate] = [];
+                        }
+                        
+                        matchesByDate[formattedDate].push(match);
+                    });
                     
-                    matchesByDate[formattedDate].push(match);
-                });
-                
-                // Render matches for each date
-                Object.keys(matchesByDate).sort((a, b) => {
-                    // Sort dates in descending order (newest first)
-                    if (a === 'Date not available') return 1;
-                    if (b === 'Date not available') return -1;
-                    
-                    const dateA = new Date(matchesByDate[a][0].match_date);
-                    const dateB = new Date(matchesByDate[b][0].match_date);
-                    return dateB - dateA;
-                }).forEach(date => {
-                    // Create date subheader
-                    const dateHeader = document.createElement('h4');
-                    dateHeader.className = 'results-date-header';
-                    dateHeader.textContent = date;
-                    resultsList.appendChild(dateHeader);
-                    
-                    // Add results for this date
-                    matchesByDate[date].forEach(result => {
-                        const resultCard = document.createElement('div');
-                        resultCard.className = 'fixture-card';
-                        resultCard.innerHTML = `
-                            <div class="team-name home">${result.home_team}</div>
-                            <div class="score">${result.home_score} - ${result.away_score}</div>
-                            <div class="team-name away">${result.away_team}</div>
-                        `;
-                        resultsList.appendChild(resultCard);
+                    // Render matches for each date
+                    Object.keys(matchesByDate).sort((a, b) => {
+                        // Sort dates in descending order (newest first)
+                        if (a === 'Date not available') return 1;
+                        if (b === 'Date not available') return -1;
+                        
+                        const dateA = new Date(matchesByDate[a][0].match_date);
+                        const dateB = new Date(matchesByDate[b][0].match_date);
+                        return dateB - dateA;
+                    }).forEach(date => {
+                        // Create date subheader
+                        const dateHeader = document.createElement('h4');
+                        dateHeader.className = 'results-date-header';
+                        dateHeader.textContent = date;
+                        resultsList.appendChild(dateHeader);
+                        
+                        // Add results for this date
+                        matchesByDate[date].forEach(result => {
+                            const resultCard = document.createElement('div');
+                            resultCard.className = 'fixture-card';
+                            resultCard.innerHTML = `
+                                <div class="team-name home">${result.home_team}</div>
+                                <div class="score">${result.home_score} - ${result.away_score}</div>
+                                <div class="team-name away">${result.away_team}</div>
+                            `;
+                            resultsList.appendChild(resultCard);
+                        });
                     });
                 });
-            });
         }
 
         // Initially load the cup results
