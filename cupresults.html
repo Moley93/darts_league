@@ -5,6 +5,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cup Results - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Enhanced fixture card styles */
+        .fixture-card {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px !important;
+            border-bottom: 1px solid #eee !important;
+            transition: background 0.3s ease !important;
+        }
+        
+        .fixture-card:hover {
+            background: var(--light-gray) !important;
+        }
+        
+        .fixture-card:last-child {
+            border-bottom: none !important;
+        }
+        
+        .team-name.home {
+            text-align: left !important;
+            width: 40% !important;
+            padding-right: 10px !important;
+        }
+        
+        .team-name.away {
+            text-align: right !important;
+            width: 40% !important;
+            padding-left: 10px !important;
+        }
+        
+        .score {
+            font-weight: bold !important;
+            font-size: 1.2em !important;
+            padding: 5px 15px !important;
+            color: var(--primary) !important;
+            text-align: center !important;
+            width: 20% !important;
+            background-color: rgba(245, 245, 245, 0.5) !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .fixture-card {
+                flex-direction: column !important;
+                text-align: center !important;
+                gap: 10px !important;
+            }
+            
+            .team-name.home, .team-name.away {
+                text-align: center !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            
+            .score {
+                width: 80% !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -148,9 +209,9 @@
                         const resultCard = document.createElement('div');
                         resultCard.className = 'fixture-card';
                         resultCard.innerHTML = `
-                            <div class="team-name">${result.home_team}</div>
+                            <div class="team-name home">${result.home_team}</div>
                             <div class="score">${result.home_score} - ${result.away_score}</div>
-                            <div class="team-name">${result.away_team}</div>
+                            <div class="team-name away">${result.away_team}</div>
                         `;
                         resultsList.appendChild(resultCard);
                     });
