@@ -34,6 +34,7 @@
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
+                <h2>Player Rankings <span class="league-only-note">(Singles - League Games Only)</span></h2>
                 <table class="rankings-table">
                     <thead>
                         <tr>
@@ -90,9 +91,20 @@
         }
 
         async function loadPlayerRankings(division) {
-            const data = await fetchApi('singles-ranking', { division });
+            // Add match_type=league parameter to only get league singles rankings
+            const data = await fetchApi('singles-ranking', { division, match_type: 'league' });
             const tbody = document.getElementById('player-rankings-body');
             tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                // Display a message if no data is found
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td colspan="7" style="text-align: center;">No player rankings data available for league singles games in this division yet.</td>
+                `;
+                tbody.appendChild(row);
+                return;
+            }
             
             data.forEach((player, index) => {
                 const row = document.createElement('tr');

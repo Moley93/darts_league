@@ -202,10 +202,18 @@ function getLeagueTable() {
 function getSinglesRanking() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
+    $match_type = isset($_GET['match_type']) ? $_GET['match_type'] : null;
     
     try {
-        $stmt = $pdo->prepare("CALL calculate_player_rankings(?)");
-        $stmt->execute([$division]);
+        // Modified to call the stored procedure with match_type parameter
+        if ($match_type) {
+            $stmt = $pdo->prepare("CALL calculate_player_rankings(?, ?)");
+            $stmt->execute([$division, $match_type]);
+        } else {
+            $stmt = $pdo->prepare("CALL calculate_player_rankings(?, NULL)");
+            $stmt->execute([$division]);
+        }
+        
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getSinglesRanking: " . $e->getMessage());
@@ -533,7 +541,6 @@ function getMatchDetails() {
             'oneEighties' => $oneEighties,
             'highFinishes' => $highFinishes
         ];
-        
         returnJson($result);
     } catch (Exception $e) {
         error_log("Error in getMatchDetails: " . $e->getMessage());

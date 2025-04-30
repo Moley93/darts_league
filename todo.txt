@@ -1,8 +1,3 @@
-create field in submit score for a drop down menu on for cup round
-
-prompt: scoreinput.html - When submitting a cup game, I want the user to specify which round of the tournament their game is in, last 16, quarter final, semi final, final, this info will show on cupresults.html once the score has submitted. If the player is submitting a league score, the cup round drop down menu will be greyed the same as other greyed out drop downs. provide me new complete files.
-
-
 player rankings only takes data from singles games and not doubles games
 
 prompt: playerrankings.html should only take scores/points from singles games and not doubles games. provide me new complete files. it should not take points from cup games either
