@@ -60,6 +60,43 @@
             background-color: rgba(244, 67, 54, 0.1);
         }
         
+        /* Tooltip for points scoring system */
+        .points-system-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            margin-left: 5px;
+            font-size: 0.8em;
+            color: #1a237e;
+        }
+        
+        .points-system-tooltip .tooltip-content {
+            visibility: hidden;
+            width: 250px;
+            background-color: #fff;
+            color: #333;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000; /* Higher z-index to ensure it appears above other elements */
+            top: 100%; /* Position below the info icon instead of above */
+            left: 50%;
+            margin-left: -125px;
+            margin-top: 10px; /* Add some spacing between the icon and tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            font-weight: normal;
+            font-style: normal;
+            font-size: 0.9em;
+        }
+        
+        .points-system-tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
         /* League only note */
         .league-only-note {
             font-size: 0.8em;
@@ -96,7 +133,32 @@
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <h2>Player Rankings <span class="league-only-note">(Singles - League Games Only)</span></h2>
+                <h2>Player Rankings <span class="league-only-note">(Singles - League Games Only)</span> 
+                    <div class="points-system-tooltip" id="premier-tooltip">ⓘ
+                        <div class="tooltip-content">
+                            <strong>Premier Division Points:</strong>
+                            <div style="margin-top: 5px;">
+                                Win 3-0: 5 points<br>
+                                Win 3-1: 4 points<br>
+                                Win 3-2: 3 points<br>
+                                Loss 2-3: 2 points<br>
+                                Loss 1-3: 1 point<br>
+                                Loss 0-3: 0 points
+                            </div>
+                        </div>
+                    </div>
+                    <div class="points-system-tooltip hidden" id="a-tooltip">ⓘ
+                        <div class="tooltip-content">
+                            <strong>A Division Points:</strong>
+                            <div style="margin-top: 5px;">
+                                Win 2-0: 3 points<br>
+                                Win 2-1: 2 points<br>
+                                Loss 1-2: 1 point<br>
+                                Loss 0-2: 0 points
+                            </div>
+                        </div>
+                    </div>
+                </h2>
                 
                 <!-- Premier Division Table -->
                 <table id="premier-rankings-table" class="rankings-table">
@@ -170,6 +232,18 @@
             return divisionToggle ? divisionToggle.dataset.division : 'premier';
         }
 
+        // Set initial tooltip visibility based on current division
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentDivision = getCurrentDivision();
+            if (currentDivision === 'premier') {
+                document.getElementById('premier-tooltip').classList.remove('hidden');
+                document.getElementById('a-tooltip').classList.add('hidden');
+            } else {
+                document.getElementById('premier-tooltip').classList.add('hidden');
+                document.getElementById('a-tooltip').classList.remove('hidden');
+            }
+        });
+
         // Division toggle handling
         document.querySelectorAll('.division-toggle button').forEach(button => {
             button.addEventListener('click', (e) => {
@@ -182,9 +256,15 @@
                 if (division === 'premier') {
                     document.getElementById('premier-rankings-table').classList.remove('hidden');
                     document.getElementById('a-rankings-table').classList.add('hidden');
+                    // Show Premier tooltip, hide A tooltip
+                    document.getElementById('premier-tooltip').classList.remove('hidden');
+                    document.getElementById('a-tooltip').classList.add('hidden');
                 } else {
                     document.getElementById('premier-rankings-table').classList.add('hidden');
                     document.getElementById('a-rankings-table').classList.remove('hidden');
+                    // Show A tooltip, hide Premier tooltip
+                    document.getElementById('premier-tooltip').classList.add('hidden');
+                    document.getElementById('a-tooltip').classList.remove('hidden');
                 }
                 
                 loadPlayerRankings(division);
@@ -203,6 +283,29 @@
                 console.error('API Error:', error);
                 return [];
             }
+        }
+
+        // Recalculate player points based on the correct scoring system
+        function recalculatePlayerPoints(player, division) {
+            let points = 0;
+            
+            if (division === 'premier') {
+                // Premier Division scoring
+                points += (player.win_3_0 || 0) * 5;  // 5 points for 3-0 win
+                points += (player.win_3_1 || 0) * 4;  // 4 points for 3-1 win
+                points += (player.win_3_2 || 0) * 3;  // 3 points for 3-2 win
+                points += (player.loss_2_3 || 0) * 2; // 2 points for 2-3 loss
+                points += (player.loss_1_3 || 0) * 1; // 1 point for 1-3 loss
+                // 0 points for 0-3 loss
+            } else {
+                // A Division scoring (assuming 2-0, 2-1, 1-2, 0-2 format)
+                points += (player.win_2_0 || 0) * 3;  // 3 points for 2-0 win
+                points += (player.win_2_1 || 0) * 2;  // 2 points for 2-1 win
+                points += (player.loss_1_2 || 0) * 1; // 1 point for 1-2 loss
+                // 0 points for 0-2 loss
+            }
+            
+            return points;
         }
 
         async function loadPlayerRankings(division) {
@@ -226,8 +329,22 @@
                 return;
             }
             
-            // Process the data to extract detailed score information
-            data.forEach((player, index) => {
+            // Process the data to recalculate correct point values and sort by new points
+            const processedData = data.map(player => {
+                player.recalculated_points = recalculatePlayerPoints(player, division);
+                return player;
+            });
+            
+            // Sort by recalculated points, then by wins
+            processedData.sort((a, b) => {
+                if (b.recalculated_points !== a.recalculated_points) {
+                    return b.recalculated_points - a.recalculated_points;
+                }
+                return b.won - a.won;
+            });
+            
+            // Display the processed data
+            processedData.forEach((player, index) => {
                 const row = document.createElement('tr');
                 
                 if (division === 'premier') {
@@ -243,7 +360,7 @@
                         <td class="loss-score">${player.loss_2_3 || 0}</td>
                         <td class="loss-score">${player.loss_1_3 || 0}</td>
                         <td class="loss-score">${player.loss_0_3 || 0}</td>
-                        <td><strong>${player.points}</strong></td>
+                        <td><strong>${player.recalculated_points}</strong></td>
                     `;
                 } else {
                     // A Division format (2-0, 2-1, 1-2, 0-2)
@@ -256,7 +373,7 @@
                         <td class="win-score">${player.win_2_1 || 0}</td>
                         <td class="loss-score">${player.loss_1_2 || 0}</td>
                         <td class="loss-score">${player.loss_0_2 || 0}</td>
-                        <td><strong>${player.points}</strong></td>
+                        <td><strong>${player.recalculated_points}</strong></td>
                     `;
                 }
                 tbody.appendChild(row);
