@@ -27,7 +27,7 @@
     </nav>
 
     <div class="container">
-        <!-- Player Rankings Page (formerly Player Rankings) -->
+        <!-- Player Rankings Page -->
         <div id="player-rankings" class="page">
             <div class="card">
                 <div class="division-toggle">
@@ -35,19 +35,63 @@
                     <button data-division="a">A Division</button>
                 </div>
                 <h2>Player Rankings <span class="league-only-note">(Singles - League Games Only)</span></h2>
-                <table class="rankings-table">
+                
+                <!-- Premier Division Table -->
+                <table id="premier-rankings-table" class="rankings-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Player</th>
                             <th>Team</th>
                             <th>Played</th>
-                            <th>Won</th>
-                            <th>Lost</th>
+                            <th colspan="3" class="wins-header">Wins</th>
+                            <th colspan="3" class="losses-header">Losses</th>
                             <th>Points</th>
                         </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>3-0</th>
+                            <th>3-1</th>
+                            <th>3-2</th>
+                            <th>2-3</th>
+                            <th>1-3</th>
+                            <th>0-3</th>
+                            <th></th>
+                        </tr>
                     </thead>
-                    <tbody id="player-rankings-body">
+                    <tbody id="premier-rankings-body">
+                        <!-- Dynamic content will be loaded here -->
+                    </tbody>
+                </table>
+                
+                <!-- A Division Table -->
+                <table id="a-rankings-table" class="rankings-table hidden">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Played</th>
+                            <th colspan="2" class="wins-header">Wins</th>
+                            <th colspan="2" class="losses-header">Losses</th>
+                            <th>Points</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>2-0</th>
+                            <th>2-1</th>
+                            <th>1-2</th>
+                            <th>0-2</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="a-rankings-body">
                         <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
@@ -72,6 +116,15 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
+                // Toggle table visibility based on division
+                if (division === 'premier') {
+                    document.getElementById('premier-rankings-table').classList.remove('hidden');
+                    document.getElementById('a-rankings-table').classList.add('hidden');
+                } else {
+                    document.getElementById('premier-rankings-table').classList.add('hidden');
+                    document.getElementById('a-rankings-table').classList.remove('hidden');
+                }
+                
                 loadPlayerRankings(division);
             });
         });
@@ -93,30 +146,57 @@
         async function loadPlayerRankings(division) {
             // Add match_type=league parameter to only get league singles rankings
             const data = await fetchApi('singles-ranking', { division, match_type: 'league' });
-            const tbody = document.getElementById('player-rankings-body');
+            
+            // Get the appropriate table body based on division
+            const tbody = document.getElementById(`${division}-rankings-body`);
+            if (!tbody) return;
+            
             tbody.innerHTML = '';
             
             if (data.length === 0) {
                 // Display a message if no data is found
                 const row = document.createElement('tr');
+                const colSpan = division === 'premier' ? 11 : 9; // Different column count based on division
                 row.innerHTML = `
-                    <td colspan="7" style="text-align: center;">No player rankings data available for league singles games in this division yet.</td>
+                    <td colspan="${colSpan}" style="text-align: center;">No player rankings data available for league singles games in this division yet.</td>
                 `;
                 tbody.appendChild(row);
                 return;
             }
             
+            // Process the data to extract detailed score information
             data.forEach((player, index) => {
                 const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${player.player_name}</td>
-                    <td>${player.team_name}</td>
-                    <td>${player.played}</td>
-                    <td>${player.won}</td>
-                    <td>${player.lost}</td>
-                    <td>${player.points}</td>
-                `;
+                
+                if (division === 'premier') {
+                    // Premier Division format (3-0, 3-1, 3-2, 2-3, 1-3, 0-3)
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${player.player_name}</td>
+                        <td>${player.team_name}</td>
+                        <td>${player.played}</td>
+                        <td>${player.win_3_0 || 0}</td>
+                        <td>${player.win_3_1 || 0}</td>
+                        <td>${player.win_3_2 || 0}</td>
+                        <td>${player.loss_2_3 || 0}</td>
+                        <td>${player.loss_1_3 || 0}</td>
+                        <td>${player.loss_0_3 || 0}</td>
+                        <td>${player.points}</td>
+                    `;
+                } else {
+                    // A Division format (2-0, 2-1, 1-2, 0-2)
+                    row.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${player.player_name}</td>
+                        <td>${player.team_name}</td>
+                        <td>${player.played}</td>
+                        <td>${player.win_2_0 || 0}</td>
+                        <td>${player.win_2_1 || 0}</td>
+                        <td>${player.loss_1_2 || 0}</td>
+                        <td>${player.loss_0_2 || 0}</td>
+                        <td>${player.points}</td>
+                    `;
+                }
                 tbody.appendChild(row);
             });
         }
@@ -124,5 +204,41 @@
         // Initially load the player rankings
         loadPlayerRankings(getCurrentDivision());
     </script>
+    
+    <style>
+        /* Additional styles for the score breakdown table */
+        .rankings-table th {
+            text-align: center;
+        }
+        
+        .rankings-table td {
+            text-align: center;
+        }
+        
+        .rankings-table td:nth-child(2),
+        .rankings-table td:nth-child(3) {
+            text-align: left;
+        }
+        
+        .rankings-table th.wins-header {
+            background-color: #4caf50; /* Green for wins */
+        }
+        
+        .rankings-table th.losses-header {
+            background-color: #f44336; /* Red for losses */
+        }
+        
+        /* Make the second header row slightly different */
+        .rankings-table tr:nth-child(2) th {
+            background-color: rgba(0, 0, 0, 0.1);
+            font-size: 0.9em;
+            padding: 8px 12px;
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+    </style>
 </body>
 </html>

@@ -31,8 +31,8 @@
             margin: 5px 0;
         }
         
-        /* Disabled home team selector */
-        #home-team:disabled {
+        /* Disabled home team and division selectors */
+        #home-team:disabled, #division:disabled {
             background-color: #f5f5f5;
             cursor: not-allowed;
         }
@@ -87,7 +87,7 @@
                 <form id="match-form">
                     <div class="form-group">
                         <label for="division">Division</label>
-                        <select id="division">
+                        <select id="division" disabled>
                             <option value="premier">Premier Division</option>
                             <option value="a">A Division</option>
                         </select>
@@ -154,6 +154,7 @@
         
         // Global variables to store captain information
         let currentCaptain = null;
+        let captainDivision = null;
 
         // API functions
         async function fetchApi(endpoint, params = {}) {
@@ -243,12 +244,15 @@
                             // Store captain info globally for later use
                             currentCaptain = result.captain;
                             
+                            // Determine team division
+                            await determineTeamDivision();
+                            
                             // Display team information
                             const teamInfoDiv = document.getElementById('team-info');
                             teamInfoDiv.innerHTML = `
                                 <p><strong>Welcome ${username}!</strong></p>
                                 <p>You are logged in as: <strong>${currentCaptain.team_name}</strong> captain</p>
-                                <p>Division: <strong>${currentCaptain.division || 'Not specified'}</strong></p>
+                                <p>Division: <strong>${captainDivision.toUpperCase()}</strong></p>
                             `;
                             
                             document.getElementById('login-form').classList.add('hidden');
@@ -258,13 +262,8 @@
                             const homeTeamSelect = document.getElementById('home-team');
                             homeTeamSelect.innerHTML = `<option value="${currentCaptain.team_name}">${currentCaptain.team_name}</option>`;
                             
-                            // Set division based on team's division if available
-                            if (currentCaptain.division) {
-                                document.getElementById('division').value = currentCaptain.division.toLowerCase();
-                            } else {
-                                // If not in the response, determine it
-                                await determineTeamDivision();
-                            }
+                            // Set division based on determined division
+                            document.getElementById('division').value = captainDivision;
                             
                             // Load other teams for the away team selection
                             loadAwayTeamOptions();
@@ -297,24 +296,6 @@
                 });
             }
 
-            const divisionSelect = document.getElementById('division');
-            if (divisionSelect) {
-                divisionSelect.addEventListener('change', async () => {
-                    // Load away teams based on division
-                    loadAwayTeamOptions();
-                    // Clear player selects
-                    document.querySelectorAll('.home-player, .home-player1, .home-player2').forEach(select => {
-                        select.innerHTML = '<option value="">Select Player</option>';
-                    });
-                    document.querySelectorAll('.away-player, .away-player1, .away-player2').forEach(select => {
-                        select.innerHTML = '<option value="">Select Player</option>';
-                    });
-                    // Regenerate matches with new scoring format
-                    generateDoublesMatches();
-                    generateSinglesMatches();
-                });
-            }
-
             // Match form submission setup
             const matchForm = document.getElementById('match-form');
             if (matchForm) {
@@ -324,25 +305,25 @@
             }
         });
 
-        // Determine the division of the captain's team if not provided in login
+        // Determine the division of the captain's team
         async function determineTeamDivision() {
             if (!currentCaptain) {
                 console.error('No captain information available');
+                captainDivision = 'premier'; // Default fallback
                 return;
             }
             
             try {
-                // Call the teams endpoint to get ALL teams
+                // Call the teams endpoint without any division filter to get ALL teams
                 const allTeams = await fetchApi('teams');
                 console.log('All teams loaded for division check:', allTeams.length);
                 
-                // First try to find the team by team_id
+                // First try to find the team by team_id (most reliable method)
                 if (currentCaptain.team_id) {
                     const teamById = allTeams.find(team => parseInt(team.team_id) === parseInt(currentCaptain.team_id));
                     if (teamById && teamById.division) {
-                        currentCaptain.division = teamById.division;
-                        document.getElementById('division').value = teamById.division.toLowerCase();
-                        console.log(`Captain's team division found by ID: ${teamById.division}`);
+                        captainDivision = teamById.division.toLowerCase();
+                        console.log(`Captain's team division found by ID: ${captainDivision}`);
                         return;
                     }
                 }
@@ -353,9 +334,8 @@
                         team.team_name.toLowerCase() === currentCaptain.team_name.toLowerCase()
                     );
                     if (teamByName && teamByName.division) {
-                        currentCaptain.division = teamByName.division;
-                        document.getElementById('division').value = teamByName.division.toLowerCase();
-                        console.log(`Captain's team division found by name: ${teamByName.division}`);
+                        captainDivision = teamByName.division.toLowerCase();
+                        console.log(`Captain's team division found by name: ${captainDivision}`);
                         return;
                     }
                 }
@@ -370,18 +350,24 @@
                     aDivisionTeams.some(name => 
                         name.toLowerCase() === currentCaptain.team_name.toLowerCase()
                     )) {
-                    currentCaptain.division = 'a';
-                    document.getElementById('division').value = 'a';
+                    captainDivision = 'a';
                     console.log("Team found in A division list");
                     return;
                 }
                 
+                // Team IDs 9-16 are A division based on the schema
+                if (currentCaptain.team_id && parseInt(currentCaptain.team_id) >= 9 && parseInt(currentCaptain.team_id) <= 16) {
+                    captainDivision = 'a';
+                    console.log("Team identified as A division by ID range");
+                    return;
+                }
+                
                 // Default to premier if all checks fail
-                currentCaptain.division = 'premier';
-                document.getElementById('division').value = 'premier';
+                captainDivision = 'premier';
+                console.warn(`Could not determine team division, defaulting to: ${captainDivision}`);
             } catch (error) {
                 console.error('Error determining team division:', error);
-                currentCaptain.division = 'premier'; // Default
+                captainDivision = 'premier'; // Default to premier division
             }
         }
 
@@ -392,8 +378,7 @@
                 return;
             }
             
-            const division = document.getElementById('division').value;
-            const teams = await fetchApi('teams', { division });
+            const teams = await fetchApi('teams', { division: captainDivision });
             
             const awaySelect = document.getElementById('away-team');
             const currentValue = awaySelect.value;
@@ -641,7 +626,9 @@
         function generateDoublesMatches() {
             const doublesMatchesDiv = document.getElementById('doubles-matches');
             doublesMatchesDiv.innerHTML = '';
-            const division = document.getElementById('division').value;
+            
+            // Use captain's division for match format
+            const division = captainDivision;
             
             for (let i = 1; i <= 3; i++) {
                 const matchDiv = document.createElement('div');
@@ -708,7 +695,9 @@
         function generateSinglesMatches() {
             const singlesMatchesDiv = document.getElementById('singles-matches');
             singlesMatchesDiv.innerHTML = '';
-            const division = document.getElementById('division').value;
+            
+            // Use captain's division for match format
+            const division = captainDivision;
             
             for (let i = 1; i <= 6; i++) {
                 const matchDiv = document.createElement('div');

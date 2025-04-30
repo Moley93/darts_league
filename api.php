@@ -205,22 +205,153 @@ function getSinglesRanking() {
     $match_type = isset($_GET['match_type']) ? $_GET['match_type'] : null;
     
     try {
-        // Modified to call the stored procedure with match_type parameter
-        if ($match_type) {
-            $stmt = $pdo->prepare("CALL calculate_player_rankings(?, ?)");
-            $stmt->execute([$division, $match_type]);
+        // SQL query to get detailed breakdown of singles scores
+        // Use different queries for Premier and A divisions due to different scoring systems
+        if ($division === 'premier') {
+            $sql = "
+                SELECT 
+                    p.player_id,
+                    p.player_name,
+                    t.team_name,
+                    COUNT(sr.result_id) as played,
+                    SUM(CASE 
+                        WHEN (sr.home_player_id = p.player_id AND sr.home_score > sr.away_score) OR
+                             (sr.away_player_id = p.player_id AND sr.away_score > sr.home_score)
+                        THEN 1 ELSE 0 
+                    END) as won,
+                    SUM(CASE 
+                        WHEN (sr.home_player_id = p.player_id AND sr.home_score < sr.away_score) OR
+                             (sr.away_player_id = p.player_id AND sr.away_score < sr.home_score)
+                        THEN 1 ELSE 0 
+                    END) as lost,
+                    
+                    -- Premier Division - Detailed score breakdown - Wins
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 0 THEN 1
+                             ELSE 0 END) as win_3_0,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 1 THEN 1
+                             ELSE 0 END) as win_3_1,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 2 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 2 THEN 1
+                             ELSE 0 END) as win_3_2,
+                    
+                    -- Premier Division - Detailed score breakdown - Losses
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 3 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 3 THEN 1
+                             ELSE 0 END) as loss_2_3,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 3 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 1 AND sr.home_score = 3 THEN 1
+                             ELSE 0 END) as loss_1_3,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 0 AND sr.away_score = 3 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 3 THEN 1
+                             ELSE 0 END) as loss_0_3,
+                    
+                    -- Points calculation - Premier Division scoring (best of 5)
+                    SUM(CASE 
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 5
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 3
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 2 THEN 1
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 0 THEN 5
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 1 THEN 3
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 2 THEN 1
+                        ELSE 0
+                    END) as points
+                FROM players p
+                JOIN teams t ON p.team_id = t.team_id
+                LEFT JOIN singles_results sr ON p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id
+                LEFT JOIN matches m ON sr.match_id = m.match_id
+                WHERE t.division = ?
+            ";
         } else {
-            $stmt = $pdo->prepare("CALL calculate_player_rankings(?, NULL)");
-            $stmt->execute([$division]);
+            // A Division query - different scoring system (2-0, 2-1, 1-2, 0-2)
+            $sql = "
+                SELECT 
+                    p.player_id,
+                    p.player_name,
+                    t.team_name,
+                    COUNT(sr.result_id) as played,
+                    SUM(CASE 
+                        WHEN (sr.home_player_id = p.player_id AND sr.home_score > sr.away_score) OR
+                             (sr.away_player_id = p.player_id AND sr.away_score > sr.home_score)
+                        THEN 1 ELSE 0 
+                    END) as won,
+                    SUM(CASE 
+                        WHEN (sr.home_player_id = p.player_id AND sr.home_score < sr.away_score) OR
+                             (sr.away_player_id = p.player_id AND sr.away_score < sr.home_score)
+                        THEN 1 ELSE 0 
+                    END) as lost,
+                    
+                    -- A Division - Detailed score breakdown - Wins (2-0, 2-1)
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 0 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 0 THEN 1
+                             ELSE 0 END) as win_2_0,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 1 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 1 THEN 1
+                             ELSE 0 END) as win_2_1,
+                    
+                    -- A Division - Zero values for Premier Division fields 
+                    -- to maintain compatible structure with frontend
+                    0 as win_3_0,
+                    0 as win_3_1, 
+                    0 as win_3_2,
+                    0 as loss_2_3,
+                             
+                    -- A Division - Detailed score breakdown - Losses (1-2, 0-2)
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 2 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 1 AND sr.home_score = 2 THEN 1
+                             ELSE 0 END) as loss_1_2,
+                             
+                    SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 0 AND sr.away_score = 2 THEN 1
+                             WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 2 THEN 1
+                             ELSE 0 END) as loss_0_2,
+                    
+                    -- Points calculation - A Division scoring (best of 3)
+                    SUM(CASE 
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 0 THEN 3
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 1 THEN 2
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 2 THEN 1
+                        WHEN sr.home_player_id = p.player_id AND sr.home_score = 0 AND sr.away_score = 2 THEN 0
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 0 THEN 3
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 1 THEN 2
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 1 AND sr.home_score = 2 THEN 1
+                        WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 2 THEN 0
+                        ELSE 0
+                    END) as points
+                FROM players p
+                JOIN teams t ON p.team_id = t.team_id
+                LEFT JOIN singles_results sr ON p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id
+                LEFT JOIN matches m ON sr.match_id = m.match_id
+                WHERE t.division = ?
+            ";
         }
         
+        // Add match type filter if specified
+        $params = [$division];
+        if ($match_type) {
+            $sql .= " AND m.match_type = ?";
+            $params[] = $match_type;
+        }
+        
+        // Complete the query with GROUP BY and ORDER BY
+        $sql .= "
+            GROUP BY p.player_id, p.player_name, t.team_name
+            ORDER BY points DESC, won DESC
+        ";
+        
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute($params);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
         error_log("Error in getSinglesRanking: " . $e->getMessage());
-        returnJson(['success' => false, 'error' => 'Error fetching Player Rankings']);
+        returnJson(['success' => false, 'error' => 'Error fetching Player Rankings: ' . $e->getMessage()]);
     }
 }
-
 function getLeagueFixtures() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
@@ -276,7 +407,6 @@ function getLeagueResults() {
         returnJson(['success' => false, 'error' => 'Error fetching league results']);
     }
 }
-
 function getCupFixtures() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
@@ -580,7 +710,7 @@ function handleLogin() {
         
         // Query database for user
         $stmt = $pdo->prepare("
-            SELECT tc.*, t.team_name 
+            SELECT tc.*, t.team_name, t.division 
             FROM team_captains tc 
             JOIN teams t ON tc.team_id = t.team_id 
             WHERE tc.username = ?
