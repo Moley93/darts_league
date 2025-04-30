@@ -17,3 +17,7 @@ create team tables for each team displaying player performance?
 captain/secretary/venue info locked behind login for GDPR reasons
 
 no show player assigned to all teams who will be exempt from player rankings
+
+results only showing at 8 points total rather than 9 points total
+
+scoreinput to use same logic as editscores.html to automatically chose the division 

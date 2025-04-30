@@ -370,7 +370,7 @@ INSERT INTO team_captains (team_id, username, password_hash) VALUES
 DELIMITER //
 
 -- Procedure to calculate player rankings
-CREATE PROCEDURE calculate_player_rankings(IN division_param VARCHAR(10))
+CREATE PROCEDURE calculate_player_rankings(IN division_param VARCHAR(10), IN match_type_param VARCHAR(10))
 BEGIN
     SELECT 
         p.player_id,
@@ -409,6 +409,7 @@ BEGIN
     LEFT JOIN singles_results sr ON p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id
     LEFT JOIN matches m ON sr.match_id = m.match_id
     WHERE t.division = division_param
+      AND (match_type_param IS NULL OR m.match_type = match_type_param)
     GROUP BY p.player_id, p.player_name, t.team_name
     ORDER BY points DESC, won DESC;
 END //
