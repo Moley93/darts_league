@@ -16,6 +16,26 @@
         #cup-round-container {
             transition: opacity 0.3s ease;
         }
+        
+        /* Team info display */
+        .team-info {
+            background-color: #e8f5e9;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            border-left: 4px solid var(--success);
+            font-size: 0.95em;
+        }
+        
+        .team-info p {
+            margin: 5px 0;
+        }
+        
+        /* Disabled home team selector */
+        #home-team:disabled {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -59,6 +79,11 @@
 
             <div id="score-input-form" class="card score-input-container hidden">
                 <h2>Match Score Input</h2>
+                
+                <div id="team-info" class="team-info">
+                    <!-- Team info will be displayed here after login -->
+                </div>
+                
                 <form id="match-form">
                     <div class="form-group">
                         <label for="division">Division</label>
@@ -85,9 +110,9 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="home-team">Home Team</label>
-                        <select id="home-team">
-                            <!-- Team options will be loaded dynamically -->
+                        <label for="home-team">Home Team (Your Team)</label>
+                        <select id="home-team" disabled>
+                            <!-- This will be auto-populated with logged-in team -->
                         </select>
                     </div>
                     <div class="form-group">
@@ -126,6 +151,9 @@
     <script>
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
+        
+        // Global variables to store captain information
+        let currentCaptain = null;
 
         // API functions
         async function fetchApi(endpoint, params = {}) {
@@ -140,6 +168,7 @@
                 return [];
             }
         }
+        
         async function postApi(endpoint, data) {
             try {
                 console.log(`Sending ${endpoint} request:`, data);
@@ -211,9 +240,34 @@
                         console.log('Login response:', result);
                         
                         if (result && result.success) {
+                            // Store captain info globally for later use
+                            currentCaptain = result.captain;
+                            
+                            // Display team information
+                            const teamInfoDiv = document.getElementById('team-info');
+                            teamInfoDiv.innerHTML = `
+                                <p><strong>Welcome ${username}!</strong></p>
+                                <p>You are logged in as: <strong>${currentCaptain.team_name}</strong> captain</p>
+                                <p>Division: <strong>${currentCaptain.division || 'Not specified'}</strong></p>
+                            `;
+                            
                             document.getElementById('login-form').classList.add('hidden');
                             document.getElementById('score-input-form').classList.remove('hidden');
-                            loadTeamOptions();
+                            
+                            // Set the home team to the captain's team
+                            const homeTeamSelect = document.getElementById('home-team');
+                            homeTeamSelect.innerHTML = `<option value="${currentCaptain.team_name}">${currentCaptain.team_name}</option>`;
+                            
+                            // Set division based on team's division if available
+                            if (currentCaptain.division) {
+                                document.getElementById('division').value = currentCaptain.division.toLowerCase();
+                            } else {
+                                // If not in the response, determine it
+                                await determineTeamDivision();
+                            }
+                            
+                            // Load other teams for the away team selection
+                            loadAwayTeamOptions();
                             generateDoublesMatches();
                             generateSinglesMatches();
                             generateOneEightiesInputs();
@@ -232,22 +286,9 @@
             }
 
             // Set up other event listeners
-            const homeTeamSelect = document.getElementById('home-team');
-            if (homeTeamSelect) {
-                homeTeamSelect.addEventListener('change', async () => {
-                    await updateTeamOptions();
-                    await updatePlayerSelects('home');
-                    // Update stat player options when teams change
-                    document.querySelectorAll('.one-eighty-player, .high-finish-player').forEach(select => {
-                        populateStatPlayerOptions(select);
-                    });
-                });
-            }
-            
             const awayTeamSelect = document.getElementById('away-team');
             if (awayTeamSelect) {
                 awayTeamSelect.addEventListener('change', async () => {
-                    await updateTeamOptions();
                     await updatePlayerSelects('away');
                     // Update stat player options when teams change
                     document.querySelectorAll('.one-eighty-player, .high-finish-player').forEach(select => {
@@ -259,7 +300,8 @@
             const divisionSelect = document.getElementById('division');
             if (divisionSelect) {
                 divisionSelect.addEventListener('change', async () => {
-                    await loadTeamOptions();
+                    // Load away teams based on division
+                    loadAwayTeamOptions();
                     // Clear player selects
                     document.querySelectorAll('.home-player, .home-player1, .home-player2').forEach(select => {
                         select.innerHTML = '<option value="">Select Player</option>';
@@ -282,73 +324,92 @@
             }
         });
 
-        // Load team options for score input
-        async function loadTeamOptions() {
-            const division = document.getElementById('division').value;
-            const teams = await fetchApi('teams', { division });
+        // Determine the division of the captain's team if not provided in login
+        async function determineTeamDivision() {
+            if (!currentCaptain) {
+                console.error('No captain information available');
+                return;
+            }
             
-            const homeSelect = document.getElementById('home-team');
-            const awaySelect = document.getElementById('away-team');
-            
-            const currentHomeValue = homeSelect.value;
-            const currentAwayValue = awaySelect.value;
-            
-            homeSelect.innerHTML = '<option value="">Select Home Team</option>';
-            awaySelect.innerHTML = '<option value="">Select Away Team</option>';
-            
-            teams.forEach(team => {
-                // Add to home select if not selected as away team
-                if (team.team_name !== currentAwayValue) {
-                    homeSelect.add(new Option(team.team_name, team.team_name));
+            try {
+                // Call the teams endpoint to get ALL teams
+                const allTeams = await fetchApi('teams');
+                console.log('All teams loaded for division check:', allTeams.length);
+                
+                // First try to find the team by team_id
+                if (currentCaptain.team_id) {
+                    const teamById = allTeams.find(team => parseInt(team.team_id) === parseInt(currentCaptain.team_id));
+                    if (teamById && teamById.division) {
+                        currentCaptain.division = teamById.division;
+                        document.getElementById('division').value = teamById.division.toLowerCase();
+                        console.log(`Captain's team division found by ID: ${teamById.division}`);
+                        return;
+                    }
                 }
                 
-                // Add to away select if not selected as home team
-                if (team.team_name !== currentHomeValue) {
-                    awaySelect.add(new Option(team.team_name, team.team_name));
+                // If team_id doesn't work, try by team name
+                if (currentCaptain.team_name) {
+                    const teamByName = allTeams.find(team => 
+                        team.team_name.toLowerCase() === currentCaptain.team_name.toLowerCase()
+                    );
+                    if (teamByName && teamByName.division) {
+                        currentCaptain.division = teamByName.division;
+                        document.getElementById('division').value = teamByName.division.toLowerCase();
+                        console.log(`Captain's team division found by name: ${teamByName.division}`);
+                        return;
+                    }
                 }
-            });
-            // Restore previously selected values if they're still valid
-            if (currentHomeValue && teams.some(t => t.team_name === currentHomeValue && t.team_name !== currentAwayValue)) {
-                homeSelect.value = currentHomeValue;
-            }
-            if (currentAwayValue && teams.some(t => t.team_name === currentAwayValue && t.team_name !== currentHomeValue)) {
-                awaySelect.value = currentAwayValue;
+                
+                // If we still don't have a division, use known A division team names
+                const aDivisionTeams = [
+                    'Ewhurst Arrows', 'Dingles', 'Johnson', 'Disappointers', 
+                    'APV', 'Ewhurst Woodys', 'Pelham', 'Division A Bye'
+                ];
+                
+                if (currentCaptain.team_name && 
+                    aDivisionTeams.some(name => 
+                        name.toLowerCase() === currentCaptain.team_name.toLowerCase()
+                    )) {
+                    currentCaptain.division = 'a';
+                    document.getElementById('division').value = 'a';
+                    console.log("Team found in A division list");
+                    return;
+                }
+                
+                // Default to premier if all checks fail
+                currentCaptain.division = 'premier';
+                document.getElementById('division').value = 'premier';
+            } catch (error) {
+                console.error('Error determining team division:', error);
+                currentCaptain.division = 'premier'; // Default
             }
         }
 
-        // Function to update team options based on selection
-        async function updateTeamOptions() {
+        // Load away team options for score input
+        async function loadAwayTeamOptions() {
+            if (!currentCaptain) {
+                console.error('No captain information available');
+                return;
+            }
+            
             const division = document.getElementById('division').value;
             const teams = await fetchApi('teams', { division });
             
-            const homeSelect = document.getElementById('home-team');
             const awaySelect = document.getElementById('away-team');
+            const currentValue = awaySelect.value;
             
-            const selectedHome = homeSelect.value;
-            const selectedAway = awaySelect.value;
-            
-            // Update away team options
-            const currentAwayValue = awaySelect.value;
             awaySelect.innerHTML = '<option value="">Select Away Team</option>';
+            
             teams.forEach(team => {
-                if (team.team_name !== selectedHome) {
+                // Add to away select if not the captain's team
+                if (team.team_name !== currentCaptain.team_name) {
                     awaySelect.add(new Option(team.team_name, team.team_name));
                 }
             });
-            if (currentAwayValue && currentAwayValue !== selectedHome) {
-                awaySelect.value = currentAwayValue;
-            }
             
-            // Update home team options
-            const currentHomeValue = homeSelect.value;
-            homeSelect.innerHTML = '<option value="">Select Home Team</option>';
-            teams.forEach(team => {
-                if (team.team_name !== selectedAway) {
-                    homeSelect.add(new Option(team.team_name, team.team_name));
-                }
-            });
-            if (currentHomeValue && currentHomeValue !== selectedAway) {
-                homeSelect.value = currentHomeValue;
+            // Restore previously selected value if still valid
+            if (currentValue && teams.some(t => t.team_name === currentValue && t.team_name !== currentCaptain.team_name)) {
+                awaySelect.value = currentValue;
             }
         }
 
@@ -407,6 +468,12 @@
         }
 
         async function updatePlayerSelects(side) {
+            // Only update away players since home team is fixed
+            if (side === 'home') {
+                await updateAllPlayerSelects();
+                return;
+            }
+            
             const teamName = document.getElementById(`${side}-team`).value;
             if (!teamName) {
                 // Clear player selects if no team is selected
@@ -432,7 +499,7 @@
          * Updates player options for doubles matches to exclude already selected players in doubles only
          */
         async function updateDoublesPlayerOptions() {
-            const homeTeamName = document.getElementById('home-team').value;
+            const homeTeamName = currentCaptain.team_name;
             const awayTeamName = document.getElementById('away-team').value;
             
             if (!homeTeamName && !awayTeamName) return;
@@ -503,7 +570,7 @@
          * Updates player options for singles matches to exclude already selected players in singles only
          */
         async function updateSinglesPlayerOptions() {
-            const homeTeamName = document.getElementById('home-team').value;
+            const homeTeamName = currentCaptain.team_name;
             const awayTeamName = document.getElementById('away-team').value;
             
             if (!homeTeamName && !awayTeamName) return;
@@ -632,6 +699,9 @@
             document.querySelectorAll('.home-player1, .home-player2, .away-player1, .away-player2').forEach(select => {
                 select.addEventListener('change', updateDoublesPlayerOptions);
             });
+            
+            // Update player options
+            updateDoublesPlayerOptions();
         }
 
         // Generate singles match inputs
@@ -690,6 +760,9 @@
             document.querySelectorAll('.home-player, .away-player').forEach(select => {
                 select.addEventListener('change', updateSinglesPlayerOptions);
             });
+            
+            // Update player options
+            updateSinglesPlayerOptions();
         }
 
         // Generate 180s input section
@@ -709,9 +782,7 @@
             container.appendChild(addButton);
             
             // Initial population of player options if teams are selected
-            const homeTeam = document.getElementById('home-team').value;
-            const awayTeam = document.getElementById('away-team').value;
-            if (homeTeam || awayTeam) {
+            if (currentCaptain && currentCaptain.team_name) {
                 document.querySelectorAll('.one-eighty-player').forEach(select => {
                     populateStatPlayerOptions(select);
                 });
@@ -729,8 +800,7 @@
                     <option value="">Select Player</option>
                 </select>
                 <input type="number" class="one-eighty-count" value="1" min="1" placeholder="Number of 180s">
-                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' :
-                ''}
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
             `;
             
             // Add before the add button
@@ -764,9 +834,7 @@
             container.appendChild(addButton);
             
             // Initial population of player options if teams are selected
-            const homeTeam = document.getElementById('home-team').value;
-            const awayTeam = document.getElementById('away-team').value;
-            if (homeTeam || awayTeam) {
+            if (currentCaptain && currentCaptain.team_name) {
                 document.querySelectorAll('.high-finish-player').forEach(select => {
                     populateStatPlayerOptions(select);
                 });
@@ -803,8 +871,11 @@
         
         // Populate player options for stats
         async function populateStatPlayerOptions(select) {
-            const homeTeam = document.getElementById('home-team').value;
+            const homeTeam = currentCaptain ? currentCaptain.team_name : '';
             const awayTeam = document.getElementById('away-team').value;
+            
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select Player</option>';
             
             if (homeTeam) {
                 const homePlayers = await fetchApi('players', { team_name: homeTeam });
@@ -825,10 +896,15 @@
         async function submitMatchForm(e) {
             e.preventDefault();
             
+            if (!currentCaptain || !currentCaptain.team_name) {
+                alert('You need to be logged in to submit scores.');
+                return;
+            }
+            
             const matchData = {
                 division: document.getElementById('division').value,
                 matchType: document.getElementById('match-type').value,
-                homeTeam: document.getElementById('home-team').value,
+                homeTeam: currentCaptain.team_name, // Always use captain's team
                 awayTeam: document.getElementById('away-team').value,
                 doubles: [],
                 singles: [],
@@ -848,7 +924,7 @@
             
             // Validate required fields
             if (!matchData.division || !matchData.matchType || !matchData.homeTeam || !matchData.awayTeam) {
-                alert('Please select division, match type, home team, and away team.');
+                alert('Please select division, match type, and away team.');
                 return;
             }
 
@@ -924,19 +1000,29 @@
             
             if (result.success) {
                 alert('Match score submitted successfully!');
+                
+                // Reset form fields but keep the home team (captain's team)
+                const homeTeam = document.getElementById('home-team').value;
+                const division = document.getElementById('division').value;
+                
                 document.getElementById('match-form').reset();
+                
+                // Restore values
+                document.getElementById('division').value = division;
+                document.getElementById('home-team').value = homeTeam;
+                document.getElementById('home-team').disabled = true;
+                
+                // Reset cup round selection
+                document.getElementById('cup-round').value = '';
+                document.getElementById('cup-round').disabled = true;
+                document.getElementById('cup-round-container').classList.add('disabled-field');
+                
+                // Reload form elements
+                loadAwayTeamOptions();
                 generateDoublesMatches();
                 generateSinglesMatches();
                 generateOneEightiesInputs();
                 generateHighFinishesInputs();
-                // Reset team selections to clear players
-                document.getElementById('home-team').value = '';
-                document.getElementById('away-team').value = '';
-                // Reset and disable cup round selection
-                document.getElementById('cup-round').value = '';
-                document.getElementById('cup-round').disabled = true;
-                document.getElementById('cup-round-container').classList.add('disabled-field');
-                updateTeamOptions();
             } else {
                 alert('Error submitting match: ' + (result.error || 'Unknown error'));
                 console.error('Error details:', result);

@@ -5,7 +5,7 @@ prompt: scoreinput.html - When submitting a cup game, I want the user to specify
 
 player rankings only takes data from singles games and not doubles games
 
-prompt: playerrankings.html should only take scores/points from singles games and not doubles games. provide me new complete files.
+prompt: playerrankings.html should only take scores/points from singles games and not doubles games. provide me new complete files. it should not take points from cup games either
 
 
 remove draws from league tables
