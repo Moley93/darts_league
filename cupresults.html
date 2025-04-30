@@ -60,6 +60,17 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         
+        /* Date header styles */
+        .results-date-header {
+            background: var(--light-gray);
+            padding: 10px 15px;
+            margin: 15px 0 10px;
+            border-radius: 5px;
+            font-size: 1.1em;
+            color: var(--primary);
+            border-left: 4px solid var(--secondary);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .fixture-card {
@@ -162,23 +173,37 @@
                 result.away_team !== 'Division A Bye'
             );
             
-            // Group results by round
-            const resultsByRound = {};
+            // Group results by round and date
+            const resultsByRoundAndDate = {};
+            
             filteredData.forEach(result => {
                 const round = result.cup_round || 'Last 16';
                 
-                if (!resultsByRound[round]) {
-                    resultsByRound[round] = [];
+                if (!resultsByRoundAndDate[round]) {
+                    resultsByRoundAndDate[round] = {};
                 }
                 
-                resultsByRound[round].push(result);
+                // Format the date for display and grouping
+                const matchDate = result.match_date ? new Date(result.match_date) : null;
+                const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : 'Date not available';
+                
+                if (!resultsByRoundAndDate[round][formattedDate]) {
+                    resultsByRoundAndDate[round][formattedDate] = [];
+                }
+                
+                resultsByRoundAndDate[round][formattedDate].push(result);
             });
             
             // Define the order of cup rounds for sorting
             const roundOrder = ['Last 16', 'Quarter Final', 'Semi Final', 'Final'];
             
             // If no results, display a message
-            if (Object.keys(resultsByRound).length === 0) {
+            if (Object.keys(resultsByRoundAndDate).length === 0) {
                 const noResultsMsg = document.createElement('p');
                 noResultsMsg.style.textAlign = 'center';
                 noResultsMsg.style.padding = '20px';
@@ -187,48 +212,43 @@
                 return;
             }
             
-            // Render results grouped by round in the proper order
+            // Render results grouped by round and date in the proper order
             roundOrder.forEach(round => {
-                if (resultsByRound[round] && resultsByRound[round].length > 0) {
+                if (resultsByRoundAndDate[round]) {
                     // Create round header
                     const roundHeader = document.createElement('h3');
                     roundHeader.className = 'cup-round-header';
                     roundHeader.textContent = round;
                     resultsList.appendChild(roundHeader);
                     
-                    // Sort matches by date within each round (newest first)
-                    resultsByRound[round].sort((a, b) => {
-                        const dateA = new Date(a.match_date);
-                        const dateB = new Date(b.match_date);
+                    // Get dates for this round and sort them (newest first)
+                    const dates = Object.keys(resultsByRoundAndDate[round]).sort((a, b) => {
+                        // Get the first match from each date to compare their actual dates
+                        const dateA = new Date(resultsByRoundAndDate[round][a][0].match_date);
+                        const dateB = new Date(resultsByRoundAndDate[round][b][0].match_date);
                         return dateB - dateA;
                     });
                     
-                    // Add matches for this round
-                    resultsByRound[round].forEach(result => {
-                        // Format the date for display
-                        const matchDate = result.match_date ? new Date(result.match_date) : null;
-                        const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
-                            weekday: 'long',
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        }) : 'Date not available';
-                        
+                    // For each date in this round
+                    dates.forEach(formattedDate => {
                         // Create date subheader
                         const dateHeader = document.createElement('h4');
                         dateHeader.className = 'results-date-header';
                         dateHeader.textContent = formattedDate;
                         resultsList.appendChild(dateHeader);
                         
-                        // Create result card
-                        const resultCard = document.createElement('div');
-                        resultCard.className = 'fixture-card';
-                        resultCard.innerHTML = `
-                            <div class="team-name home">${result.home_team}</div>
-                            <div class="score">${result.home_score} - ${result.away_score}</div>
-                            <div class="team-name away">${result.away_team}</div>
-                        `;
-                        resultsList.appendChild(resultCard);
+                        // Add matches for this date
+                        resultsByRoundAndDate[round][formattedDate].forEach(result => {
+                            // Create result card
+                            const resultCard = document.createElement('div');
+                            resultCard.className = 'fixture-card';
+                            resultCard.innerHTML = `
+                                <div class="team-name home">${result.home_team}</div>
+                                <div class="score">${result.home_score} - ${result.away_score}</div>
+                                <div class="team-name away">${result.away_team}</div>
+                            `;
+                            resultsList.appendChild(resultCard);
+                        });
                     });
                 }
             });

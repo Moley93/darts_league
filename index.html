@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
     <link rel="icon" href="cdl.png">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>League Table - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles for even table column spacing */
+        #league-table table {
+            table-layout: fixed;
+            width: 100%;
+        }
+        
+        #league-table th, #league-table td {
+            text-align: center;
+            padding: 12px 8px;
+        }
+        
+        /* Make team name left-aligned */
+        #league-table th:nth-child(2), 
+        #league-table td:nth-child(2) {
+            text-align: left;
+            width: 30%;
+        }
+        
+        /* Position column is narrower */
+        #league-table th:first-child, 
+        #league-table td:first-child {
+            width: 10%;
+        }
+        
+        /* Other columns get equal space */
+        #league-table th:not(:first-child):not(:nth-child(2)), 
+        #league-table td:not(:first-child):not(:nth-child(2)) {
+            width: 10%;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -42,7 +72,6 @@
                             <th>Team</th>
                             <th>P</th>
                             <th>W</th>
-                            <th>D</th>
                             <th>L</th>
                             <th>F</th>
                             <th>A</th>
@@ -107,7 +136,6 @@
                     <td>${team.team_name}</td>
                     <td>${team.played}</td>
                     <td>${team.won}</td>
-                    <td>${team.drawn}</td>
                     <td>${team.lost}</td>
                     <td>${team.games_for}</td>
                     <td>${team.games_against}</td>
