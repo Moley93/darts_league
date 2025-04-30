@@ -151,7 +151,7 @@ INSERT INTO teams (team_name, division) VALUES
 ('Dark Side Of The Moon', 'premier'),
 ('Dartbreakers', 'premier'),
 ('Rugby Club', 'premier'),
-('Grasshopper Premier', 'premier'),
+('Grasshopper', 'premier'),
 ('Bye', 'premier'),
 ('Ewhurst Arrows', 'a'),
 ('Dingles', 'a'),
@@ -242,7 +242,7 @@ INSERT INTO players (player_name, team_id) VALUES
 ('Keith Peterson', 6),
 ('Jeremy Gray', 6);
 
--- Grasshopper Premier (team_id: 7)
+-- Grasshopper (team_id: 7)
 INSERT INTO players (player_name, team_id) VALUES
 ('Stephen James', 7),
 ('Gregory Watson', 7),
