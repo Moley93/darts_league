@@ -6,6 +6,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Rankings - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles for the score breakdown table */
+        .rankings-table th {
+            text-align: center;
+        }
+        
+        .rankings-table td {
+            text-align: center;
+        }
+        
+        .rankings-table td:nth-child(2),
+        .rankings-table td:nth-child(3) {
+            text-align: left;
+        }
+        
+        /* Improved styling for the wins header - better contrast */
+        .rankings-table th.wins-header {
+            background-color: #4caf50; /* Green for wins */
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+        }
+        
+        /* Improved styling for the losses header - better contrast */
+        .rankings-table th.losses-header {
+            background-color: #f44336; /* Red for losses */
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+        }
+        
+        /* Make the second header row more visible */
+        .rankings-table tr:nth-child(2) th {
+            background-color: #e0e0e0; /* Lighter grey for the score numbers row */
+            color: #333333; /* Dark text for better contrast */
+            font-size: 0.9em;
+            font-weight: bold;
+            padding: 8px 12px;
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Highlight winning scores in green and losing scores in light red */
+        .win-score {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .loss-score {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        /* League only note */
+        .league-only-note {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--secondary);
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -175,13 +237,13 @@
                         <td>${player.player_name}</td>
                         <td>${player.team_name}</td>
                         <td>${player.played}</td>
-                        <td>${player.win_3_0 || 0}</td>
-                        <td>${player.win_3_1 || 0}</td>
-                        <td>${player.win_3_2 || 0}</td>
-                        <td>${player.loss_2_3 || 0}</td>
-                        <td>${player.loss_1_3 || 0}</td>
-                        <td>${player.loss_0_3 || 0}</td>
-                        <td>${player.points}</td>
+                        <td class="win-score">${player.win_3_0 || 0}</td>
+                        <td class="win-score">${player.win_3_1 || 0}</td>
+                        <td class="win-score">${player.win_3_2 || 0}</td>
+                        <td class="loss-score">${player.loss_2_3 || 0}</td>
+                        <td class="loss-score">${player.loss_1_3 || 0}</td>
+                        <td class="loss-score">${player.loss_0_3 || 0}</td>
+                        <td><strong>${player.points}</strong></td>
                     `;
                 } else {
                     // A Division format (2-0, 2-1, 1-2, 0-2)
@@ -190,11 +252,11 @@
                         <td>${player.player_name}</td>
                         <td>${player.team_name}</td>
                         <td>${player.played}</td>
-                        <td>${player.win_2_0 || 0}</td>
-                        <td>${player.win_2_1 || 0}</td>
-                        <td>${player.loss_1_2 || 0}</td>
-                        <td>${player.loss_0_2 || 0}</td>
-                        <td>${player.points}</td>
+                        <td class="win-score">${player.win_2_0 || 0}</td>
+                        <td class="win-score">${player.win_2_1 || 0}</td>
+                        <td class="loss-score">${player.loss_1_2 || 0}</td>
+                        <td class="loss-score">${player.loss_0_2 || 0}</td>
+                        <td><strong>${player.points}</strong></td>
                     `;
                 }
                 tbody.appendChild(row);
@@ -204,41 +266,5 @@
         // Initially load the player rankings
         loadPlayerRankings(getCurrentDivision());
     </script>
-    
-    <style>
-        /* Additional styles for the score breakdown table */
-        .rankings-table th {
-            text-align: center;
-        }
-        
-        .rankings-table td {
-            text-align: center;
-        }
-        
-        .rankings-table td:nth-child(2),
-        .rankings-table td:nth-child(3) {
-            text-align: left;
-        }
-        
-        .rankings-table th.wins-header {
-            background-color: #4caf50; /* Green for wins */
-        }
-        
-        .rankings-table th.losses-header {
-            background-color: #f44336; /* Red for losses */
-        }
-        
-        /* Make the second header row slightly different */
-        .rankings-table tr:nth-child(2) th {
-            background-color: rgba(0, 0, 0, 0.1);
-            font-size: 0.9em;
-            padding: 8px 12px;
-        }
-        
-        /* Hidden class */
-        .hidden {
-            display: none !important;
-        }
-    </style>
 </body>
 </html>
