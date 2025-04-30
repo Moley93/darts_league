@@ -6,6 +6,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Score Input - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Cup round dropdown styling when disabled */
+        #cup-round-container.disabled-field {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        #cup-round-container {
+            transition: opacity 0.3s ease;
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -61,6 +72,16 @@
                         <select id="match-type">
                             <option value="league">League</option>
                             <option value="cup">Cup</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="cup-round-container">
+                        <label for="cup-round">Cup Round</label>
+                        <select id="cup-round" disabled>
+                            <option value="">Select Cup Round</option>
+                            <option value="Last 16">Last 16</option>
+                            <option value="Quarter Final">Quarter Final</option>
+                            <option value="Semi Final">Semi Final</option>
+                            <option value="Final">Final</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -119,7 +140,6 @@
                 return [];
             }
         }
-
         async function postApi(endpoint, data) {
             try {
                 console.log(`Sending ${endpoint} request:`, data);
@@ -154,6 +174,27 @@
 
         // Wait for DOM to be fully loaded before adding event listeners
         document.addEventListener('DOMContentLoaded', function() {
+            // Setup the match type and cup round relationship
+            const matchTypeSelect = document.getElementById('match-type');
+            const cupRoundSelect = document.getElementById('cup-round');
+            const cupRoundContainer = document.getElementById('cup-round-container');
+            
+            // Apply initial state - disable cup round by default
+            cupRoundContainer.classList.add('disabled-field');
+            cupRoundSelect.disabled = true;
+            
+            // Add event listener to match type dropdown
+            matchTypeSelect.addEventListener('change', function() {
+                if (this.value === 'cup') {
+                    cupRoundSelect.disabled = false;
+                    cupRoundContainer.classList.remove('disabled-field');
+                } else {
+                    cupRoundSelect.disabled = true;
+                    cupRoundSelect.value = '';
+                    cupRoundContainer.classList.add('disabled-field');
+                }
+            });
+            
             // Login form handling
             const loginForm = document.getElementById('login-form-element');
             if (loginForm) {
@@ -266,7 +307,6 @@
                     awaySelect.add(new Option(team.team_name, team.team_name));
                 }
             });
-            
             // Restore previously selected values if they're still valid
             if (currentHomeValue && teams.some(t => t.team_name === currentHomeValue && t.team_name !== currentAwayValue)) {
                 homeSelect.value = currentHomeValue;
@@ -689,7 +729,8 @@
                     <option value="">Select Player</option>
                 </select>
                 <input type="number" class="one-eighty-count" value="1" min="1" placeholder="Number of 180s">
-                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' :
+                ''}
             `;
             
             // Add before the add button
@@ -767,7 +808,8 @@
             
             if (homeTeam) {
                 const homePlayers = await fetchApi('players', { team_name: homeTeam });
-                homePlayers.forEach(player => {select.add(new Option(`${player.player_name} (${homeTeam})`, player.player_name));
+                homePlayers.forEach(player => {
+                    select.add(new Option(`${player.player_name} (${homeTeam})`, player.player_name));
                 });
             }
             
@@ -793,6 +835,16 @@
                 oneEighties: [],
                 highFinishes: []
             };
+            
+            // Add cup round if it's a cup match
+            if (matchData.matchType === 'cup') {
+                const cupRound = document.getElementById('cup-round').value;
+                if (!cupRound) {
+                    alert('Please select a Cup Round for cup matches.');
+                    return;
+                }
+                matchData.cupRound = cupRound;
+            }
             
             // Validate required fields
             if (!matchData.division || !matchData.matchType || !matchData.homeTeam || !matchData.awayTeam) {
@@ -880,6 +932,10 @@
                 // Reset team selections to clear players
                 document.getElementById('home-team').value = '';
                 document.getElementById('away-team').value = '';
+                // Reset and disable cup round selection
+                document.getElementById('cup-round').value = '';
+                document.getElementById('cup-round').disabled = true;
+                document.getElementById('cup-round-container').classList.add('disabled-field');
                 updateTeamOptions();
             } else {
                 alert('Error submitting match: ' + (result.error || 'Unknown error'));
