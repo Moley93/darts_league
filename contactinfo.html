@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Venues & Contactsrmation - Crawley Darts League - Friday</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles for contact page */
+        .contact-section {
+            margin-bottom: 40px;
+        }
+
+        .contact-section h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        /* Tables with consistent styling */
+        .contact-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .contact-table thead {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .contact-table th, .contact-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+
+        .contact-table tbody tr:hover {
+            background-color: var(--light-gray);
+            transition: background-color 0.3s ease;
+        }
+
+        /* Responsive tables */
+        @media screen and (max-width: 768px) {
+            .contact-table {
+                display: block;
+                overflow-x: auto;
+            }
+        }
+
+        /* Login message and button */
+        .login-info {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--success);
+        }
+
+        .login-info p {
+            margin: 0;
+        }
+
+        .login-button {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 10px;
+            transition: background-color 0.3s ease;
+        }
+
+        .login-button:hover {
+            background-color: var(--secondary);
+        }
+
+        /* Hidden phone numbers (to be revealed when logged in) */
+        .phone-hidden {
+            display: none;
+        }
+
+        /* GDPR notice */
+        .gdpr-notice {
+            font-size: 0.9em;
+            background-color: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 5px;
+            border-left: 4px solid var(--accent);
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Crawley Darts League - Friday</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Homepage</a></li>
+            <li><a href="leaguetable.html">League Table</a></li>
+            <li><a href="playerrankings.html">Player Rankings</a></li>
+            <li><a href="leaguefixtures.html">League Fixtures</a></li>
+            <li><a href="leagueresults.html">League Results</a></li>
+            <li><a href="cupfixtures.html">Cup Fixtures</a></li>
+            <li><a href="cupresults.html">Cup Results</a></li>
+            <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+            <li><a href="contactinfo.html" class="active">Venues & Contacts</a></li>
+            <li><a href="scoreinput.html">Score Input</a></li>
+            <li><a href="editscores.html">Edit Scores</a></li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Venues & Contactsrmation Page -->
+        <div id="contact-info" class="page">
+            <div class="card">
+                <h1>Venues & Contactsrmation</h1>
+                
+                <!-- Venue Information Section -->
+                <div class="contact-section">
+                    <h2>Venue Information</h2>
+                    <table class="contact-table">
+                        <thead>
+                            <tr>
+                                <th>Venue Name</th>
+                                <th>Address</th>
+                                <th>Phone Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>The Grasshopper</td>
+                                <td>22 Ashdown Drive, Crawley, RH10 6QY</td>
+                                <td>01293 510981</td>
+                            </tr>
+                            <tr>
+                                <td>Jubilee Club</td>
+                                <td>37 Brighton Road, Crawley, RH10 6AE</td>
+                                <td>01293 884765</td>
+                            </tr>
+                            <tr>
+                                <td>Crawley Rugby Club</td>
+                                <td>Ifield Avenue, Crawley, RH11 0LF</td>
+                                <td>01293 524055</td>
+                            </tr>
+                            <tr>
+                                <td>The Pelham</td>
+                                <td>108 Hollybush Road, Crawley, RH10 8DH</td>
+                                <td>01293 515638</td>
+                            </tr>
+                            <tr>
+                                <td>APV Club</td>
+                                <td>Crawley Lane, Crawley, RH10 7EA</td>
+                                <td>01293 522977</td>
+                            </tr>
+                            <tr>
+                                <td>The Dingles</td>
+                                <td>42 Station Road, Crawley, RH10 1EG</td>
+                                <td>01293 562410</td>
+                            </tr>
+                            <tr>
+                                <td>Ewhurst Arms</td>
+                                <td>17 Ewhurst Road, Crawley, RH10 3JA</td>
+                                <td>01293 547398</td>
+                            </tr>
+                            <tr>
+                                <td>Johnson's Bar</td>
+                                <td>85 High Street, Crawley, RH10 5BD</td>
+                                <td>01293 538921</td>
+                            </tr>
+                            <tr>
+                                <td>Dark Side Lounge</td>
+                                <td>132 London Road, Crawley, RH10 8JT</td>
+                                <td>01293 563274</td>
+                            </tr>
+                            <tr>
+                                <td>The Rebels Inn</td>
+                                <td>24 Manor Road, Crawley, RH10 9PQ</td>
+                                <td>01293 582164</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Team Information Section -->
+                <div class="contact-section">
+                    <h2>Team Information</h2>
+                    
+                    <div class="login-info" id="login-required-notice">
+                        <p><strong>Notice:</strong> Team secretary contact details are only visible to team captains for GDPR reasons.</p>
+                        <a href="scoreinput.html" class="login-button">Log in as Captain</a>
+                    </div>
+                    
+                    <div id="logged-in-notice" class="login-info hidden">
+                        <p><strong>Logged in:</strong> Secretary contact details are now visible.</p>
+                    </div>
+                    
+                    <table class="contact-table" id="team-contact-table">
+                        <thead>
+                            <tr>
+                                <th>Team</th>
+                                <th>Venue</th>
+                                <th>Secretary</th>
+                                <th>Contact Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>The Unbearables</td>
+                                <td>Dark Side Lounge</td>
+                                <td>John Smith</td>
+                                <td class="phone-hidden">07912 345678</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Jubilee Club</td>
+                                <td>Jubilee Club</td>
+                                <td>Tom Wilson</td>
+                                <td class="phone-hidden">07823 456789</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Rebels</td>
+                                <td>The Rebels Inn</td>
+                                <td>Peter Moore</td>
+                                <td class="phone-hidden">07734 567890</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Dark Side Of The Moon</td>
+                                <td>Dark Side Lounge</td>
+                                <td>Matthew Adams</td>
+                                <td class="phone-hidden">07645 678901</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Dartbreakers</td>
+                                <td>The Grasshopper</td>
+                                <td>George Evans</td>
+                                <td class="phone-hidden">07556 789012</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Rugby Club</td>
+                                <td>Crawley Rugby Club</td>
+                                <td>Carl Bailey</td>
+                                <td class="phone-hidden">07467 890123</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Grasshopper</td>
+                                <td>The Grasshopper</td>
+                                <td>Stephen James</td>
+                                <td class="phone-hidden">07378 901234</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Ewhurst Arrows</td>
+                                <td>Ewhurst Arms</td>
+                                <td>Philip Butler</td>
+                                <td class="phone-hidden">07289 012345</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Dingles</td>
+                                <td>The Dingles</td>
+                                <td>Allen Myers</td>
+                                <td class="phone-hidden">07190 123456</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Johnson</td>
+                                <td>Johnson's Bar</td>
+                                <td>Edwin Owens</td>
+                                <td class="phone-hidden">07801 234567</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Disappointers</td>
+                                <td>APV Club</td>
+                                <td>Dale Gomez</td>
+                                <td class="phone-hidden">07712 345678</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>APV</td>
+                                <td>APV Club</td>
+                                <td>Harold Hicks</td>
+                                <td class="phone-hidden">07623 456789</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Ewhurst Woodys</td>
+                                <td>Ewhurst Arms</td>
+                                <td>Neil Reyes</td>
+                                <td class="phone-hidden">07534 567890</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                            <tr>
+                                <td>Pelham</td>
+                                <td>The Pelham</td>
+                                <td>Hubert Palmer</td>
+                                <td class="phone-hidden">07445 678901</td>
+                                <td class="phone-placeholder">Login required</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="gdpr-notice">
+                        <p>In accordance with GDPR regulations, team secretary personal Venues & Contactsrmation is only accessible to registered team captains who have logged in.</p>
+                    </div>
+                </div>
+                
+                <!-- Committee Information Section -->
+                <div class="contact-section">
+                    <h2>Committee Information</h2>
+                    <table class="contact-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Email</th>
+                                <th>Phone Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>David Miller</td>
+                                <td>League Chairman</td>
+                                <td><a href="mailto:chairman@crawleydartsleague.co.uk">chairman@crawleydartsleague.co.uk</a></td>
+                                <td>07923 456789</td>
+                            </tr>
+                            <tr>
+                                <td>Mike Johnson</td>
+                                <td>League Secretary</td>
+                                <td><a href="mailto:secretary@crawleydartsleague.co.uk">secretary@crawleydartsleague.co.uk</a></td>
+                                <td>07834 567890</td>
+                            </tr>
+                            <tr>
+                                <td>Sarah Thompson</td>
+                                <td>Treasurer</td>
+                                <td><a href="mailto:treasurer@crawleydartsleague.co.uk">treasurer@crawleydartsleague.co.uk</a></td>
+                                <td>07745 678901</td>
+                            </tr>
+                            <tr>
+                                <td>James Wilson</td>
+                                <td>Results Secretary</td>
+                                <td><a href="mailto:results@crawleydartsleague.co.uk">results@crawleydartsleague.co.uk</a></td>
+                                <td>07656 789012</td>
+                            </tr>
+                            <tr>
+                                <td>Patricia Harris</td>
+                                <td>Cup Competitions Organizer</td>
+                                <td><a href="mailto:cup@crawleydartsleague.co.uk">cup@crawleydartsleague.co.uk</a></td>
+                                <td>07567 890123</td>
+                            </tr>
+                            <tr>
+                                <td>Robert Brown</td>
+                                <td>Fixture Secretary</td>
+                                <td><a href="mailto:fixtures@crawleydartsleague.co.uk">fixtures@crawleydartsleague.co.uk</a></td>
+                                <td>07478 901234</td>
+                            </tr>
+                            <tr>
+                                <td>Emma Lewis</td>
+                                <td>Social Events Coordinator</td>
+                                <td><a href="mailto:events@crawleydartsleague.co.uk">events@crawleydartsleague.co.uk</a></td>
+                                <td>07389 012345</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if user is logged in as a captain
+        document.addEventListener('DOMContentLoaded', function() {
+            // The checkLogin function attempts to verify if a user is logged in
+            // For demo purposes, we'll check if there's a login token in localStorage
+            // In a real implementation, this would involve proper session verification
+            function checkLogin() {
+                // This is a simplified check - in reality you would verify this with the server
+                const isLoggedIn = localStorage.getItem('captainLoggedIn') === 'true';
+                
+                if (isLoggedIn) {
+                    // Show phone numbers and hide placeholders
+                    document.querySelectorAll('.phone-hidden').forEach(element => {
+                        element.style.display = 'table-cell';
+                    });
+                    
+                    document.querySelectorAll('.phone-placeholder').forEach(element => {
+                        element.style.display = 'none';
+                    });
+                    
+                    // Hide login notice and show logged-in notice
+                    document.getElementById('login-required-notice').classList.add('hidden');
+                    document.getElementById('logged-in-notice').classList.remove('hidden');
+                }
+            }
+            
+            // Check login status when page loads
+            checkLogin();
+            
+            // Add event listener for the login button
+            const loginButton = document.querySelector('.login-button');
+            if (loginButton) {
+                loginButton.addEventListener('click', function(e) {
+                    // For demo purposes, we'll just navigate to the login page
+                    // The actual login handling would be done on that page
+                    // window.location.href = 'scoreinput.html';
+                });
+            }
+        });
+        
+        // Function to handle login events
+        // In reality, this would be triggered after successful login from the login page
+        window.addEventListener('storage', function(e) {
+            // Listen for login state changes
+            if (e.key === 'captainLoggedIn') {
+                checkLogin();
+            }
+        });
+    </script>
+</body>
+</html>
