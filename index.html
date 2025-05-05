@@ -4,37 +4,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League Table - Crawley Darts League - Friday</title>
+    <title>Crawley Darts League - Friday</title>
     <link rel="stylesheet" href="styles.css">
     <style>
-        /* Additional styles for even table column spacing */
-        #league-table table {
-            table-layout: fixed;
-            width: 100%;
-        }
-        
-        #league-table th, #league-table td {
+        /* Homepage specific styles */
+        .welcome-section {
+            background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(26, 35, 126, 0.7)), url('darts-bg.jpg');
+            background-size: cover;
+            background-position: center;
+            color: white;
             text-align: center;
-            padding: 12px 8px;
+            padding: 40px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        /* Make team name left-aligned */
-        #league-table th:nth-child(2), 
-        #league-table td:nth-child(2) {
-            text-align: left;
-            width: 30%;
+        .welcome-section h2 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
         }
         
-        /* Position column is narrower */
-        #league-table th:first-child, 
-        #league-table td:first-child {
-            width: 10%;
+        .welcome-section p {
+            font-size: 1.1rem;
+            max-width: 800px;
+            margin: 0 auto;
         }
         
-        /* Other columns get equal space */
-        #league-table th:not(:first-child):not(:nth-child(2)), 
-        #league-table td:not(:first-child):not(:nth-child(2)) {
-            width: 10%;
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-link {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .quick-link:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .quick-link h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .quick-link a {
+            display: inline-block;
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 500;
+            padding: 8px 15px;
+            border-radius: 4px;
+            border: 1px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .quick-link a:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .announcements {
+            margin-bottom: 20px;
+        }
+        
+        .announcement {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .announcement .date {
+            color: var(--dark-gray);
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+        
+        .announcement h3 {
+            color: var(--primary);
+            margin: 5px 0 10px;
+        }
+        
+        .upcoming-matches {
+            margin-bottom: 20px;
+        }
+        
+        .match-preview {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .match-date {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .versus {
+            font-weight: bold;
+            padding: 0 10px;
+            color: var(--primary);
+        }
+        
+        .contact-info {
+            text-align: center;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        
+        .contact-info h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .contact-info p {
+            margin-bottom: 10px;
+        }
+        
+        .contact-info a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .contact-info a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Featured section */
+        .featured {
+            margin-bottom: 20px;
+        }
+        
+        .featured-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .featured-card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .featured-card .featured-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 10px;
+        }
+        
+        .featured-card .featured-team {
+            font-style: italic;
+            margin-bottom: 15px;
+        }
+        
+        .featured-card .featured-stats {
+            margin-bottom: 15px;
+        }
+        
+        .featured-card .featured-desc {
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        /* Responsive styles for homepage */
+        @media (max-width: 768px) {
+            .match-preview {
+                flex-direction: column;
+                text-align: center;
+                gap: 10px;
+            }
+            
+            .match-date {
+                margin-bottom: 10px;
+            }
         }
     </style>
 </head>
@@ -57,5 +226,79 @@
             <li><a href="editscores.html">Edit Scores</a></li>
         </ul>
     </nav>
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <section class="welcome-section">
+            <h2>Welcome to the Crawley Darts League</h2>
+            <p>Established local darts league featuring Premier and A Divisions. Matches played on Friday evenings at venues across Crawley.</p>
+        </section>
+        
+        <!-- Quick Links -->
+        <section class="quick-links">
+            <div class="quick-link">
+                <h3>League Tables</h3>
+                <p>View the current standings in both Premier and A Divisions.</p>
+                <br>
+                <a href="leaguetable.html">View Tables</a>
+            </div>
+            <div class="quick-link">
+                <h3>Upcoming Fixtures</h3>
+                <p>Check when and where your team plays next.</p>
+                <br>
+                <a href="leaguefixtures.html">View Fixtures</a>
+            </div>
+            <div class="quick-link">
+                <h3>Player Rankings</h3>
+                <p>See who's leading the individual rankings this season.</p>
+                <br>
+                <a href="playerrankings.html">View Rankings</a>
+            </div>
+            <div class="quick-link">
+                <h3>Latest Results</h3>
+                <p>Catch up on the most recent match results.</p>
+                <br>
+                <a href="leagueresults.html">View Results</a>
+            </div>
+        </section>
+        
+        <!-- Announcements Section -->
+        <section class="announcements card">
+            <h2>League Announcements</h2>
+            
+            <div class="announcement">
+                <div class="date">May 3, 2025</div>
+                <h3>Quarter Finals Draw Complete</h3>
+                <p>The draw for the cup quarter finals has been completed. Please check the Cup Fixtures page for details of your next match. All quarter final matches must be played by May 17th.</p>
+            </div>
+            
+            <div class="announcement">
+                <div class="date">April 25, 2025</div>
+                <h3>Score Entry Reminder</h3>
+                <p>Home team captains are reminded to submit match scores within 48 hours of the match being played. This ensures league tables and player rankings are kept up to date.</p>
+            </div>
+            
+            <div class="announcement">
+                <div class="date">April 10, 2025</div>
+                <h3>End of Season Presentation Night</h3>
+                <p>Our end of season presentation night will be held at The Grasshopper on Friday, June 6th at 7:30pm. Tickets are available from your team captain - £10 including buffet.</p>
+            </div>
+        </section>
+                    
+        <!-- Contact Information -->
+        <section class="contact-info">
+            <h2>Contact Information</h2>
+            <p>League Secretary: Mike Johnson</p>
+            <p>Email: <a href="mailto:secretary@crawleydartsleague.co.uk">secretary@crawleydartsleague.co.uk</a></p>
+            <p>League Chairman: David Miller</p>
+            <p>Email: <a href="mailto:chairman@crawleydartsleague.co.uk">chairman@crawleydartsleague.co.uk</a></p>
+            <p>For result queries: <a href="mailto:results@crawleydartsleague.co.uk">results@crawleydartsleague.co.uk</a></p>
+        </section>
+    </div>
+
+    <script>
+        // You can add JavaScript for dynamic content loading here
+        // For example, to fetch and display the latest announcements or upcoming matches from an API
+    </script>
 </body>
 </html>
