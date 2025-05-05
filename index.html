@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League Table - Crawley Darts League</title>
+    <title>League Table - Crawley Darts League - Friday</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Additional styles for even table column spacing */
@@ -40,12 +40,13 @@
 </head>
 <body>
     <header class="header">
-        <h1>Crawley Darts League</h1>
+        <h1>Crawley Darts League - Friday</h1>
     </header>
 
     <nav class="nav">
         <ul>
-            <li><a href="index.html" class="active">League Table</a></li>
+            <li><a href="index.html" class="active">Homepage</a></li>
+            <li><a href="leaguetable.html">League Table</a></li>
             <li><a href="playerrankings.html">Player Rankings</a></li>
             <li><a href="leaguefixtures.html">League Fixtures</a></li>
             <li><a href="leagueresults.html">League Results</a></li>
@@ -56,97 +57,5 @@
             <li><a href="editscores.html">Edit Scores</a></li>
         </ul>
     </nav>
-
-    <div class="container">
-        <!-- League Table Page -->
-        <div id="league-table" class="page">
-            <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Team</th>
-                            <th>P</th>
-                            <th>W</th>
-                            <th>L</th>
-                            <th>F</th>
-                            <th>A</th>
-                            <th>Pts</th>
-                        </tr>
-                    </thead>
-                    <tbody id="league-table-body">
-                        <!-- Dynamic content will be loaded here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
-        }
-
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                loadLeagueTable(division);
-            });
-        });
-
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
-            try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
-            }
-        }
-
-        async function loadLeagueTable(division) {
-            const data = await fetchApi('league-table', { division });
-            const tbody = document.getElementById('league-table-body');
-            tbody.innerHTML = '';
-            
-            // Filter out the "Bye" teams
-            const filteredData = data.filter(team => team.team_name !== 'Bye' && team.team_name !== 'Division A Bye');
-            
-            filteredData.forEach((team, index) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${team.team_name}</td>
-                    <td>${team.played}</td>
-                    <td>${team.won}</td>
-                    <td>${team.lost}</td>
-                    <td>${team.games_for}</td>
-                    <td>${team.games_against}</td>
-                    <td>${team.points}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-
-        // Initially load the league table
-        loadLeagueTable(getCurrentDivision());
-    </script>
 </body>
 </html>
