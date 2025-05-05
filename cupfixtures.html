@@ -6,6 +6,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cup Fixtures - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Cup bracket styles */
+        .bracket-container {
+            overflow-x: auto;
+            padding: 20px 0;
+            margin-top: 20px;
+        }
+        
+        .tournament-bracket {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-around;
+            min-width: 800px; /* Ensure minimum width for desktop */
+        }
+        
+        .round {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 200px;
+            margin: 0 10px;
+        }
+        
+        .round-title {
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        .match {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: white;
+        }
+        
+        .team {
+            padding: 10px;
+            text-align: center;
+            position: relative;
+        }
+        
+        .team:first-child {
+            border-bottom: 1px solid #eee;
+        }
+        
+        .team.winner {
+            font-weight: bold;
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .team.tbd {
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* Match connectors */
+        .match::after {
+            content: '';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            width: 20px;
+            height: 2px;
+            background-color: #ccc;
+        }
+        
+        .round:last-child .match::after {
+            display: none;
+        }
+        
+        .match-date {
+            font-size: 0.7em;
+            text-align: center;
+            color: var(--dark-gray);
+            padding: 3px 0;
+            background-color: #f5f5f5;
+        }
+        
+        .match-venue {
+            font-size: 0.7em;
+            text-align: center;
+            color: var(--dark-gray);
+            padding: 3px 0;
+            border-top: 1px solid #eee;
+        }
+        
+        .final-winner-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .final-winner {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: bold;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        
+        .match-score {
+            position: absolute;
+            right: 8px;
+            font-weight: bold;
+        }
+        
+        .champion-trophy {
+            font-size: 2em;
+            margin-right: 10px;
+            color: gold;
+        }
+        
+        /* For vertical connectors */
+        .connector-wrapper {
+            position: relative;
+            flex: 1;
+        }
+        
+        .connector {
+            position: absolute;
+            left: -10px;
+            width: 2px;
+            background-color: #ccc;
+        }
+        
+        .connector.top {
+            top: 0;
+            height: 50%;
+            border-bottom-right-radius: 10px;
+            border-bottom: 2px solid #ccc;
+        }
+        
+        .connector.bottom {
+            bottom: 0;
+            height: 50%;
+            border-top-right-radius: 10px;
+            border-top: 2px solid #ccc;
+        }
+        
+        /* Round spacing adjustments */
+        .round-last16 .match {
+            margin-bottom: 15px;
+        }
+        
+        .round-quarters .match {
+            margin-bottom: 60px;
+        }
+        
+        .round-semis .match {
+            margin-bottom: 140px;
+        }
+        
+        /* Responsive adjustments */
+        @media screen and (max-width: 900px) {
+            .tournament-bracket {
+                min-width: 750px;
+            }
+            
+            .round {
+                width: 180px;
+            }
+        }
+    </style>
 </head>
 <body>
     <header class="header">
@@ -37,12 +209,238 @@
                     <button data-division="a">A Division</button>
                 </div>
                 
-                <div id="premier-cup-fixtures" class="iframe-container">
-                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRsttr-oTPRiXeFfi1dp7eZi5IGmvIjOkhxyGoTzWd5YfCQdWANcixrfr6IrmawfQ52YBOJ_s1KWK1D/pubhtml?widget=true&amp;headers=false"></iframe>
+                <!-- Premier Division Cup Bracket -->
+                <div id="premier-cup-fixtures" class="bracket-container">
+                    <div class="tournament-bracket">
+                        <!-- Last 16 Round -->
+                        <div class="round round-last16">
+                            <div class="round-title">Last 16</div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team winner">The Unbearables<span class="match-score">5</span></div>
+                                <div class="team">Jubilee Club<span class="match-score">4</span></div>
+                                <div class="match-venue">Dark Side Lounge</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team">Rebels<span class="match-score">3</span></div>
+                                <div class="team winner">Dark Side Of The Moon<span class="match-score">6</span></div>
+                                <div class="match-venue">The Rebels Inn</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team winner">Dartbreakers<span class="match-score">6</span></div>
+                                <div class="team">Rugby Club<span class="match-score">3</span></div>
+                                <div class="match-venue">The Grasshopper</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team">Grasshopper<span class="match-score">4</span></div>
+                                <div class="team winner">Ewhurst Arrows<span class="match-score">5</span></div>
+                                <div class="match-venue">The Grasshopper</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team winner">Dingles<span class="match-score">6</span></div>
+                                <div class="team">Johnson<span class="match-score">3</span></div>
+                                <div class="match-venue">The Dingles</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team">Disappointers<span class="match-score">2</span></div>
+                                <div class="team winner">APV<span class="match-score">7</span></div>
+                                <div class="match-venue">APV Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 2, 2025</div>
+                                <div class="team winner">Ewhurst Woodys<span class="match-score">5</span></div>
+                                <div class="team">Pelham<span class="match-score">4</span></div>
+                                <div class="match-venue">Ewhurst Arms</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date"></div>
+                                <div class="team tbd">TBD</div>
+                                <div class="team tbd">TBD</div>
+                                <div class="match-venue"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quarter Finals -->
+                        <div class="round round-quarters">
+                            <div class="round-title">Quarter Finals</div>
+                            <div class="match">
+                                <div class="match-date">May 16, 2025</div>
+                                <div class="team winner">The Unbearables<span class="match-score">6</span></div>
+                                <div class="team">Dark Side Of The Moon<span class="match-score">3</span></div>
+                                <div class="match-venue">Dark Side Lounge</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 16, 2025</div>
+                                <div class="team">Dartbreakers<span class="match-score">4</span></div>
+                                <div class="team winner">Ewhurst Arrows<span class="match-score">5</span></div>
+                                <div class="match-venue">The Grasshopper</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 16, 2025</div>
+                                <div class="team winner">Dingles<span class="match-score">6</span></div>
+                                <div class="team">APV<span class="match-score">3</span></div>
+                                <div class="match-venue">The Dingles</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 16, 2025</div>
+                                <div class="team">Ewhurst Woodys<span class="match-score">4</span></div>
+                                <div class="team winner">Grasshopper<span class="match-score">5</span></div>
+                                <div class="match-venue">Ewhurst Arms</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Semi Finals -->
+                        <div class="round round-semis">
+                            <div class="round-title">Semi Finals</div>
+                            <div class="match">
+                                <div class="match-date">May 27, 2025</div>
+                                <div class="team">The Unbearables<span class="match-score">TBD</span></div>
+                                <div class="team">Ewhurst Arrows<span class="match-score">TBD</span></div>
+                                <div class="match-venue">Dark Side Lounge</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 27, 2025</div>
+                                <div class="team">Dingles<span class="match-score">TBD</span></div>
+                                <div class="team">Grasshopper<span class="match-score">TBD</span></div>
+                                <div class="match-venue">The Dingles</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Final -->
+                        <div class="round">
+                            <div class="round-title">Final</div>
+                            <div class="round-matches">
+                                <div class="match">
+                                    <div class="match-date">June 13, 2025</div>
+                                    <div class="team tbd">TBD</div>
+                                    <div class="team tbd">TBD</div>
+                                    <div class="match-venue">Crawley Rugby Club</div>
+                                </div>
+                            </div>
+                            <!-- Trophy will appear here after the final -->
+                        </div>
+                    </div>
                 </div>
                 
-                <div id="a-cup-fixtures" class="iframe-container hidden">
-                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQ39YxHlpGlZ6cP3jbkmtVQkl2DCVMLdaqb0KXKtaD3qnTdxpWxVkCJBVr4MYnCkS8Acf9a2Nj_3RJ-/pubhtml?widget=true&amp;headers=false"></iframe>
+                <!-- A Division Cup Bracket -->
+                <div id="a-cup-fixtures" class="bracket-container hidden">
+                    <div class="tournament-bracket">
+                        <!-- Last 16 Round -->
+                        <div class="round round-last16">
+                            <div class="round-title">Last 16</div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team winner">Ewhurst Arrows<span class="match-score">5</span></div>
+                                <div class="team">Dingles<span class="match-score">4</span></div>
+                                <div class="match-venue">Ewhurst Arms</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team">Johnson<span class="match-score">3</span></div>
+                                <div class="team winner">Disappointers<span class="match-score">6</span></div>
+                                <div class="match-venue">Johnson's Bar</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team winner">APV<span class="match-score">6</span></div>
+                                <div class="team">Ewhurst Woodys<span class="match-score">3</span></div>
+                                <div class="match-venue">APV Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team">Pelham<span class="match-score">4</span></div>
+                                <div class="team winner">The Unbearables<span class="match-score">5</span></div>
+                                <div class="match-venue">The Pelham</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team winner">Jubilee Club<span class="match-score">6</span></div>
+                                <div class="team">Rebels<span class="match-score">3</span></div>
+                                <div class="match-venue">Jubilee Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team">Dark Side Of The Moon<span class="match-score">2</span></div>
+                                <div class="team winner">Dartbreakers<span class="match-score">7</span></div>
+                                <div class="match-venue">Dark Side Lounge</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 3, 2025</div>
+                                <div class="team winner">Rugby Club<span class="match-score">5</span></div>
+                                <div class="team">Grasshopper<span class="match-score">4</span></div>
+                                <div class="match-venue">Crawley Rugby Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date"></div>
+                                <div class="team tbd">TBD</div>
+                                <div class="team tbd">TBD</div>
+                                <div class="match-venue"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quarter Finals -->
+                        <div class="round round-quarters">
+                            <div class="round-title">Quarter Finals</div>
+                            <div class="match">
+                                <div class="match-date">May 17, 2025</div>
+                                <div class="team winner">Ewhurst Arrows<span class="match-score">6</span></div>
+                                <div class="team">Disappointers<span class="match-score">3</span></div>
+                                <div class="match-venue">Ewhurst Arms</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 17, 2025</div>
+                                <div class="team">APV<span class="match-score">4</span></div>
+                                <div class="team winner">The Unbearables<span class="match-score">5</span></div>
+                                <div class="match-venue">APV Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 17, 2025</div>
+                                <div class="team winner">Jubilee Club<span class="match-score">6</span></div>
+                                <div class="team">Dartbreakers<span class="match-score">3</span></div>
+                                <div class="match-venue">Jubilee Club</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 17, 2025</div>
+                                <div class="team">Rugby Club<span class="match-score">4</span></div>
+                                <div class="team winner">Dingles<span class="match-score">5</span></div>
+                                <div class="match-venue">Crawley Rugby Club</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Semi Finals -->
+                        <div class="round round-semis">
+                            <div class="round-title">Semi Finals</div>
+                            <div class="match">
+                                <div class="match-date">May 28, 2025</div>
+                                <div class="team">Ewhurst Arrows<span class="match-score">TBD</span></div>
+                                <div class="team">The Unbearables<span class="match-score">TBD</span></div>
+                                <div class="match-venue">Ewhurst Arms</div>
+                            </div>
+                            <div class="match">
+                                <div class="match-date">May 28, 2025</div>
+                                <div class="team">Jubilee Club<span class="match-score">TBD</span></div>
+                                <div class="team">Dingles<span class="match-score">TBD</span></div>
+                                <div class="match-venue">Jubilee Club</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Final -->
+                        <div class="round">
+                            <div class="round-title">Final</div>
+                            <div class="match">
+                                <div class="match-date">June 14, 2025</div>
+                                <div class="team tbd">TBD</div>
+                                <div class="team tbd">TBD</div>
+                                <div class="match-venue">Crawley Rugby Club</div>
+                            </div>
+                            <!-- Trophy will appear here after the final -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -57,7 +455,7 @@
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                // Toggle fixture display based on division
+                // Toggle bracket display based on division
                 if (division === 'premier') {
                     document.getElementById('premier-cup-fixtures').classList.remove('hidden');
                     document.getElementById('a-cup-fixtures').classList.add('hidden');
@@ -67,6 +465,55 @@
                 }
             });
         });
+
+        // API configuration for potential future integration
+        const API_URL = 'api.php';
+
+        // API functions - ready for future implementation
+        async function fetchApi(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
+            
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
+            }
+        }
+        
+        // Function to load cup fixtures data - ready for future implementation
+        async function loadCupFixtures(division) {
+            try {
+                const data = await fetchApi('cup-fixtures', { division });
+                
+                // Parse the fixture data
+                const fixtures = {};
+                
+                // Group fixtures by round
+                data.forEach(fixture => {
+                    const round = fixture.cup_round || 'Unknown';
+                    if (!fixtures[round]) {
+                        fixtures[round] = [];
+                    }
+                    fixtures[round].push(fixture);
+                });
+                
+                // Update the UI with the fixture data
+                const bracketContainer = document.getElementById(`${division}-cup-fixtures`);
+                
+                // More implementation would go here based on actual API data structure
+                
+            } catch (error) {
+                console.error('Error loading cup fixtures:', error);
+            }
+        }
+        
+        // Uncomment to enable API integration
+        // document.addEventListener('DOMContentLoaded', () => {
+        //     loadCupFixtures('premier');
+        // });
     </script>
 </body>
 </html>
