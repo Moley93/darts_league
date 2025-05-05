@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Venues & Contactsrmation - Crawley Darts League - Friday</title>
+    <title>Venues & Contacts - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Additional styles for contact page */
@@ -73,13 +73,14 @@
             text-decoration: none;
             margin-top: 10px;
             transition: background-color 0.3s ease;
+            cursor: pointer;
         }
 
         .login-button:hover {
             background-color: var(--secondary);
         }
 
-        /* Hidden phone numbers (to be revealed when logged in) */
+        /* Phone numbers (to be revealed when logged in) */
         .phone-hidden {
             display: none;
         }
@@ -93,11 +94,61 @@
             border-left: 4px solid var(--accent);
             margin-top: 15px;
         }
+        
+        /* Login modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            width: 80%;
+            max-width: 400px;
+        }
+        
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .close:hover {
+            color: black;
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            display: none;
+            width: 40px;
+            height: 40px;
+            margin: 10px auto;
+            border: 4px solid rgba(0,0,0,0.1);
+            border-left-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <header class="header">
-        <h1>Crawley Darts League - Friday</h1>
+        <h1>Crawley Darts League</h1>
     </header>
 
     <nav class="nav">
@@ -117,10 +168,10 @@
     </nav>
 
     <div class="container">
-        <!-- Venues & Contactsrmation Page -->
+        <!-- Venues & Contacts Page -->
         <div id="contact-info" class="page">
             <div class="card">
-                <h1>Venues & Contactsrmation</h1>
+                <h1>Venues & Contacts</h1>
                 
                 <!-- Venue Information Section -->
                 <div class="contact-section">
@@ -194,11 +245,12 @@
                     
                     <div class="login-info" id="login-required-notice">
                         <p><strong>Notice:</strong> Team secretary contact details are only visible to team captains for GDPR reasons.</p>
-                        <a href="scoreinput.html" class="login-button">Log in as Captain</a>
+                        <button class="login-button" id="open-login-modal">Log in as Captain</button>
                     </div>
                     
                     <div id="logged-in-notice" class="login-info hidden">
                         <p><strong>Logged in:</strong> Secretary contact details are now visible.</p>
+                        <button class="login-button" id="logout-button">Log out</button>
                     </div>
                     
                     <table class="contact-table" id="team-contact-table">
@@ -313,7 +365,7 @@
                     </table>
                     
                     <div class="gdpr-notice">
-                        <p>In accordance with GDPR regulations, team secretary personal Venues & Contactsrmation is only accessible to registered team captains who have logged in.</p>
+                        <p>In accordance with GDPR regulations, team secretary personal contact information is only accessible to registered team captains who have logged in.</p>
                     </div>
                 </div>
                 
@@ -378,55 +430,206 @@
             </div>
         </div>
     </div>
+    
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Team Captain Login</h2>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <div id="login-error" style="color: red; margin-bottom: 10px; display: none;"></div>
+                <div class="spinner" id="login-spinner"></div>
+                <button type="submit" class="btn">Login</button>
+            </form>
+        </div>
+    </div>
 
     <script>
-        // Check if user is logged in as a captain
+        // API configuration
+        const API_URL = 'api.php'; // Change this to your actual API endpoint
+        
+        // DOM Elements
+        const loginModal = document.getElementById('login-modal');
+        const openLoginButton = document.getElementById('open-login-modal');
+        const closeModalButton = document.querySelector('.close');
+        const loginForm = document.getElementById('login-form');
+        const loginSpinner = document.getElementById('login-spinner');
+        const loginError = document.getElementById('login-error');
+        const logoutButton = document.getElementById('logout-button');
+        const loginRequiredNotice = document.getElementById('login-required-notice');
+        const loggedInNotice = document.getElementById('logged-in-notice');
+        
+        // Check if user is logged in on page load
         document.addEventListener('DOMContentLoaded', function() {
-            // The checkLogin function attempts to verify if a user is logged in
-            // For demo purposes, we'll check if there's a login token in localStorage
-            // In a real implementation, this would involve proper session verification
-            function checkLogin() {
-                // This is a simplified check - in reality you would verify this with the server
-                const isLoggedIn = localStorage.getItem('captainLoggedIn') === 'true';
-                
-                if (isLoggedIn) {
-                    // Show phone numbers and hide placeholders
-                    document.querySelectorAll('.phone-hidden').forEach(element => {
-                        element.style.display = 'table-cell';
-                    });
-                    
-                    document.querySelectorAll('.phone-placeholder').forEach(element => {
-                        element.style.display = 'none';
-                    });
-                    
-                    // Hide login notice and show logged-in notice
-                    document.getElementById('login-required-notice').classList.add('hidden');
-                    document.getElementById('logged-in-notice').classList.remove('hidden');
-                }
-            }
-            
-            // Check login status when page loads
             checkLogin();
             
-            // Add event listener for the login button
-            const loginButton = document.querySelector('.login-button');
-            if (loginButton) {
-                loginButton.addEventListener('click', function(e) {
-                    // For demo purposes, we'll just navigate to the login page
-                    // The actual login handling would be done on that page
-                    // window.location.href = 'scoreinput.html';
-                });
-            }
+            // Open login modal
+            openLoginButton.addEventListener('click', function() {
+                loginModal.style.display = 'block';
+                document.getElementById('username').focus();
+            });
+            
+            // Close login modal when clicking X
+            closeModalButton.addEventListener('click', function() {
+                loginModal.style.display = 'none';
+                resetLoginForm();
+            });
+            
+            // Close login modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === loginModal) {
+                    loginModal.style.display = 'none';
+                    resetLoginForm();
+                }
+            });
+            
+            // Logout button functionality
+            logoutButton.addEventListener('click', function() {
+                localStorage.removeItem('captainLoggedIn');
+                localStorage.removeItem('captainData');
+                checkLogin();
+            });
+            
+            // Login form submission
+            loginForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (!username || !password) {
+                    showLoginError('Please enter both username and password');
+                    return;
+                }
+                
+                try {
+                    showLoading(true);
+                    hideLoginError();
+                    
+                    const result = await postApi('login', { username, password });
+                    
+                    if (result && result.success) {
+                        // Store login state in localStorage
+                        localStorage.setItem('captainLoggedIn', 'true');
+                        localStorage.setItem('captainData', JSON.stringify(result.captain));
+                        
+                        // Close modal and update UI
+                        loginModal.style.display = 'none';
+                        resetLoginForm();
+                        checkLogin();
+                    } else {
+                        const errorMsg = result ? (result.error || 'Invalid username or password') : 'Login failed. Please try again.';
+                        showLoginError(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showLoginError('An error occurred during login. Please try again.');
+                } finally {
+                    showLoading(false);
+                }
+            });
         });
         
-        // Function to handle login events
-        // In reality, this would be triggered after successful login from the login page
-        window.addEventListener('storage', function(e) {
-            // Listen for login state changes
-            if (e.key === 'captainLoggedIn') {
-                checkLogin();
+        // Check login state and update UI
+        function checkLogin() {
+            const isLoggedIn = localStorage.getItem('captainLoggedIn') === 'true';
+            
+            if (isLoggedIn) {
+                // Show secretary phone numbers and hide placeholders
+                document.querySelectorAll('.phone-hidden').forEach(element => {
+                    element.style.display = 'table-cell';
+                });
+                
+                document.querySelectorAll('.phone-placeholder').forEach(element => {
+                    element.style.display = 'none';
+                });
+                
+                // Show logged-in notice and hide login notice
+                loginRequiredNotice.classList.add('hidden');
+                loggedInNotice.classList.remove('hidden');
+                
+                // Get captain data if available
+                const captainData = localStorage.getItem('captainData');
+                if (captainData) {
+                    try {
+                        const captain = JSON.parse(captainData);
+                        console.log('Logged in as captain for team:', captain.team_name);
+                    } catch (e) {
+                        console.error('Error parsing captain data');
+                    }
+                }
+            } else {
+                // Hide phone numbers and show placeholders
+                document.querySelectorAll('.phone-hidden').forEach(element => {
+                    element.style.display = 'none';
+                });
+                
+                document.querySelectorAll('.phone-placeholder').forEach(element => {
+                    element.style.display = 'table-cell';
+                });
+                
+                // Show login notice and hide logged-in notice
+                loginRequiredNotice.classList.remove('hidden');
+                loggedInNotice.classList.add('hidden');
             }
-        });
+        }
+        
+        // Reset login form
+        function resetLoginForm() {
+            loginForm.reset();
+            hideLoginError();
+            showLoading(false);
+        }
+        
+        // Show/hide loading spinner
+        function showLoading(show) {
+            loginSpinner.style.display = show ? 'block' : 'none';
+        }
+        
+        // Show login error message
+        function showLoginError(message) {
+            loginError.textContent = message;
+            loginError.style.display = 'block';
+        }
+        
+        // Hide login error message
+        function hideLoginError() {
+            loginError.style.display = 'none';
+        }
+        
+        // API functions
+        async function postApi(endpoint, data) {
+            try {
+                const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const responseText = await response.text();
+                
+                try {
+                    return JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('JSON Parse Error:', parseError);
+                    console.error('Response text:', responseText);
+                    return { success: false, error: 'Invalid response from server' };
+                }
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, error: error.message };
+            }
+        }
     </script>
 </body>
 </html>
