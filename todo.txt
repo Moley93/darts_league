@@ -1,7 +1,15 @@
-create new home page and league table seperate to display info/announcements
-
-create team tables for each team displaying player performance?
-
-captain/secretary/venue info locked behind login for GDPR reasons
-
 no show player assigned to all teams who will be exempt from player rankings
+
+register/add players to team via
+
+secretary / chairman / competitions
+
+bracket creation / randomiser
+
+rankings leg match win %
+
+rules page
+
+agm minutes
+
+homepage registration forms
