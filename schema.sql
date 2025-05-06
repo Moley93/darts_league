@@ -3,9 +3,9 @@
 -- ========================================
 
 -- Create the database
-DROP DATABASE IF EXISTS darts_league;
-CREATE DATABASE darts_league;
-USE darts_league;
+-- DROP DATABASE IF EXISTS darts_league;
+-- CREATE DATABASE darts_league;
+-- USE darts_league;
 
 -- ========================================
 -- TABLE DEFINITIONS
