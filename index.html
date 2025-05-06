@@ -7,6 +7,37 @@
     <title>Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        /* Custom header style for the index page to position logo left and title centered */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 113px;
+            height: 107px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+
+        
         /* Homepage specific styles */
         .welcome-section {
             background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(26, 35, 126, 0.7)), url('darts-bg.jpg');
@@ -96,34 +127,6 @@
             margin: 5px 0 10px;
         }
         
-        .upcoming-matches {
-            margin-bottom: 20px;
-        }
-        
-        .match-preview {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 10px;
-        }
-        
-        .match-date {
-            font-size: 0.9rem;
-            color: var(--dark-gray);
-            text-align: center;
-            padding: 0 10px;
-        }
-        
-        .versus {
-            font-weight: bold;
-            padding: 0 10px;
-            color: var(--primary);
-        }
-        
         .contact-info {
             text-align: center;
             background-color: var(--card-bg);
@@ -150,65 +153,14 @@
         .contact-info a:hover {
             text-decoration: underline;
         }
-        
-        /* Featured section */
-        .featured {
-            margin-bottom: 20px;
-        }
-        
-        .featured-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-            text-align: center;
-        }
-        
-        .featured-card h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        
-        .featured-card .featured-name {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: var(--secondary);
-            margin-bottom: 10px;
-        }
-        
-        .featured-card .featured-team {
-            font-style: italic;
-            margin-bottom: 15px;
-        }
-        
-        .featured-card .featured-stats {
-            margin-bottom: 15px;
-        }
-        
-        .featured-card .featured-desc {
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-        }
-        
-        /* Responsive styles for homepage */
-        @media (max-width: 768px) {
-            .match-preview {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .match-date {
-                margin-bottom: 10px;
-            }
-        }
+
     </style>
 </head>
 <body>
     <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
         <h1>Crawley Darts League</h1>
     </header>
 

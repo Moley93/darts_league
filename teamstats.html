@@ -258,10 +258,42 @@
                 grid-column: span 2;
             }
         }
+                /* Custom header style for the index page to position logo left and title centered */
+                .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 113px;
+            height: 107px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
     <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
         <h1>Crawley Darts League</h1>
     </header>
 
@@ -533,6 +565,24 @@
                 
                 const legWinPercentage = legsPlayed > 0 ? (legsWon / legsPlayed * 100).toFixed(1) : 0;
                 
+                // Calculate points using the corrected Premier Division scoring system
+                let points = 0;
+                if (playerSinglesData.win_3_0 !== undefined) {
+                    // Premier Division scoring with corrected point values
+                    points += (win_3_0 * 5);  // 5 points for 3-0 win
+                    points += (win_3_1 * 4);  // 4 points for 3-1 win
+                    points += (win_3_2 * 3);  // 3 points for 3-2 win
+                    points += (loss_2_3 * 2); // 2 points for 2-3 loss
+                    points += (loss_1_3 * 1); // 1 point for 1-3 loss
+                    // 0 points for 0-3 loss
+                } else {
+                    // A Division scoring (unchanged)
+                    points += (win_2_0 * 3);  // 3 points for 2-0 win
+                    points += (win_2_1 * 2);  // 2 points for 2-1 win
+                    points += (loss_1_2 * 1); // 1 point for 1-2 loss
+                    // 0 points for 0-2 loss
+                }
+                
                 return {
                     ...player,
                     singlesStats: {
@@ -555,9 +605,10 @@
                         loss_1_2,
                         loss_0_2,
                         isPremier: playerSinglesData.win_3_0 !== undefined,
-                        // Additional stats for display
-                        points: playerSinglesData.points || 0,
-                        recalculated_points: playerSinglesData.recalculated_points || 0
+                        // Use the calculated points instead of points from the API
+                        points: points,
+                        // Keep this for compatibility, but it should be the same as points now
+                        recalculated_points: points
                     }
                 };
             });

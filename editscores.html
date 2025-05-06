@@ -7,6 +7,36 @@
     <title>Edit Scores - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+
+                /* Custom header style for the index page to position logo left and title centered */
+                .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 113px;
+            height: 107px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
         /* Additional styles specifically for edit page */
         #edit-cup-round-container.disabled-field {
             opacity: 0.6;
@@ -47,6 +77,9 @@
 </head>
 <body>
     <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
         <h1>Crawley Darts League</h1>
     </header>
 
