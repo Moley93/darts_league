@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AGM Minutes - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles for AGM minutes page */
+        .minutes-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .minutes-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .minutes-header h2 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .minutes-header p {
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+        
+        .minutes-section {
+            margin-bottom: 30px;
+        }
+        
+        .minutes-section h3 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .minutes-section p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .attendees-list {
+            list-style-type: none;
+            padding-left: 0;
+            column-count: 2;
+            column-gap: 30px;
+        }
+        
+        .attendees-list li {
+            margin-bottom: 8px;
+            break-inside: avoid;
+        }
+        
+        .position {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .resolution {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-left: 4px solid var(--primary);
+            margin: 15px 0;
+        }
+        
+        .resolution-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .motion {
+            font-style: italic;
+            margin-bottom: 8px;
+        }
+        
+        .voting-result {
+            margin-top: 8px;
+        }
+        
+        .passed {
+            color: var(--success);
+            font-weight: bold;
+        }
+        
+        .not-passed {
+            color: var(--error);
+            font-weight: bold;
+        }
+        
+        .financial-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .financial-table th, .financial-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid var(--light-gray);
+        }
+        
+        .financial-table th {
+            background-color: var(--light-gray);
+            font-weight: bold;
+        }
+        
+        .financial-table tr.total td {
+            font-weight: bold;
+            border-top: 2px solid var(--medium-gray);
+        }
+        
+        .amount {
+            text-align: right;
+        }
+        
+        .pdf-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 15px;
+            background-color: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .pdf-link:hover {
+            background-color: var(--secondary);
+        }
+        
+        /* Basic dropdown styling - same as other pages */
+        .nav .dropdown {
+            position: relative;
+        }
+
+        .nav .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .nav .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 4px;
+            padding: 10px 0;
+        }
+
+        .nav .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .nav .dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--primary);
+            border-radius: 0;
+        }
+
+        .nav .dropdown-menu a:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .nav-menu.active {
+                display: block;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+            
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+            
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav .dropdown-menu li:first-child {
+                border-top: 1px solid var(--medium-gray);
+            }
+            
+            .nav .dropdown:hover .dropdown-menu {
+                display: none; /* Don't show on hover on mobile */
+            }
+            
+            /* Add a + icon to dropdowns */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
+            }
+            
+            /* Toggle this class with JavaScript */
+            .nav .dropdown.active .dropdown-menu {
+                display: block;
+            }
+            
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
+            }
+            
+            /* AGM specific mobile styles */
+            .attendees-list {
+                column-count: 1;
+            }
+        }
+        
+        /* Custom header style for logo positioning */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 67px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <div class="minutes-container">
+                <!-- AGM Minutes Header -->
+                <div class="minutes-header">
+                    <h2>Annual General Meeting Minutes</h2>
+                    <p>Held at Jubilee Club, Three Bridges, Crawley on Thursday, 8th August 2024 at 19:30</p>
+                </div>
+                
+                <!-- Attendees Section -->
+                <div class="minutes-section">
+                    <h3>1. Attendees</h3>
+                    <ul class="attendees-list">
+                        <li><span class="position">Chairman:</span> David Miller</li>
+                        <li><span class="position">League Secretary:</span> Mike Johnson</li>
+                        <li><span class="position">Treasurer:</span> Sarah Thompson</li>
+                        <li><span class="position">Results Secretary:</span> James Wilson</li>
+                        <li><span class="position">Cup Competitions Organizer:</span> Patricia Harris</li>
+                        <li><span class="position">Fixture Secretary:</span> Robert Brown</li>
+                        <li><span class="position">Social Events Coordinator:</span> Emma Lewis</li>
+                        <li>John Smith (The Unbearables)</li>
+                        <li>Tom Wilson (Jubilee Club)</li>
+                        <li>Peter Moore (Rebels)</li>
+                        <li>Matthew Adams (Dark Side Of The Moon)</li>
+                        <li>George Evans (Dartbreakers)</li>
+                        <li>Carl Bailey (Rugby Club)</li>
+                        <li>Stephen James (Grasshopper)</li>
+                        <li>Philip Butler (Ewhurst Arrows)</li>
+                        <li>Allen Myers (Dingles)</li>
+                        <li>Edwin Owens (Johnson)</li>
+                        <li>Dale Gomez (Disappointers)</li>
+                        <li>Harold Hicks (APV)</li>
+                        <li>Neil Reyes (Ewhurst Woodys)</li>
+                        <li>Hubert Palmer (Pelham)</li>
+                    </ul>
+                    <p>5 additional team members were in attendance.</p>
+                </div>
+                
+                <!-- Apologies Section -->
+                <div class="minutes-section">
+                    <h3>2. Apologies for Absence</h3>
+                    <p>Apologies were received from:</p>
+                    <ul>
+                        <li>Kevin White (Jubilee Club)</li>
+                        <li>Brian Harris (Jubilee Club)</li>
+                        <li>Adam Roberts (Dark Side Of The Moon)</li>
+                    </ul>
+                </div>
+                
+                <!-- Minutes of Previous Meeting Section -->
+                <div class="minutes-section">
+                    <h3>3. Minutes of Previous AGM</h3>
+                    <p>The minutes of the previous AGM held on 10th August 2023 were approved as a true and accurate record. Proposed by Carl Bailey, seconded by Peter Moore.</p>
+                </div>
+                
+                <!-- Matters Arising Section -->
+                <div class="minutes-section">
+                    <h3>4. Matters Arising</h3>
+                    <p>There were no matters arising that were not covered by items on the agenda.</p>
+                </div>
+                
+                <!-- Chairman's Report Section -->
+                <div class="minutes-section">
+                    <h3>5. Chairman's Report</h3>
+                    <p>David Miller presented his report for the 2023/24 season:</p>
+                    <p>The league had another successful season with 15 teams participating. Membership has remained stable with no teams dropping out. The new website has been well received and has significantly improved communication and results reporting. Thanks were extended to James Wilson for maintaining the results and statistics on the website.</p>
+                    <p>The Chairman expressed his gratitude to all committee members for their hard work throughout the season and to all venues for their continued support.</p>
+                    <p>Notable achievements for the season included:</p>
+                    <ul>
+                        <li>League winners: The Unbearables (Premier Division) and Ewhurst Arrows (A Division)</li>
+                        <li>Cup winners: Dark Side Of The Moon (Premier Division Cup) and Jubilee Club (A Division Cup)</li>
+                        <li>Most 180s: Chris Davis (The Unbearables) with 14</li>
+                        <li>Highest Finish: Justin Young (Rebels) with 170</li>
+                    </ul>
+                </div>
+                
+                <!-- Treasurer's Report Section -->
+                <div class="minutes-section">
+                    <h3>6. Treasurer's Report</h3>
+                    <p>Sarah Thompson presented the audited accounts for the year ending 31st July 2024:</p>
+                    
+                    <table class="financial-table">
+                        <tr>
+                            <th colspan="2">Income</th>
+                        </tr>
+                        <tr>
+                            <td>Team Registration Fees (15 teams at £80 each)</td>
+                            <td class="amount">£1,200.00</td>
+                        </tr>
+                        <tr>
+                            <td>Paul Terry Memorial Tournament</td>
+                            <td class="amount">£320.00</td>
+                        </tr>
+                        <tr>
+                            <td>Charity Night Proceeds</td>
+                            <td class="amount">£425.00</td>
+                        </tr>
+                        <tr>
+                            <td>Finals Night Raffle</td>
+                            <td class="amount">£285.00</td>
+                        </tr>
+                        <tr>
+                            <td>Sponsorship (Local Businesses)</td>
+                            <td class="amount">£500.00</td>
+                        </tr>
+                        <tr class="total">
+                            <td>Total Income</td>
+                            <td class="amount">£2,730.00</td>
+                        </tr>
+                    </table>
+                    
+                    <table class="financial-table">
+                        <tr>
+                            <th colspan="2">Expenditure</th>
+                        </tr>
+                        <tr>
+                            <td>Trophies and Engraving</td>
+                            <td class="amount">£650.00</td>
+                        </tr>
+                        <tr>
+                            <td>Website Hosting and Development</td>
+                            <td class="amount">£350.00</td>
+                        </tr>
+                        <tr>
+                            <td>Venue Hire for Finals and Special Events</td>
+                            <td class="amount">£420.00</td>
+                        </tr>
+                        <tr>
+                            <td>Printing and Stationery</td>
+                            <td class="amount">£175.00</td>
+                        </tr>
+                        <tr>
+                            <td>Charitable Donations</td>
+                            <td class="amount">£425.00</td>
+                        </tr>
+                        <tr>
+                            <td>Prize Money</td>
+                            <td class="amount">£550.00</td>
+                        </tr>
+                        <tr class="total">
+                            <td>Total Expenditure</td>
+                            <td class="amount">£2,570.00</td>
+                        </tr>
+                    </table>
+                    
+                    <p>Overall Balance: £160.00 surplus for the year</p>
+                    <p>Current bank balance: £2,315.00</p>
+                    
+                    <p>The accounts were approved by the meeting. Proposed by Stephen James, seconded by Hubert Palmer.</p>
+                </div>
+                
+                <!-- Election of Officers Section -->
+                <div class="minutes-section">
+                    <h3>7. Election of Officers</h3>
+                    <p>The following committee members were elected unopposed:</p>
+                    <ul>
+                        <li><span class="position">Chairman:</span> David Miller (re-elected)</li>
+                        <li><span class="position">League Secretary:</span> Mike Johnson (re-elected)</li>
+                        <li><span class="position">Treasurer:</span> Sarah Thompson (re-elected)</li>
+                        <li><span class="position">Results Secretary:</span> James Wilson (re-elected)</li>
+                        <li><span class="position">Cup Competitions Organizer:</span> Patricia Harris (re-elected)</li>
+                        <li><span class="position">Fixture Secretary:</span> Robert Brown (re-elected)</li>
+                        <li><span class="position">Social Events Coordinator:</span> Emma Lewis (re-elected)</li>
+                        <li><span class="position">Web Administrator:</span> Philip Butler (newly elected)</li>
+                    </ul>
+                </div>
+                
+                <!-- Resolutions and Rule Changes Section -->
+                <div class="minutes-section">
+                    <h3>8. Resolutions and Rule Changes</h3>
+                    
+                    <div class="resolution">
+                        <div class="resolution-header">Resolution 1: League Fee Structure</div>
+                        <div class="motion">That team registration fees for the 2024/25 season be increased from £80 to £85 per team to reflect increased trophy and administration costs.</div>
+                        <div class="voting-result">
+                            <p>In favor: 17, Against: 4, Abstentions: 5</p>
+                            <p><span class="passed">Motion passed</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="resolution">
+                        <div class="resolution-header">Resolution 2: Singles Format in A Division</div>
+                        <div class="motion">That the singles format in A Division remains as best of 3 legs for the 2024/25 season, rather than changing to the Premier Division format of best of 5 legs.</div>
+                        <div class="voting-result">
+                            <p>In favor: 21, Against: 2, Abstentions: 3</p>
+                            <p><span class="passed">Motion passed</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="resolution">
+                        <div class="resolution-header">Resolution 3: Player Registration Deadline</div>
+                        <div class="motion">That the deadline for player registration be set at 31st October 2024, after which teams wishing to register additional players must apply to the committee.</div>
+                        <div class="voting-result">
+                            <p>In favor: 20, Against: 3, Abstentions: 3</p>
+                            <p><span class="passed">Motion passed</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="resolution">
+                        <div class="resolution-header">Resolution 4: Introduction of Online Score Submission</div>
+                        <div class="motion">That all match scores must be submitted via the league website within 48 hours of the match being played, with paper score sheets no longer being accepted.</div>
+                        <div class="voting-result">
+                            <p>In favor: 19, Against: 5, Abstentions: 2</p>
+                            <p><span class="passed">Motion passed</span></p>
+                        </div>
+                    </div>
+                    
+                    <div class="resolution">
+                        <div class="resolution-header">Resolution 5: Revision of Scoring System</div>
+                        <div class="motion">That the scoring system for Premier Division singles be updated to: 5 points for a 3-0 win, 4 points for a 3-1 win, 3 points for a 3-2 win, 2 points for a 2-3 loss, 1 point for a 1-3 loss, and 0 points for a 0-3 loss.</div>
+                        <div class="voting-result">
+                            <p>In favor: 15, Against: 8, Abstentions: 3</p>
+                            <p><span class="passed">Motion passed</span></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Fixtures and Dates Section -->
+                <div class="minutes-section">
+                    <h3>9. Fixtures and Key Dates for 2024/25 Season</h3>
+                    <p>The following key dates were agreed for the 2024/25 season:</p>
+                    <ul>
+                        <li>Season Start: Friday, 4th October 2024 (Trebles Competition Night)</li>
+                        <li>League Matches Start: Friday, 11th October 2024</li>
+                        <li>Christmas Break: 27th December 2024</li>
+                        <li>Knockout Cup Rounds: 22nd November 2024, 4th April 2025, 23rd May 2025</li>
+                        <li>Pairs Competition: Friday, 14th February 2025</li>
+                        <li>Singles Competition: Friday, 2nd May 2025</li>
+                        <li>Paul Terry Memorial Night: Friday, 9th May 2025</li>
+                        <li>Captain/Secretary Competition: Friday, 16th May 2025</li>
+                        <li>Finals Night: Friday, 30th May 2025</li>
+                        <li>Presentation Evening: Friday, 6th June 2025</li>
+                    </ul>
+                    <p>The fixture list will be circulated to all teams by the end of August and published on the league website.</p>
+                </div>
+                
+                <!-- AOB Section -->
+                <div class="minutes-section">
+                    <h3>10. Any Other Business</h3>
+                    <p><strong>Website Development:</strong> James Wilson reported that the new Submit Score and player statistics features have been added to the website. Training will be provided to team captains on how to use these features effectively.</p>
+                    
+                    <p><strong>Charity Night:</strong> Emma Lewis suggested organizing a special charity night in March 2025 to raise funds for St Catherine's Hospice. This was agreed in principle, with Emma to prepare detailed proposals for committee approval.</p>
+                    
+                    <p><strong>Venue Changes:</strong> Allen Myers informed the meeting that The Dingles venue will be undergoing refurbishment in January 2025 and alternative arrangements may need to be made for home matches during this period. The committee will work with The Dingles team to find suitable solutions.</p>
+                    
+                    <p><strong>Promotion/Relegation:</strong> It was confirmed that The Unbearables (winners of Premier Division) and Pelham (bottom of Premier Division) would exchange places with Ewhurst Arrows (winners of A Division) and Ewhurst Woodys (bottom of A Division) for the 2024/25 season.</p>
+                </div>
+                
+                <!-- Date of Next Meeting Section -->
+                <div class="minutes-section">
+                    <h3>11. Date of Next Meeting</h3>
+                    <p>The next AGM will be held on Thursday, 7th August 2025 at 19:30 at Jubilee Club, Three Bridges, Crawley.</p>
+                    <p>The meeting closed at 21:45.</p>
+                    
+                    <p>Minutes approved by: David Miller (Chairman)<br>Date: 15th August 2024</p>
+                </div>
+                
+                <!-- Download Option -->
+                <div class="minutes-section" style="text-align: center;">
+                    <a href="#" class="pdf-link">Download AGM Minutes (PDF)</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Simple script to toggle dropdown menus on mobile
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const parent = this.parentElement;
+                        parent.classList.toggle('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

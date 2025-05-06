@@ -208,7 +208,7 @@ tr:hover {
     transform: translateY(0);
 }
 
-/* Score Input Styles */
+/* Submit Score Styles */
 .score-input-container {
     max-width: 600px;
     margin: 0 auto;

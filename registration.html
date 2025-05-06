@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Form - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Custom header style for the index page to position logo left and title centered */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 67px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+
+        /* Registration page specific styles */
+        .registration-section {
+            margin-bottom: 40px;
+        }
+
+        .registration-section h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .download-button {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-weight: bold;
+            margin: 20px 0;
+            transition: all 0.3s ease;
+        }
+
+        .download-button:hover {
+            background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .info-card {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .info-card h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .requirement-box {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .requirement-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .requirement-box h3 {
+            display: flex;
+            align-items: center;
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .requirement-box h3 svg {
+            margin-right: 10px;
+            fill: var(--primary);
+        }
+
+        .requirement-box ul {
+            padding-left: 20px;
+            margin-bottom: 0;
+        }
+
+        .requirement-box ul li {
+            margin-bottom: 8px;
+        }
+
+        .steps-list {
+            list-style: none;
+            counter-reset: step-counter;
+            padding-left: 0;
+            margin-top: 30px;
+        }
+
+        .steps-list li {
+            counter-increment: step-counter;
+            margin-bottom: 20px;
+            padding-left: 50px;
+            position: relative;
+        }
+
+        .steps-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: var(--primary);
+            color: white;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .contact-details {
+            background-color: #e8f5e9;
+            padding: 15px;
+            margin-top: 30px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .contact-details h3 {
+            margin-top: 0;
+            color: var(--primary);
+        }
+
+        .contact-details p {
+            margin-bottom: 5px;
+        }
+
+        .contact-details a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .contact-details a:hover {
+            text-decoration: underline;
+        }
+
+        /* Note box */
+        .note-box {
+            background-color: #fff3e0;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .note-box h4 {
+            margin-top: 0;
+            color: var(--warning);
+        }
+
+        /* Timeline styles */
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 30px auto;
+        }
+
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 6px;
+            background-color: var(--light-gray);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            margin-left: -3px;
+        }
+
+        .timeline-item {
+            padding: 10px 40px;
+            position: relative;
+            width: 50%;
+            box-sizing: border-box;
+        }
+
+        .timeline-item::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            right: -10px;
+            background-color: white;
+            border: 4px solid var(--primary);
+            top: 15px;
+            border-radius: 50%;
+            z-index: 1;
+        }
+
+        .timeline-left {
+            left: 0;
+        }
+
+        .timeline-right {
+            left: 50%;
+        }
+
+        .timeline-left::after {
+            right: -10px;
+        }
+
+        .timeline-right::after {
+            left: -10px;
+        }
+
+        .timeline-content {
+            padding: 20px;
+            background-color: white;
+            position: relative;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-date {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        /* Responsive adjustments for timeline */
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+            
+            .timeline-item {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+            }
+            
+            .timeline-item::after {
+                left: 21px;
+            }
+            
+            .timeline-right {
+                left: 0;
+            }
+        }
+
+        /* Basic dropdown styling */
+        .nav .dropdown {
+            position: relative;
+        }
+
+        .nav .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .nav .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 4px;
+            padding: 10px 0;
+        }
+
+        .nav .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .nav .dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--primary);
+            border-radius: 0;
+        }
+
+        .nav .dropdown-menu a:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .nav-menu.active {
+                display: block;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+            
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+            
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav .dropdown-menu li:first-child {
+                border-top: 1px solid var(--medium-gray);
+            }
+            
+            .nav .dropdown:hover .dropdown-menu {
+                display: none; /* Don't show on hover on mobile */
+            }
+            
+            /* Add a + icon to dropdowns */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
+            }
+            
+            /* Toggle this class with JavaScript */
+            .nav .dropdown.active .dropdown-menu {
+                display: block;
+            }
+            
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <div class="registration-section">
+                <h2>Register a Team for the Crawley Darts League</h2>
+                
+                <p>Thank you for your interest in joining the Crawley Darts League. We're always looking for enthusiastic teams to join our community of players. Whether you're an established team or looking to form a new one, this page will guide you through the registration process.</p>
+                
+                <div class="info-card">
+                    <h3>Registration Form Download</h3>
+                    <p>To register your team for the upcoming season, please download and complete the official registration form. Submit the completed form to our League Secretary by email or in person.</p>
+                    
+                    <a href="cdl-team-registration.pdf" class="download-button" download>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" style="margin-right: 5px; vertical-align: text-bottom;" viewBox="0 0 16 16">
+                            <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                            <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                        </svg>
+                        Download Registration Form (PDF)
+                    </a>
+                </div>
+            </div>
+
+            <div class="registration-section">
+                <h2>Team Requirements</h2>
+                
+                <div class="info-grid">
+                    <div class="requirement-box">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            Team Composition
+                        </h3>
+                        <ul>
+                            <li>Minimum of 8 registered players per team</li>
+                            <li>Recommended to have 10-12 players to account for absences</li>
+                            <li>Each team must have a designated captain and a secretary</li>
+                            <li>Mixed teams are welcome (men and women)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="requirement-box">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="3" y1="9" x2="21" y2="9"></line>
+                                <line x1="9" y1="21" x2="9" y2="9"></line>
+                            </svg>
+                            Venue Requirements
+                        </h3>
+                        <ul>
+                            <li>Access to a suitable venue with at least one dartboard</li>
+                            <li>Board must be in good condition and well-lit</li>
+                            <li>Regulation height (5ft 8in to bull) and distance (7ft 9.25in)</li>
+                            <li>Venue must be available Friday evenings during the season</li>
+                            <li>Reasonable space around the board for players and spectators</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="requirement-box">
+                        <h3>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                                <polyline points="10 9 9 9 8 9"></polyline>
+                            </svg>
+                            Registration Fees
+                        </h3>
+                        <ul>
+                            <li>Team registration fee: £40 per season</li>
+                            <li>Individual player registration: £5 per player</li>
+                            <li>Fees must be paid by the registration deadline</li>
+                            <li>Fee covers league administration, trophies, and website maintenance</li>
+                            <li>Payment methods accepted: bank transfer, cash, or cheque</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="note-box">
+                    <h4>Important Note:</h4>
+                    <p>New teams will typically enter the A Division unless agreed otherwise by the committee. Promotion to the Premier Division is based on performance in the previous season.</p>
+                </div>
+            </div>
+
+            <div class="registration-section">
+                <h2>Registration Process</h2>
+                
+                <ol class="steps-list">
+                    <li>
+                        <strong>Download and complete the registration form</strong>
+                        <p>Fill in all required information including team name, home venue, captain and secretary details, and all player information.</p>
+                    </li>
+                    <li>
+                        <strong>Submit the completed form and pay registration fees</strong>
+                        <p>Send the form to the League Secretary by email or in person. Pay the registration fees via bank transfer or in person at a committee meeting.</p>
+                    </li>
+                    <li>
+                        <strong>Attend the pre-season captains' meeting</strong>
+                        <p>Each team must have a representative at the captains' meeting where fixtures, rules, and other important information will be discussed.</p>
+                    </li>
+                    <li>
+                        <strong>Confirm your team's details</strong>
+                        <p>Review and confirm your team's information on the league website once published.</p>
+                    </li>
+                </ol>
+                
+                <div class="contact-details">
+                    <h3>Contact Information</h3>
+                    <p><strong>League Secretary:</strong> Mike Johnson</p>
+                    <p><strong>Email:</strong> <a href="mailto:secretary@crawleydartsleague.co.uk">secretary@crawleydartsleague.co.uk</a></p>
+                    <p><strong>Phone:</strong> 07834 567890</p>
+                </div>
+            </div>
+
+            <div class="registration-section">
+                <h2>League Season Timeline</h2>
+                
+                <div class="timeline">
+                    <div class="timeline-item timeline-left">
+                        <div class="timeline-content">
+                            <div class="timeline-date">August</div>
+                            <p>Registration opens for the upcoming season</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-right">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Early September</div>
+                            <p>Registration deadline and fee payment due</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-left">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Mid-September</div>
+                            <p>Pre-season captains' meeting</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-right">
+                        <div class="timeline-content">
+                            <div class="timeline-date">Early October</div>
+                            <p>Season begins with first league matches</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-left">
+                        <div class="timeline-content">
+                            <div class="timeline-date">November</div>
+                            <p>Cup competitions begin</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item timeline-right">
+                        <div class="timeline-content">
+                            <div class="timeline-date">May-June</div>
+                            <p>End of season and presentation night</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="registration-section">
+                <h2>About the Crawley Darts League</h2>
+                
+                <p>The Crawley Darts League has been running for over 25 years and is one of the most established and competitive darts leagues in the area. We offer:</p>
+                
+                <ul>
+                    <li><strong>League Format:</strong> Two divisions (Premier and A Division) with promotion and relegation</li>
+                    <li><strong>Match Format:</strong> Friday evenings, featuring 3 doubles games and 6 singles games</li>
+                    <li><strong>Cup Competitions:</strong> Knockout cup competitions throughout the season</li>
+                    <li><strong>Special Events:</strong> Singles, pairs, and charity tournaments throughout the season</li>
+                    <li><strong>Awards:</strong> End of season presentation with trophies for division winners, cup winners, and individual achievements</li>
+                    <li><strong>Social Aspect:</strong> A friendly community of darts enthusiasts with regular social events</li>
+                </ul>
+                
+                <p>We welcome players of all abilities, from beginners to experienced county players. The league is designed to be competitive yet enjoyable, with a strong focus on sportsmanship and camaraderie.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Any JavaScript can be added here if needed
+    </script>
+</body>
+</html>

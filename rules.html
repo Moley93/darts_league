@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League Rules - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .rules-section {
+            margin-bottom: 30px;
+        }
+        
+        .rules-section h2 {
+            color: var(--primary);
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .rules-section h3 {
+            color: var(--primary);
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+        
+        .rule-item {
+            margin-bottom: 15px;
+            padding-left: 20px;
+            position: relative;
+        }
+        
+        .rule-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: var(--secondary);
+            font-weight: bold;
+        }
+        
+        .rule-subitem {
+            margin: 8px 0 8px 20px;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .rule-subitem::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: var(--accent);
+        }
+        
+        .last-updated {
+            text-align: right;
+            font-style: italic;
+            color: var(--dark-gray);
+            font-size: 0.9em;
+            margin-top: 30px;
+        }
+        
+        /* Tabs for different rule sections */
+        .rules-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .rules-tab {
+            padding: 10px 20px;
+            background: var(--light-gray);
+            color: var(--text);
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 5px;
+            margin-bottom: -1px;
+            border-radius: 5px 5px 0 0;
+        }
+        
+        .rules-tab.active {
+            background: var(--primary);
+            color: white;
+            border-bottom: 1px solid var(--primary);
+        }
+        
+        .rules-tab:hover:not(.active) {
+            background: var(--medium-gray);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .rules-tab {
+                flex: 1 0 auto;
+                text-align: center;
+                padding: 8px 10px;
+                font-size: 0.9em;
+            }
+            
+            .rules-tabs {
+                justify-content: center;
+            }
+        }
+        
+        /* Basic dropdown styling */
+        .nav .dropdown {
+            position: relative;
+        }
+
+        .nav .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .nav .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 4px;
+            padding: 10px 0;
+        }
+
+        .nav .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .nav .dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--primary);
+            border-radius: 0;
+        }
+
+        .nav .dropdown-menu a:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .nav-menu.active {
+                display: block;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+            
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+            
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav .dropdown-menu li:first-child {
+                border-top: 1px solid var(--medium-gray);
+            }
+            
+            .nav .dropdown:hover .dropdown-menu {
+                display: none; /* Don't show on hover on mobile */
+            }
+            
+            /* Add a + icon to dropdowns */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
+            }
+            
+            /* Toggle this class with JavaScript */
+            .nav .dropdown.active .dropdown-menu {
+                display: block;
+            }
+            
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
+            }
+        }
+        
+        /* Custom header style for the index page to position logo right and title centered */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 67px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    
+    <div class="container">
+        <div class="card">
+            <h1>Crawley Darts League Rules</h1>
+            
+            <div class="rules-tabs">
+                <button class="rules-tab active" data-section="general">General Rules</button>
+                <button class="rules-tab" data-section="league">League Rules</button>
+                <button class="rules-tab" data-section="cup">Cup Rules</button>
+                <button class="rules-tab" data-section="match">Match Play</button>
+                <button class="rules-tab" data-section="scoring">Scoring</button>
+            </div>
+            
+            <!-- General Rules Section -->
+            <div id="general-rules" class="rules-section">
+                <h2>General Rules and Registration</h2>
+                
+                <div class="rule-item">
+                    <strong>League Structure:</strong> The Crawley Darts League comprises two divisions: Premier Division and A Division, each consisting of up to 8 teams.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Team Registration:</strong> Teams must register before the season's start date with a minimum of 8 players and a maximum of 12 players per team.
+                    <div class="rule-subitem">Registration forms must be submitted to the League Secretary by the deadline specified in the AGM minutes.</div>
+                    <div class="rule-subitem">Registration fee of £40 per team must be paid before the first match of the season.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Player Registration:</strong> Players can only be registered for one team at a time within the Crawley Darts League.
+                    <div class="rule-subitem">New players can be registered throughout the season by notifying the League Secretary at least 48 hours before they play their first match.</div>
+                    <div class="rule-subitem">A player may transfer between teams only once per season with the approval of the Committee.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Team Venues:</strong> Each team must have a registered venue with at least one board of acceptable standard as determined by the Committee.
+                    <div class="rule-subitem">The oche must be clearly marked and at a distance of 7 feet 9¼ inches (2.37m) from the face of the board.</div>
+                    <div class="rule-subitem">The height of the board must be 5 feet 8 inches (1.73m) from the floor to the center of the bullseye.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Match Schedule:</strong> Matches are scheduled to be played on Friday evenings at 8:00 PM unless agreed otherwise by both team captains and the Committee.
+                </div>
+            </div>
+            
+            <!-- League Rules Section -->
+            <div id="league-rules" class="rules-section hidden">
+                <h2>League Rules</h2>
+                
+                <div class="rule-item">
+                    <strong>Season Format:</strong> Each team will play every other team in their division twice during the season, once at home and once away.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Match Format:</strong> Each match consists of 9 games: 3 doubles games and 6 singles games.
+                    <div class="rule-subitem">Premier Division: All games are best of 5 legs (first to 3).</div>
+                    <div class="rule-subitem">A Division: All games are best of 3 legs (first to 2).</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Points System:</strong> Teams receive 1 point for each game won in a match.
+                    <div class="rule-subitem">A match can end in a draw (e.g., 4-4, 5-4) based on total games won.</div>
+                    <div class="rule-subitem">League positions are determined by total points, then leg difference, then games won.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Player Participation:</strong> A team must field at least 5 players for a match to be valid.
+                    <div class="rule-subitem">No player may participate in more than one doubles game and one singles game in a match.</div>
+                    <div class="rule-subitem">Teams failing to field 5 players will forfeit the appropriate number of games.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Postponements:</strong> Matches can only be postponed with agreement from both captains and notification to the League Secretary at least 48 hours in advance.
+                    <div class="rule-subitem">Postponed matches must be played within 2 weeks of the original date.</div>
+                    <div class="rule-subitem">Any team failing to fulfill a fixture without proper notice will forfeit the match 9-0.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Result Submission:</strong> The home team captain is responsible for submitting the match result online within 48 hours of the match being played.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Promotion/Relegation:</strong> At the end of each season, the bottom two teams in the Premier Division will be relegated to the A Division, and the top two teams in the A Division will be promoted to the Premier Division.
+                </div>
+            </div>
+            
+            <!-- Cup Rules Section -->
+            <div id="cup-rules" class="rules-section hidden">
+                <h2>Cup Competition Rules</h2>
+                
+                <div class="rule-item">
+                    <strong>Entry:</strong> All teams registered in the league are automatically entered into their respective division's cup competition.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Format:</strong> The cup competition is a straight knockout tournament.
+                    <div class="rule-subitem">Draws for each round will be conducted by the Committee and published on the league website.</div>
+                    <div class="rule-subitem">The team drawn first has home advantage through to the semi-finals.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Match Format:</strong> Cup matches follow the same format as league matches: 3 doubles games and 6 singles games.
+                    <div class="rule-subitem">In the event of a 4-4 tie after all games, a deciding doubles game will be played.</div>
+                    <div class="rule-subitem">For the deciding game, team captains can select any two players who have played in the match.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Semi-Finals and Final:</strong> Semi-finals are played at the home venue of the first team drawn.
+                    <div class="rule-subitem">The final will be played at a neutral venue selected by the Committee.</div>
+                    <div class="rule-subitem">All players must have played at least 3 league matches for their team to be eligible for the cup final.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Trophy:</strong> The winning team will hold the cup trophy until the following season's final.
+                    <div class="rule-subitem">Individual trophies will be presented to the members of the winning team.</div>
+                </div>
+            </div>
+            
+            <!-- Match Play Rules Section -->
+            <div id="match-play" class="rules-section hidden">
+                <h2>Match Play Rules</h2>
+                
+                <div class="rule-item">
+                    <strong>Start Time:</strong> Matches should commence by 8:15 PM. A grace period of 30 minutes is allowed for late arrivals.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Order of Play:</strong> The three doubles games are played first, followed by the six singles games.
+                    <div class="rule-subitem">Team captains must provide their full line-up before the start of the doubles games.</div>
+                    <div class="rule-subitem">No changes to the line-up are permitted once the match has started unless agreed by both captains.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Throw for Bull:</strong> To determine who starts each leg, a player from each team throws for the bull.
+                    <div class="rule-subitem">The player whose dart lands closest to the bullseye will throw first in the first leg.</div>
+                    <div class="rule-subitem">The visiting team has the option to throw first or second when throwing for the bull.</div>
+                    <div class="rule-subitem">Subsequent legs follow an alternating format regardless of who won the previous leg.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Warm-up Throws:</strong> Each player is allowed up to 6 warm-up darts before their game begins.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Scorers and Markers:</strong> Each team shall provide a scorer/marker for alternate games.
+                    <div class="rule-subitem">Scores must be clearly marked on a scoreboard visible to both players.</div>
+                    <div class="rule-subitem">A player's score must be announced by the marker before the player removes their darts from the board.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Disputes:</strong> In case of a dispute, team captains should try to resolve the issue amicably.
+                    <div class="rule-subitem">If no agreement can be reached, the match should continue under protest and the matter referred to the Committee for resolution.</div>
+                </div>
+            </div>
+            
+            <!-- Scoring Rules Section -->
+            <div id="scoring-rules" class="rules-section hidden">
+                <h2>Scoring and Player Rankings</h2>
+                
+                <h3>Singles Rankings System</h3>
+                
+                <div class="rule-item">
+                    <strong>Premier Division Scoring:</strong> Singles matches are scored as follows:
+                    <div class="rule-subitem">Win 3-0: 5 points</div>
+                    <div class="rule-subitem">Win 3-1: 4 points</div>
+                    <div class="rule-subitem">Win 3-2: 3 points</div>
+                    <div class="rule-subitem">Loss 2-3: 2 points</div>
+                    <div class="rule-subitem">Loss 1-3: 1 point</div>
+                    <div class="rule-subitem">Loss 0-3: 0 points</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>A Division Scoring:</strong> Singles matches are scored as follows:
+                    <div class="rule-subitem">Win 2-0: 3 points</div>
+                    <div class="rule-subitem">Win 2-1: 2 points</div>
+                    <div class="rule-subitem">Loss 1-2: 1 point</div>
+                    <div class="rule-subitem">Loss 0-2: 0 points</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Player Rankings:</strong> Players are ranked based on points accumulated in league singles games.
+                    <div class="rule-subitem">In case of a tie on points, rankings are determined by the number of wins, then by leg difference.</div>
+                    <div class="rule-subitem">A player must have played a minimum of 5 singles games to be eligible for end-of-season individual awards.</div>
+                </div>
+                
+                <h3>180s and High Finishes</h3>
+                
+                <div class="rule-item">
+                    <strong>Recording:</strong> All 180s and high finishes (100+) must be recorded on the match result form.
+                    <div class="rule-subitem">180s and high finishes are recorded separately for league and cup matches.</div>
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Verification:</strong> 180s and high finishes must be witnessed and verified by both team captains.
+                </div>
+                
+                <div class="rule-item">
+                    <strong>Awards:</strong> End-of-season awards will be presented for:
+                    <div class="rule-subitem">Most 180s (Premier and A Division)</div>
+                    <div class="rule-subitem">Highest finish (Premier and A Division)</div>
+                    <div class="rule-subitem">Player of the season (based on singles rankings in each division)</div>
+                </div>
+            </div>
+            
+            <div class="last-updated">Last updated: April 2025</div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.rules-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs
+                document.querySelectorAll('.rules-tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                
+                // Add active class to clicked tab
+                tab.classList.add('active');
+                
+                // Hide all rule sections
+                document.querySelectorAll('.rules-section').forEach(section => {
+                    section.classList.add('hidden');
+                });
+                
+                // Show the selected section
+                const sectionId = tab.dataset.section + '-rules';
+                document.getElementById(sectionId).classList.remove('hidden');
+            });
+        });
+        
+        // Mobile dropdown navigation
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const parent = this.parentElement;
+                    
+                    // Check if this dropdown is already active
+                    const isActive = parent.classList.contains('active');
+                    
+                    // Close all open dropdowns
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                    
+                    // Toggle this dropdown
+                    if (!isActive) {
+                        parent.classList.add('active');
+                    }
+                });
+            });
+            
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(e) {
+                // If click is outside dropdown
+                if (!e.target.closest('.dropdown')) {
+                    document.querySelectorAll('.dropdown').forEach(dropdown => {
+                        dropdown.classList.remove('active');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

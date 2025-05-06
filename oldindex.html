@@ -24,8 +24,8 @@
             <li><a href="#" data-page="cup-fixtures">Cup Fixtures</a></li>
             <li><a href="#" data-page="cup-results">Cup Results</a></li>
             <li><a href="#" data-page="stats">180s & High Finishes</a></li>
-            <li><a href="#" data-page="score-input">Score Input</a></li>
-            <li><a href="#" data-page="edit-scores">Edit Scores</a></li>
+            <li><a href="#" data-page="score-input">Submit Score</a></li>
+            <li><a href="#" data-page="edit-scores">Edit Score</a></li>
         </ul>
     </nav>
 
@@ -36,7 +36,7 @@
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
-                    <!-- Edit Scores Page -->
+                    <!-- Edit Score Page -->
         <div id="edit-scores" class="page hidden">
             <div id="edit-login-form" class="card login-form">
                 <h2>Team Captain Login</h2>
@@ -251,7 +251,7 @@
             </div>
         </div>
 
-        <!-- Score Input Page -->
+        <!-- Submit Score Page -->
         <div id="score-input" class="page hidden">
             <div id="login-form" class="card login-form">
                 <h2>Team Captain Login</h2>
@@ -269,7 +269,7 @@
             </div>
 
             <div id="score-input-form" class="card score-input-container hidden">
-                <h2>Match Score Input</h2>
+                <h2>Match Submit Score</h2>
                 <form id="match-form">
                     <div class="form-group">
                         <label for="division">Division</label>
@@ -729,7 +729,7 @@
             }
         });
 
-        // Load team options for score input
+        // Load team options for Submit Score
         async function loadTeamOptions() {
             const division = document.getElementById('division').value;
             const teams = await fetchApi('teams', { division });

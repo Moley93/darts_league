@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Scores - Crawley Darts League</title>
+    <title>Edit Score - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
     <style>
 
@@ -230,23 +230,24 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Information</a>
                 <ul class="dropdown-menu">
-            <li><a href="contactinfo.html">Contacts & Venues</a></li>
-            <li><a href="registration.html">Registration Form</a></li>
-            <li><a href="agm-minutes.html">AGM Minutes</a></li>
-            </ul>
-        </li>
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
             
             <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Admin</a>
+                <a href="#" class="dropdown-toggle">Submit Score</a>
                 <ul class="dropdown-menu">
-                    <li><a href="scoreinput.html">Score Input</a></li>
-                    <li><a href="editscores.html">Edit Scores</a></li>
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
                 </ul>
             </li>
         </ul>
     </nav>
     <div class="container">
-        <!-- Edit Scores Page -->
+        <!-- Edit Score Page -->
         <div id="edit-scores" class="page">
             <div id="loading-indicator" class="hidden">Processing...</div>
             
@@ -534,7 +535,7 @@
             }
         }
 
-        // Edit Scores functionality
+        // Edit Score functionality
         async function loadEditMatchesSelect() {
             const select = document.getElementById('match-select');
             
