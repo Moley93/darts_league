@@ -56,8 +56,8 @@
         }
         
         .logo {
-            width: 113px;
-            height: 107px;
+            width: 70px;
+            height: 67px;
             object-fit: contain;
         }
         
@@ -65,6 +65,120 @@
             margin: 0;
             text-align: center;
         }
+        /* Basic dropdown styling */
+.nav .dropdown {
+    position: relative;
+}
+
+.nav .dropdown-toggle {
+    cursor: pointer;
+}
+
+.nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 10px 0;
+}
+
+.nav .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav .dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.nav .dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile navigation */
+.mobile-nav-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
     </style>
 </head>
 <body>
@@ -77,21 +191,45 @@
 
     <nav class="nav">
         <ul>
-            <li><a href="index.html">Homepage</a></li>
-            <li><a href="leaguetable.html">League Table</a></li>
-            <li><a href="playerrankings.html">Player Rankings</a></li>
-            <li><a href="leaguefixtures.html">League Fixtures</a></li>
-            <li><a href="leagueresults.html">League Results</a></li>
-            <li><a href="cupfixtures.html">Cup Fixtures</a></li>
-            <li><a href="cupresults.html">Cup Results</a></li>
-            <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-            <li><a href="teamstats.html">Team Statistics</a></li>
-            <li><a href="contactinfo.html">Venues & Contacts</a></li>
-            <li><a href="scoreinput.html" class="active">Score Input</a></li>
-            <li><a href="editscores.html">Edit Scores</a></li>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li><a href="contactinfo.html">Contacts & Venues</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Admin</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Score Input</a></li>
+                    <li><a href="editscores.html">Edit Scores</a></li>
+                </ul>
+            </li>
         </ul>
     </nav>
-
     <div class="container">
         <!-- Score Input Page -->
         <div id="score-input" class="page">
