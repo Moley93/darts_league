@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Players - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="cdl.png">
+    <style>
+        /* Players page specific styles */
+        .player-filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filter-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .player-search {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .player-search input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .players-table-container {
+            overflow-x: auto;
+        }
+        
+        .players-table th {
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .players-table th::after {
+            content: "";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .players-table th.sort-asc::after {
+            content: "↑";
+        }
+        
+        .players-table th.sort-desc::after {
+            content: "↓";
+        }
+        
+        .players-count {
+            margin-bottom: 15px;
+            color: var(--dark-gray);
+            font-style: italic;
+        }
+        
+        .no-players-message {
+            text-align: center;
+            padding: 30px;
+            color: var(--dark-gray);
+            font-style: italic;
+            background: var(--light-gray);
+            border-radius: 5px;
+        }
+        
+        /* Team badge style */
+        .team-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: white;
+            background-color: var(--primary);
+        }
+        
+        .premier-team {
+            background-color: var(--primary);
+        }
+        
+        .a-team {
+            background-color: var(--secondary);
+        }
+        
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            margin: 20px auto;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-left-color: var(--primary);
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Header style for the index page to position logo left and title centered */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 67px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+        
+        /* Basic dropdown styling */
+        .nav .dropdown {
+            position: relative;
+        }
+        
+        .nav .dropdown-toggle {
+            cursor: pointer;
+        }
+        
+        .nav .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 4px;
+            padding: 10px 0;
+        }
+        
+        .nav .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+        
+        .nav .dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+        
+        .nav .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--primary);
+            border-radius: 0;
+        }
+        
+        .nav .dropdown-menu a:hover {
+            background-color: var(--light-gray);
+        }
+        
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 1.5rem;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: block;
+            }
+            
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .nav-menu.active {
+                display: block;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+            
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+            
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav .dropdown-menu li:first-child {
+                border-top: 1px solid var(--medium-gray);
+            }
+            
+            .nav .dropdown:hover .dropdown-menu {
+                display: none; /* Don't show on hover on mobile */
+            }
+            
+            /* Add a + icon to dropdowns */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
+            }
+            
+            /* Toggle this class with JavaScript */
+            .nav .dropdown.active .dropdown-menu {
+                display: block;
+            }
+            
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
+            }
+            
+            .player-filters {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                    <li><a href="cupdraw.html">Cup Draw</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                    <li><a href="players.html">Players</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Join</a>
+                <ul class="dropdown-menu">
+                    <li><a href="registration.html">Registration Form</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <div class="card">
+            <h1>Players</h1>
+            
+            <div class="player-filters">
+                <div class="filter-group">
+                    <label for="division-filter">Division</label>
+                    <select id="division-filter">
+                        <option value="all">All Divisions</option>
+                        <option value="premier">Premier Division</option>
+                        <option value="a">A Division</option>
+                    </select>
+                </div>
+                
+                <div class="filter-group">
+                    <label for="team-filter">Team</label>
+                    <select id="team-filter">
+                        <option value="all">All Teams</option>
+                        <!-- Team options will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+            
+            <div class="player-search">
+                <input type="text" id="player-search" placeholder="Search for a player...">
+            </div>
+            
+            <div class="players-count">
+                Showing <span id="visible-count">0</span> of <span id="total-count">0</span> players
+            </div>
+            
+            <div class="players-table-container">
+                <div id="loading-spinner" class="spinner"></div>
+                <table id="players-table" class="players-table">
+                    <thead>
+                        <tr>
+                            <th data-sort="id">ID</th>
+                            <th data-sort="name">Player Name</th>
+                            <th data-sort="team">Team</th>
+                            <th data-sort="division">Division</th>
+                        </tr>
+                    </thead>
+                    <tbody id="players-table-body">
+                        <!-- Player data will be loaded dynamically -->
+                    </tbody>
+                </table>
+                <div id="no-players-message" class="no-players-message hidden">
+                    No players match your current filter settings.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API configuration
+        const API_URL = 'api.php'; // Change this to your actual API endpoint
+        
+        // Global variables
+        let allPlayers = [];
+        let allTeams = [];
+        let currentSortField = 'name';
+        let currentSortDirection = 'asc';
+        
+        // DOM Elements
+        const playersTableBody = document.getElementById('players-table-body');
+        const divisionFilter = document.getElementById('division-filter');
+        const teamFilter = document.getElementById('team-filter');
+        const playerSearch = document.getElementById('player-search');
+        const visibleCountElement = document.getElementById('visible-count');
+        const totalCountElement = document.getElementById('total-count');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const noPlayersMessage = document.getElementById('no-players-message');
+        const tableHeaders = document.querySelectorAll('.players-table th');
+        
+        // API functions
+        async function fetchApi(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
+            
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
+            }
+        }
+        
+        // Fetch and display players data
+        async function loadPlayers() {
+            loadingSpinner.style.display = 'block';
+            playersTableBody.innerHTML = '';
+            
+            try {
+                // Fetch both Premier and A Division teams
+                const premierTeams = await fetchApi('teams', { division: 'premier' });
+                const aTeams = await fetchApi('teams', { division: 'a' });
+                
+                // Combine team lists and store globally
+                allTeams = [...premierTeams, ...aTeams];
+                
+                // Populate team filter dropdown
+                populateTeamFilter(allTeams);
+                
+                // Fetch players from all teams
+                const playerRequests = allTeams.map(team => fetchApi('players', { team_id: team.team_id }));
+                const playerResults = await Promise.all(playerRequests);
+                
+                // Flatten the array of player arrays and add team and division info
+                allPlayers = playerResults.flat().map(player => {
+                    const team = allTeams.find(t => t.team_id === player.team_id);
+                    return {
+                        ...player,
+                        team_name: team?.team_name || 'Unknown Team',
+                        division: team?.division || 'unknown'
+                    };
+                });
+                
+                // Update total count
+                totalCountElement.textContent = allPlayers.length;
+                
+                // Apply filters and sorting
+                filterAndSortPlayers();
+            } catch (error) {
+                console.error('Error loading players:', error);
+                playersTableBody.innerHTML = `<tr><td colspan="4">Error loading players. Please try again later.</td></tr>`;
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+        
+        // Populate team filter dropdown
+        function populateTeamFilter(teams) {
+            const teamFilter = document.getElementById('team-filter');
+            
+            // Clear existing options except the first one
+            teamFilter.innerHTML = '<option value="all">All Teams</option>';
+            
+            // Add Premier Division teams first
+            const premierTeams = teams.filter(team => team.division === 'premier' && team.team_name !== 'Bye');
+            if (premierTeams.length > 0) {
+                const premierOptgroup = document.createElement('optgroup');
+                premierOptgroup.label = 'Premier Division';
+                
+                premierTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.team_id;
+                    option.textContent = team.team_name;
+                    premierOptgroup.appendChild(option);
+                });
+                
+                teamFilter.appendChild(premierOptgroup);
+            }
+            
+            // Add A Division teams
+            const aTeams = teams.filter(team => team.division === 'a' && team.team_name !== 'Division A Bye');
+            if (aTeams.length > 0) {
+                const aOptgroup = document.createElement('optgroup');
+                aOptgroup.label = 'A Division';
+                
+                aTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.team_id;
+                    option.textContent = team.team_name;
+                    aOptgroup.appendChild(option);
+                });
+                
+                teamFilter.appendChild(aOptgroup);
+            }
+        }
+        
+        // Filter and sort players based on current filter settings
+        function filterAndSortPlayers() {
+            const divisionValue = divisionFilter.value;
+            const teamValue = teamFilter.value;
+            const searchValue = playerSearch.value.toLowerCase().trim();
+            
+            // Apply filters
+            const filteredPlayers = allPlayers.filter(player => {
+                // Division filter
+                if (divisionValue !== 'all' && player.division !== divisionValue) {
+                    return false;
+                }
+                
+                // Team filter
+                if (teamValue !== 'all' && player.team_id !== parseInt(teamValue)) {
+                    return false;
+                }
+                
+                // Search filter
+                if (searchValue && !player.player_name.toLowerCase().includes(searchValue)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            // Sort players
+            const sortedPlayers = sortPlayers(filteredPlayers, currentSortField, currentSortDirection);
+            
+            // Update visible count
+            visibleCountElement.textContent = sortedPlayers.length;
+            
+            // Display players or show "no players" message
+            if (sortedPlayers.length === 0) {
+                playersTableBody.innerHTML = '';
+                noPlayersMessage.classList.remove('hidden');
+            } else {
+                noPlayersMessage.classList.add('hidden');
+                displayPlayers(sortedPlayers);
+            }
+        }
+        
+        // Sort players based on the given field and direction
+        function sortPlayers(players, field, direction) {
+            return [...players].sort((a, b) => {
+                let valueA, valueB;
+                
+                switch (field) {
+                    case 'id':
+                        valueA = a.player_id;
+                        valueB = b.player_id;
+                        break;
+                    case 'name':
+                        valueA = a.player_name;
+                        valueB = b.player_name;
+                        break;
+                    case 'team':
+                        valueA = a.team_name;
+                        valueB = b.team_name;
+                        break;
+                    case 'division':
+                        valueA = a.division;
+                        valueB = b.division;
+                        break;
+                    default:
+                        valueA = a.player_name;
+                        valueB = b.player_name;
+                }
+                
+                // Handle numeric and string comparisons
+                if (typeof valueA === 'number' && typeof valueB === 'number') {
+                    return direction === 'asc' ? valueA - valueB : valueB - valueA;
+                } else {
+                    const strA = String(valueA).toLowerCase();
+                    const strB = String(valueB).toLowerCase();
+                    return direction === 'asc' 
+                        ? strA.localeCompare(strB) 
+                        : strB.localeCompare(strA);
+                }
+            });
+        }
+        
+        // Display the filtered and sorted players in the table
+        function displayPlayers(players) {
+            playersTableBody.innerHTML = '';
+            
+            players.forEach(player => {
+                const row = document.createElement('tr');
+                
+                // Determine team badge class based on division
+                const teamBadgeClass = player.division === 'premier' ? 'premier-team' : 'a-team';
+                
+                row.innerHTML = `
+                    <td>${player.player_id}</td>
+                    <td>${player.player_name}</td>
+                    <td>${player.team_name}</td>
+                    <td><span class="team-badge ${teamBadgeClass}">${player.division.toUpperCase()}</span></td>
+                `;
+                
+                playersTableBody.appendChild(row);
+            });
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Filter change events
+            divisionFilter.addEventListener('change', filterAndSortPlayers);
+            teamFilter.addEventListener('change', filterAndSortPlayers);
+            
+            // Search input event with debounce
+            let debounceTimeout;
+            playerSearch.addEventListener('input', () => {
+                clearTimeout(debounceTimeout);
+                debounceTimeout = setTimeout(filterAndSortPlayers, 300);
+            });
+            
+            // Sort column headers
+            tableHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const sortField = header.dataset.sort;
+                    
+                    // Toggle direction if clicking the same column
+                    if (sortField === currentSortField) {
+                        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+                    } else {
+                        currentSortField = sortField;
+                        currentSortDirection = 'asc';
+                    }
+                    
+                    // Update header styles
+                    tableHeaders.forEach(h => {
+                        h.classList.remove('sort-asc', 'sort-desc');
+                    });
+                    
+                    header.classList.add(`sort-${currentSortDirection}`);
+                    
+                    // Apply the new sort
+                    filterAndSortPlayers();
+                });
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', () => {
+            setupEventListeners();
+            loadPlayers();
+            
+            // Set initial sort indicator
+            const defaultSortHeader = document.querySelector(`.players-table th[data-sort="${currentSortField}"]`);
+            if (defaultSortHeader) {
+                defaultSortHeader.classList.add(`sort-${currentSortDirection}`);
+            }
+        });
+    </script>
+</body>
+</html>
