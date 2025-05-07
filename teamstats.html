@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Premier Division Statistics - Crawley Darts League</title>
+    <title>Team Statistics - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
     <style>
         /* Additional styles for team statistics page */
@@ -258,8 +258,8 @@
                 grid-column: span 2;
             }
         }
-        /* Custom header style for the index page to position logo left and title centered */
-        .header {
+                /* Custom header style for the index page to position logo left and title centered */
+                .header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
             padding: 20px;
@@ -436,8 +436,7 @@
                 <a href="#" class="dropdown-toggle">Statistics</a>
                 <ul class="dropdown-menu">
                     <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="premstats.html">Premier Division Stats</a></li>
-                    <li><a href="adivstats.html">A Division Stats</a></li>
+                    <li><a href="teamstats.html">Team Statistics</a></li>
                     <li><a href="playerrankings.html">Player Rankings</a></li>
                 </ul>
             </li>
@@ -465,7 +464,7 @@
         <!-- Team Statistics Page -->
         <div id="team-stats" class="page">
             <div class="card">
-                <h1>Premier Division Statistics <span class="league-only-note">(League Singles Only)</span></h1>
+                <h1>Team Statistics <span class="league-only-note">(League Singles Only)</span></h1>
                 
                 <div class="team-selector">
                     <select id="team-select">
@@ -557,29 +556,55 @@
             }
         }
         
-        // Load Premier Division teams only
-        async function loadTeams() {
-            try {
-                // Get Premier Division teams only
-                const premierTeams = await fetchApi('teams', { division: 'premier' });
-                
-                // Filter out bye teams
-                const filteredTeams = premierTeams.filter(team => 
-                    team.team_name !== 'Bye'
-                );
-                
-                // Add teams to select
-                filteredTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_name;
-                    option.textContent = team.team_name;
-                    teamSelect.appendChild(option);
-                });
-                
-            } catch (error) {
-                console.error('Error loading teams:', error);
+// Load all teams
+async function loadTeams() {
+    try {
+        // Get Premier Division teams
+        const premierTeams = await fetchApi('teams', { division: 'premier' });
+        // Get A Division teams
+        const aTeams = await fetchApi('teams', { division: 'a' });
+        
+        // Combine and filter out bye teams
+        const allTeams = [...premierTeams, ...aTeams].filter(team => 
+            team.team_name !== 'Bye' && team.team_name !== 'Division A Bye'
+        );
+        
+        // REMOVED: Sort alphabetically
+        // allTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
+        
+        // Add options to select
+        const premierGroup = document.createElement('optgroup');
+        premierGroup.label = 'Premier Division';
+        
+        const aGroup = document.createElement('optgroup');
+        aGroup.label = 'A Division';
+        
+        // Add teams to their respective division groups without sorting
+        premierTeams.forEach(team => {
+            if (team.team_name !== 'Bye') {
+                const option = document.createElement('option');
+                option.value = team.team_name;
+                option.textContent = team.team_name;
+                premierGroup.appendChild(option);
             }
-        }
+        });
+        
+        aTeams.forEach(team => {
+            if (team.team_name !== 'Division A Bye') {
+                const option = document.createElement('option');
+                option.value = team.team_name;
+                option.textContent = team.team_name;
+                aGroup.appendChild(option);
+            }
+        });
+        
+        teamSelect.appendChild(premierGroup);
+        teamSelect.appendChild(aGroup);
+        
+    } catch (error) {
+        console.error('Error loading teams:', error);
+    }
+}
         
         // Load team data including all players and their stats
         async function loadTeamData(teamName) {
@@ -594,6 +619,8 @@
                     throw new Error(`Team not found: ${teamName}`);
                 }
                 
+                const division = team.division;
+                
                 // 2. Get players for this team
                 const players = await fetchApi('players', { team_name: teamName });
                 
@@ -601,9 +628,9 @@
                     throw new Error(`No players found for team: ${teamName}`);
                 }
                 
-                // 3. Get singles rankings for all players in Premier division with match_type=league
+                // 3. Get singles rankings for all players in the division with match_type=league
                 const singlesData = await fetchApi('singles-ranking', { 
-                    division: 'premier',
+                    division: division,
                     match_type: 'league'
                 });
                 
@@ -616,7 +643,7 @@
                 // 6. Render the data
                 renderTeamInfo(team);
                 renderTeamSummary(teamSummaryStats);
-                renderPlayerStats(playerStats);
+                renderPlayerStats(playerStats, division);
                 
                 // Cache the data
                 playerStatsCache[teamName] = {
@@ -656,7 +683,7 @@
                 // Calculate derived stats
                 const winPercentage = played > 0 ? (won / played * 100).toFixed(1) : 0;
                 
-                // Calculate legs stats - Premier Division (best of 5)
+                // Calculate legs stats
                 const win_3_0 = playerSinglesData.win_3_0 || 0;
                 const win_3_1 = playerSinglesData.win_3_1 || 0;
                 const win_3_2 = playerSinglesData.win_3_2 || 0;
@@ -664,26 +691,50 @@
                 const loss_1_3 = playerSinglesData.loss_1_3 || 0;
                 const loss_0_3 = playerSinglesData.loss_0_3 || 0;
                 
-                // Calculate leg stats - Premier Division logic (best of 5)
-                const legsPlayed = (win_3_0 * 3) + (win_3_1 * 4) + (win_3_2 * 5) + 
+                // For A division, check different fields
+                const win_2_0 = playerSinglesData.win_2_0 || 0;
+                const win_2_1 = playerSinglesData.win_2_1 || 0;
+                const loss_1_2 = playerSinglesData.loss_1_2 || 0;
+                const loss_0_2 = playerSinglesData.loss_0_2 || 0;
+                
+                // Calculate leg stats - different depending on division
+                let legsPlayed, legsWon, legsLost;
+                
+                if (playerSinglesData.win_3_0 !== undefined) {
+                    // Premier Division logic (best of 5)
+                    legsPlayed = (win_3_0 * 3) + (win_3_1 * 4) + (win_3_2 * 5) + 
                                 (loss_2_3 * 5) + (loss_1_3 * 4) + (loss_0_3 * 3);
-                
-                const legsWon = (win_3_0 * 3) + (win_3_1 * 3) + (win_3_2 * 3) + 
+                    
+                    legsWon = (win_3_0 * 3) + (win_3_1 * 3) + (win_3_2 * 3) + 
                             (loss_2_3 * 2) + (loss_1_3 * 1) + (loss_0_3 * 0);
-                
-                const legsLost = legsPlayed - legsWon;
+                    
+                    legsLost = legsPlayed - legsWon;
+                } else {
+                    // A Division logic (best of 3)
+                    legsPlayed = (win_2_0 * 2) + (win_2_1 * 3) + (loss_1_2 * 3) + (loss_0_2 * 2);
+                    legsWon = (win_2_0 * 2) + (win_2_1 * 2) + (loss_1_2 * 1) + (loss_0_2 * 0);
+                    legsLost = legsPlayed - legsWon;
+                }
                 
                 const legWinPercentage = legsPlayed > 0 ? (legsWon / legsPlayed * 100).toFixed(1) : 0;
                 
-                // Calculate points using the Premier Division scoring system
+                // Calculate points using the corrected Premier Division scoring system
                 let points = 0;
-                // Premier Division scoring with corrected point values
-                points += (win_3_0 * 5);  // 5 points for 3-0 win
-                points += (win_3_1 * 4);  // 4 points for 3-1 win
-                points += (win_3_2 * 3);  // 3 points for 3-2 win
-                points += (loss_2_3 * 2); // 2 points for 2-3 loss
-                points += (loss_1_3 * 1); // 1 point for 1-3 loss
-                // 0 points for 0-3 loss
+                if (playerSinglesData.win_3_0 !== undefined) {
+                    // Premier Division scoring with corrected point values
+                    points += (win_3_0 * 5);  // 5 points for 3-0 win
+                    points += (win_3_1 * 4);  // 4 points for 3-1 win
+                    points += (win_3_2 * 3);  // 3 points for 3-2 win
+                    points += (loss_2_3 * 2); // 2 points for 2-3 loss
+                    points += (loss_1_3 * 1); // 1 point for 1-3 loss
+                    // 0 points for 0-3 loss
+                } else {
+                    // A Division scoring (unchanged)
+                    points += (win_2_0 * 3);  // 3 points for 2-0 win
+                    points += (win_2_1 * 2);  // 2 points for 2-1 win
+                    points += (loss_1_2 * 1); // 1 point for 1-2 loss
+                    // 0 points for 0-2 loss
+                }
                 
                 return {
                     ...player,
@@ -702,7 +753,15 @@
                         loss_2_3,
                         loss_1_3,
                         loss_0_3,
-                        points
+                        win_2_0,
+                        win_2_1,
+                        loss_1_2,
+                        loss_0_2,
+                        isPremier: playerSinglesData.win_3_0 !== undefined,
+                        // Use the calculated points instead of points from the API
+                        points: points,
+                        // Keep this for compatibility, but it should be the same as points now
+                        recalculated_points: points
                     }
                 };
             });
@@ -751,7 +810,7 @@
         function renderTeamInfo(team) {
             teamInfoBanner.innerHTML = `
                 <h2>${team.team_name}</h2>
-                <p>Premier Division</p>
+                <p>${team.division === 'premier' ? 'Premier Division' : 'A Division'}</p>
             `;
         }
         
@@ -797,7 +856,7 @@
         }
         
         // Render player statistics cards
-        function renderPlayerStats(playerStats) {
+        function renderPlayerStats(playerStats, division) {
             // Sort players by games played (desc) then win percentage (desc)
             playerStats.sort((a, b) => {
                 if (b.singlesStats.played === a.singlesStats.played) {
@@ -818,35 +877,62 @@
                 const card = document.createElement('div');
                 card.className = 'stats-card';
                 
-                // Premier Division (best of 5) score breakdown
-                const scoreBreakdownHTML = `
-                    <div class="score-breakdown">
-                        <div class="score-item win">
-                            <div class="score-count">${stats.win_3_0}</div>
-                            <div>3-0</div>
+                // Generate score breakdown based on division
+                let scoreBreakdownHTML = '';
+                
+                if (stats.isPremier) {
+                    // Premier Division (best of 5)
+                    scoreBreakdownHTML = `
+                        <div class="score-breakdown">
+                            <div class="score-item win">
+                                <div class="score-count">${stats.win_3_0}</div>
+                                <div>3-0</div>
+                            </div>
+                            <div class="score-item win">
+                                <div class="score-count">${stats.win_3_1}</div>
+                                <div>3-1</div>
+                            </div>
+                            <div class="score-item win">
+                                <div class="score-count">${stats.win_3_2}</div>
+                                <div>3-2</div>
+                            </div>
+                            <div class="score-item loss">
+                                <div class="score-count">${stats.loss_2_3}</div>
+                                <div>2-3</div>
+                            </div>
+                            <div class="score-item loss">
+                                <div class="score-count">${stats.loss_1_3}</div>
+                                <div>1-3</div>
+                            </div>
+                            <div class="score-item loss">
+                                <div class="score-count">${stats.loss_0_3}</div>
+                                <div>0-3</div>
+                            </div>
                         </div>
-                        <div class="score-item win">
-                            <div class="score-count">${stats.win_3_1}</div>
-                            <div>3-1</div>
+                    `;
+                } else {
+                    // A Division (best of 3)
+                    scoreBreakdownHTML = `
+                        <div class="score-breakdown">
+                            <div class="score-item win">
+                                <div class="score-count">${stats.win_2_0}</div>
+                                <div>2-0</div>
+                            </div>
+                            <div class="score-item win">
+                                <div class="score-count">${stats.win_2_1}</div>
+                                <div>2-1</div>
+                            </div>
+                            <div class="score-item loss">
+                                <div class="score-count">${stats.loss_1_2}</div>
+                                <div>1-2</div>
+                            </div>
+                            <div class="score-item loss">
+                                <div class="score-count">${stats.loss_0_2}</div>
+                                <div>0-2</div>
+                            </div>
                         </div>
-                        <div class="score-item win">
-                            <div class="score-count">${stats.win_3_2}</div>
-                            <div>3-2</div>
-                        </div>
-                        <div class="score-item loss">
-                            <div class="score-count">${stats.loss_2_3}</div>
-                            <div>2-3</div>
-                        </div>
-                        <div class="score-item loss">
-                            <div class="score-count">${stats.loss_1_3}</div>
-                            <div>1-3</div>
-                        </div>
-                        <div class="score-item loss">
-                            <div class="score-count">${stats.loss_0_3}</div>
-                            <div>0-3</div>
-                        </div>
-                    </div>
-                `;
+                    `;
+                }
                 
                 card.innerHTML = `
                     <div class="stats-header">
@@ -896,3 +982,41 @@
                         <h3>Score Breakdown</h3>
                         ${scoreBreakdownHTML}
                     </div>
+                `;
+                
+                playerStatsGrid.appendChild(card);
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTeams();
+            
+            // If there's a team in the URL hash, load it
+            const hashTeam = window.location.hash.substring(1);
+            if (hashTeam) {
+                // Find the team option and select it
+                const option = Array.from(teamSelect.options).find(o => 
+                    o.value.toLowerCase() === decodeURIComponent(hashTeam).toLowerCase()
+                );
+                
+                if (option) {
+                    teamSelect.value = option.value;
+                    loadTeamData(option.value);
+                }
+            }
+        });
+        
+        // Update URL hash when team is selected
+        teamSelect.addEventListener('change', () => {
+            const selectedTeam = teamSelect.value;
+            if (selectedTeam) {
+                window.location.hash = encodeURIComponent(selectedTeam);
+            } else {
+                // Clear hash if no team selected
+                history.pushState("", document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
