@@ -896,3 +896,41 @@
                         <h3>Score Breakdown</h3>
                         ${scoreBreakdownHTML}
                     </div>
+                `;
+                
+                playerStatsGrid.appendChild(card);
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTeams();
+            
+            // If there's a team in the URL hash, load it
+            const hashTeam = window.location.hash.substring(1);
+            if (hashTeam) {
+                // Find the team option and select it
+                const option = Array.from(teamSelect.options).find(o => 
+                    o.value.toLowerCase() === decodeURIComponent(hashTeam).toLowerCase()
+                );
+                
+                if (option) {
+                    teamSelect.value = option.value;
+                    loadTeamData(option.value);
+                }
+            }
+        });
+        
+        // Update URL hash when team is selected
+        teamSelect.addEventListener('change', () => {
+            const selectedTeam = teamSelect.value;
+            if (selectedTeam) {
+                window.location.hash = encodeURIComponent(selectedTeam);
+            } else {
+                // Clear hash if no team selected
+                history.pushState("", document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
