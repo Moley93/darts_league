@@ -429,7 +429,6 @@
                 <ul class="dropdown-menu">
                     <li><a href="cupfixtures.html">Fixtures</a></li>
                     <li><a href="cupresults.html">Results</a></li>
-                    <li><a href="cupdraw.html">Cup Draw</a></li>
                 </ul>
             </li>
             
@@ -446,6 +445,7 @@
                 <a href="#" class="dropdown-toggle">Information</a>
                 <ul class="dropdown-menu">
                     <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
                     <li><a href="rules.html">League Rules</a></li>
                     <li><a href="agm-minutes.html">AGM Minutes</a></li>
                 </ul>
@@ -458,15 +458,9 @@
                     <li><a href="editscores.html">Edit Score</a></li>
                 </ul>
             </li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                </ul>
-            </li>
         </ul>
-    </nav>    <div class="container">
+    </nav>
+    <div class="container">
         <!-- Team Statistics Page -->
         <div id="team-stats" class="page">
             <div class="card">
@@ -605,54 +599,7 @@
             }
         }
         
-<<<<<<< HEAD
-        // Sort alphabetically within each division
-        premierTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
-        aTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
-        
-        // Create optgroups for each division
-        const premierGroup = document.createElement('optgroup');
-        premierGroup.label = 'Premier Division';
-        
-        const aGroup = document.createElement('optgroup');
-        aGroup.label = 'A Division';
-        
-        // Add Premier Division teams
-        premierTeams
-            .filter(team => team.team_name !== 'Bye')
-            .forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.team_name;
-                option.textContent = team.team_name;
-                premierGroup.appendChild(option);
-            });
-        
-        // Add A Division teams
-        aTeams
-            .filter(team => team.team_name !== 'Division A Bye')
-            .forEach(team => {
-                const option = document.createElement('option');
-                option.value = team.team_name;
-                option.textContent = team.team_name;
-                aGroup.appendChild(option);
-            });
-        
-        // Add the optgroups to the select element
-        teamSelect.appendChild(premierGroup);
-        teamSelect.appendChild(aGroup);
-        
-        console.log('Premier Group options:', premierGroup.children.length);
-        console.log('A Division Group options:', aGroup.children.length);
-        
-        showLoading(false);
-    } catch (error) {
-        console.error('Error loading teams:', error);
-        showLoading(false);
-    }
-}        // Load team data including all players and their stats
-=======
         // Load team data including all players and their stats
->>>>>>> parent of 6865d87 (updates)
         async function loadTeamData(teamName) {
             showLoading(true);
             
