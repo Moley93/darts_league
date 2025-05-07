@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Division Statistics - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Additional styles for team statistics page */
+        .team-selector {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .team-selector select {
+            padding: 10px 20px;
+            font-size: 16px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            min-width: 250px;
+        }
+        
+        .team-info-banner {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .team-info-banner h2 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        .team-info-banner p {
+            margin: 5px 0;
+            font-size: 1.1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .stats-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .stats-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 10px;
+        }
+        
+        .player-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary);
+            flex-grow: 1;
+        }
+        
+        .stats-badge {
+            background-color: var(--accent);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+        
+        .stats-group {
+            margin-bottom: 15px;
+        }
+        
+        .stats-group h3 {
+            font-size: 1rem;
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+        
+        .stats-label {
+            color: var(--dark-gray);
+        }
+        
+        .stats-value {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .score-breakdown {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .score-item {
+            text-align: center;
+            padding: 8px 5px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .score-item.win {
+            background-color: rgba(76, 175, 80, 0.1);
+            border: 1px solid rgba(76, 175, 80, 0.3);
+        }
+        
+        .score-item.loss {
+            background-color: rgba(244, 67, 54, 0.1);
+            border: 1px solid rgba(244, 67, 54, 0.3);
+        }
+        
+        .score-count {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            width: 100%;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            border-radius: 4px;
+        }
+        
+        .team-summary {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .team-summary h2 {
+            margin-bottom: 15px;
+            color: var(--primary);
+            border-bottom: 2px solid var(--light-gray);
+            padding-bottom: 10px;
+        }
+        
+        .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .summary-stat {
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .summary-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary);
+        }
+        
+        .summary-label {
+            font-size: 0.9rem;
+            color: var(--dark-gray);
+        }
+        
+        .loading-spinner {
+            display: none;
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--light-gray);
+            border-top: 5px solid var(--primary);
+            border-radius: 50%;
+            margin: 40px auto;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .no-team-message {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 1.2rem;
+            color: var(--dark-gray);
+        }
+        
+        /* Add league-only note class from other pages */
+        .league-only-note {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--secondary);
+            font-style: italic;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .summary-stats {
+                grid-template-columns: 1fr;
+            }
+            
+            .score-breakdown {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        /* Custom header style for the index page to position logo left and title centered */
+        .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 70px;
+            height: 67px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+        /* Basic dropdown styling */
+.nav .dropdown {
+    position: relative;
+}
+
+.nav .dropdown-toggle {
+    cursor: pointer;
+}
+
+.nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 10px 0;
+}
+
+.nav .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav .dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.nav .dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile navigation */
+.mobile-nav-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+    </header>
+
+    <nav class="nav">
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupfixtures.html">Fixtures</a></li>
+                    <li><a href="cupresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="premstats.html">Premier Division Stats</a></li>
+                    <li><a href="adivstats.html">A Division Stats</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div class="container">
+        <!-- Team Statistics Page -->
+        <div id="team-stats" class="page">
+            <div class="card">
+                <h1>A Division Statistics <span class="league-only-note">(League Singles Only)</span></h1>
+                
+                <div class="team-selector">
+                    <select id="team-select">
+                        <option value="">Select a team to view stats</option>
+                        <!-- Teams will be loaded here -->
+                    </select>
+                </div>
+                
+                <div id="loading-spinner" class="loading-spinner"></div>
+                
+                <div id="no-team-selected" class="no-team-message">
+                    <p>Please select a team above to view detailed player statistics.</p>
+                </div>
+                
+                <div id="team-data-container" class="hidden">
+                    <div id="team-info-banner" class="team-info-banner">
+                        <!-- Team info will be displayed here -->
+                    </div>
+                    
+                    <div id="team-summary" class="team-summary">
+                        <h2>Team Overview</h2>
+                        <div class="summary-stats">
+                            <!-- Team summary stats will be displayed here -->
+                        </div>
+                    </div>
+                    
+                    <h2>Player Statistics</h2>
+                    <div id="player-stats-grid" class="stats-grid">
+                        <!-- Player stats cards will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API configuration
+        const API_URL = 'api.php'; // The API endpoint path
+        
+        // Cache to store player data
+        let playerStatsCache = {};
+        
+        // DOM Elements
+        const teamSelect = document.getElementById('team-select');
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const noTeamSelected = document.getElementById('no-team-selected');
+        const teamDataContainer = document.getElementById('team-data-container');
+        const teamInfoBanner = document.getElementById('team-info-banner');
+        const teamSummary = document.getElementById('team-summary').querySelector('.summary-stats');
+        const playerStatsGrid = document.getElementById('player-stats-grid');
+        
+        // Event listener for team selection change
+        teamSelect.addEventListener('change', async () => {
+            const selectedTeam = teamSelect.value;
+            
+            if (!selectedTeam) {
+                showNoTeamMessage();
+                return;
+            }
+            
+            await loadTeamData(selectedTeam);
+        });
+        
+        // Show loading spinner
+        function showLoading(show = true) {
+            loadingSpinner.style.display = show ? 'block' : 'none';
+            noTeamSelected.style.display = show ? 'none' : 'block';
+            teamDataContainer.classList.toggle('hidden', show);
+        }
+        
+        // Show no team selected message
+        function showNoTeamMessage() {
+            noTeamSelected.style.display = 'block';
+            teamDataContainer.classList.add('hidden');
+            loadingSpinner.style.display = 'none';
+        }
+        
+        // API functions
+        async function fetchApi(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
+            
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
+            }
+        }
+        
+        // Load A Division teams only
+        async function loadTeams() {
+            try {
+                // Get A Division teams only
+                const aTeams = await fetchApi('teams', { division: 'a' });
+                
+                // Filter out bye teams
+                const filteredTeams = aTeams.filter(team => 
+                    team.team_name !== 'Division A Bye'
+                );
+                
+                // Add teams to select
+                filteredTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.team_name;
+                    option.textContent = team.team_name;
+                    teamSelect.appendChild(option);
+                });
+                
+            } catch (error) {
+                console.error('Error loading teams:', error);
+            }
+        }
+        
+        // Load team data including all players and their stats
+        async function loadTeamData(teamName) {
+            showLoading(true);
+            
+            try {
+                // 1. Get team info
+                const allTeams = await fetchApi('teams');
+                const team = allTeams.find(t => t.team_name === teamName);
+                
+                if (!team) {
+                    throw new Error(`Team not found: ${teamName}`);
+                }
+                
+                // 2. Get players for this team
+                const players = await fetchApi('players', { team_name: teamName });
+                
+                if (!players || players.length === 0) {
+                    throw new Error(`No players found for team: ${teamName}`);
+                }
+                
+                // 3. Get singles rankings for all players in Premier division with match_type=league
+                const singlesData = await fetchApi('singles-ranking', { 
+                    division: 'premier',
+                    match_type: 'league'
+                });
+                
+                // 4. Filter and process player stats
+                const playerStats = processPlayerStats(players, singlesData);
+                
+                // 5. Calculate team summary
+                const teamSummaryStats = calculateTeamSummary(playerStats);
+                
+                // 6. Render the data
+                renderTeamInfo(team);
+                renderTeamSummary(teamSummaryStats);
+                renderPlayerStats(playerStats);
+                
+                // Cache the data
+                playerStatsCache[teamName] = {
+                    team,
+                    playerStats,
+                    teamSummaryStats
+                };
+                
+                showLoading(false);
+            } catch (error) {
+                console.error('Error loading team data:', error);
+                // Show error message
+                teamInfoBanner.innerHTML = `
+                    <h2>Error Loading Team Data</h2>
+                    <p>${error.message || 'An unknown error occurred'}</p>
+                `;
+                teamSummary.innerHTML = '';
+                playerStatsGrid.innerHTML = '';
+                
+                showLoading(false);
+            }
+        }
+        
+        // Process player statistics from the API data
+        function processPlayerStats(players, singlesData) {
+            return players.map(player => {
+                // Find this player in the singles data
+                const playerSinglesData = singlesData.find(p => 
+                    p.player_name === player.player_name
+                ) || {};
+                
+                // Extract stats or set defaults
+                const played = playerSinglesData.played || 0;
+                const won = playerSinglesData.won || 0;
+                const lost = playerSinglesData.lost || 0;
+                
+                // Calculate derived stats
+                const winPercentage = played > 0 ? (won / played * 100).toFixed(1) : 0;
+                
+                // Calculate legs stats - Premier Division (best of 5)
+                const win_3_0 = playerSinglesData.win_3_0 || 0;
+                const win_3_1 = playerSinglesData.win_3_1 || 0;
+                const win_3_2 = playerSinglesData.win_3_2 || 0;
+                const loss_2_3 = playerSinglesData.loss_2_3 || 0;
+                const loss_1_3 = playerSinglesData.loss_1_3 || 0;
+                const loss_0_3 = playerSinglesData.loss_0_3 || 0;
+                
+                // Calculate leg stats - Premier Division logic (best of 5)
+                const legsPlayed = (win_3_0 * 3) + (win_3_1 * 4) + (win_3_2 * 5) + 
+                                (loss_2_3 * 5) + (loss_1_3 * 4) + (loss_0_3 * 3);
+                
+                const legsWon = (win_3_0 * 3) + (win_3_1 * 3) + (win_3_2 * 3) + 
+                            (loss_2_3 * 2) + (loss_1_3 * 1) + (loss_0_3 * 0);
+                
+                const legsLost = legsPlayed - legsWon;
+                
+                const legWinPercentage = legsPlayed > 0 ? (legsWon / legsPlayed * 100).toFixed(1) : 0;
+                
+                // Calculate points using the Premier Division scoring system
+                let points = 0;
+                // Premier Division scoring with corrected point values
+                points += (win_3_0 * 5);  // 5 points for 3-0 win
+                points += (win_3_1 * 4);  // 4 points for 3-1 win
+                points += (win_3_2 * 3);  // 3 points for 3-2 win
+                points += (loss_2_3 * 2); // 2 points for 2-3 loss
+                points += (loss_1_3 * 1); // 1 point for 1-3 loss
+                // 0 points for 0-3 loss
+                
+                return {
+                    ...player,
+                    singlesStats: {
+                        played,
+                        won,
+                        lost,
+                        winPercentage,
+                        legsPlayed,
+                        legsWon,
+                        legsLost,
+                        legWinPercentage,
+                        win_3_0,
+                        win_3_1,
+                        win_3_2,
+                        loss_2_3,
+                        loss_1_3,
+                        loss_0_3,
+                        points
+                    }
+                };
+            });
+        }
+        
+        // Calculate team summary statistics
+        function calculateTeamSummary(playerStats) {
+            // Initialize with default values
+            const summary = {
+                totalPlayers: playerStats.length,
+                activePlayers: 0,
+                totalMatches: 0,
+                totalMatchesWon: 0,
+                totalMatchesLost: 0,
+                totalLegsPlayed: 0,
+                totalLegsWon: 0,
+                totalLegsLost: 0
+            };
+            
+            // Loop through all players to accumulate stats
+            playerStats.forEach(player => {
+                const stats = player.singlesStats;
+                if (stats.played > 0) {
+                    summary.activePlayers++;
+                }
+                
+                // Add match stats
+                const played = parseInt(stats.played) || 0;
+                const won = parseInt(stats.won) || 0;
+                const lost = parseInt(stats.lost) || 0;
+                
+                summary.totalMatches += played;
+                summary.totalMatchesWon += won;
+                summary.totalMatchesLost += lost;
+                
+                // Add leg stats
+                summary.totalLegsPlayed += parseInt(stats.legsPlayed) || 0;
+                summary.totalLegsWon += parseInt(stats.legsWon) || 0;
+                summary.totalLegsLost += parseInt(stats.legsLost) || 0;
+            });
+            
+            return summary;
+        }
+        
+        // Render team information
+        function renderTeamInfo(team) {
+            teamInfoBanner.innerHTML = `
+                <h2>${team.team_name}</h2>
+                <p>Premier Division</p>
+            `;
+        }
+        
+        // Render team summary statistics
+        function renderTeamSummary(summary) {
+            // Calculate percentages here in the render function
+            let matchWinPct = 0;
+            if (summary.totalMatches > 0) {
+                matchWinPct = (summary.totalMatchesWon / summary.totalMatches) * 100;
+            }
+            
+            let legWinPct = 0;
+            if (summary.totalLegsPlayed > 0) {
+                legWinPct = (summary.totalLegsWon / summary.totalLegsPlayed) * 100;
+            }
+            
+            teamSummary.innerHTML = `
+                <div class="summary-stat">
+                    <div class="summary-value">${summary.activePlayers}/${summary.totalPlayers}</div>
+                    <div class="summary-label">Active Players</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value">${summary.totalMatches}</div>
+                    <div class="summary-label">Total Matches</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value">${summary.totalMatchesWon}-${summary.totalMatchesLost}</div>
+                    <div class="summary-label">Match Record (W-L)</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value">${matchWinPct.toFixed(1)}%</div>
+                    <div class="summary-label">Match Win %</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value">${summary.totalLegsWon}-${summary.totalLegsLost}</div>
+                    <div class="summary-label">Leg Record (W-L)</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="summary-value">${legWinPct.toFixed(1)}%</div>
+                    <div class="summary-label">Leg Win %</div>
+                </div>
+            `;
+        }
+        
+        // Render player statistics cards
+        function renderPlayerStats(playerStats) {
+            // Sort players by games played (desc) then win percentage (desc)
+            playerStats.sort((a, b) => {
+                if (b.singlesStats.played === a.singlesStats.played) {
+                    return b.singlesStats.winPercentage - a.singlesStats.winPercentage;
+                }
+                return b.singlesStats.played - a.singlesStats.played;
+            });
+            
+            playerStatsGrid.innerHTML = '';
+            
+            if (playerStats.length === 0) {
+                playerStatsGrid.innerHTML = '<p>No players found for this team.</p>';
+                return;
+            }
+            
+            playerStats.forEach(player => {
+                const stats = player.singlesStats;
+                const card = document.createElement('div');
+                card.className = 'stats-card';
+                
+                // Premier Division (best of 5) score breakdown
+                const scoreBreakdownHTML = `
+                    <div class="score-breakdown">
+                        <div class="score-item win">
+                            <div class="score-count">${stats.win_3_0}</div>
+                            <div>3-0</div>
+                        </div>
+                        <div class="score-item win">
+                            <div class="score-count">${stats.win_3_1}</div>
+                            <div>3-1</div>
+                        </div>
+                        <div class="score-item win">
+                            <div class="score-count">${stats.win_3_2}</div>
+                            <div>3-2</div>
+                        </div>
+                        <div class="score-item loss">
+                            <div class="score-count">${stats.loss_2_3}</div>
+                            <div>2-3</div>
+                        </div>
+                        <div class="score-item loss">
+                            <div class="score-count">${stats.loss_1_3}</div>
+                            <div>1-3</div>
+                        </div>
+                        <div class="score-item loss">
+                            <div class="score-count">${stats.loss_0_3}</div>
+                            <div>0-3</div>
+                        </div>
+                    </div>
+                `;
+                
+                card.innerHTML = `
+                    <div class="stats-header">
+                        <div class="player-name">${player.player_name}</div>
+                        <div class="stats-badge">${stats.points} pts</div>
+                    </div>
+                    
+                    <div class="stats-group">
+                        <h3>Match Statistics</h3>
+                        <div class="stats-row">
+                            <div class="stats-label">Matches Played:</div>
+                            <div class="stats-value">${stats.played}</div>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stats-label">Match Record (W-L):</div>
+                            <div class="stats-value">${stats.won}-${stats.lost}</div>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stats-label">Match Win %:</div>
+                            <div class="stats-value">${stats.winPercentage}%</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${stats.winPercentage}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-group">
+                        <h3>Leg Statistics</h3>
+                        <div class="stats-row">
+                            <div class="stats-label">Legs Played:</div>
+                            <div class="stats-value">${stats.legsPlayed}</div>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stats-label">Leg Record (W-L):</div>
+                            <div class="stats-value">${stats.legsWon}-${stats.legsLost}</div>
+                        </div>
+                        <div class="stats-row">
+                            <div class="stats-label">Leg Win %:</div>
+                            <div class="stats-value">${stats.legWinPercentage}%</div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${stats.legWinPercentage}%"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="stats-group">
+                        <h3>Score Breakdown</h3>
+                        ${scoreBreakdownHTML}
+                    </div>
+                `;
+                
+                playerStatsGrid.appendChild(card);
+            });
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadTeams();
+            
+            // If there's a team in the URL hash, load it
+            const hashTeam = window.location.hash.substring(1);
+            if (hashTeam) {
+                // Find the team option and select it
+                const option = Array.from(teamSelect.options).find(o => 
+                    o.value.toLowerCase() === decodeURIComponent(hashTeam).toLowerCase()
+                );
+                
+                if (option) {
+                    teamSelect.value = option.value;
+                    loadTeamData(option.value);
+                }
+            }
+        });
+        
+        // Update URL hash when team is selected
+        teamSelect.addEventListener('change', () => {
+            const selectedTeam = teamSelect.value;
+            if (selectedTeam) {
+                window.location.hash = encodeURIComponent(selectedTeam);
+            } else {
+                // Clear hash if no team selected
+                history.pushState("", document.title, window.location.pathname);
+            }
+        });
+    </script>
+</body>
+</html>
