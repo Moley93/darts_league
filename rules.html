@@ -929,62 +929,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-        // Tab switching functionality
-        document.querySelectorAll('.rules-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                // Remove active class from all tabs
-                document.querySelectorAll('.rules-tab').forEach(t => {
-                    t.classList.remove('active');
-                });
-                
-                // Add active class to clicked tab
-                tab.classList.add('active');
-                
-                // Hide all rule sections
-                document.querySelectorAll('.rules-section').forEach(section => {
-                    section.classList.add('hidden');
-                });
-                
-                // Show the selected section
-                const sectionId = tab.dataset.section + '-rules';
-                document.getElementById(sectionId).classList.remove('hidden');
-            });
-        });
-        
-        // Mobile dropdown navigation
+        // Simple script to toggle dropdown menus on mobile
         document.addEventListener('DOMContentLoaded', function() {
             const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
             
             dropdownToggles.forEach(toggle => {
                 toggle.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    const parent = this.parentElement;
-                    
-                    // Check if this dropdown is already active
-                    const isActive = parent.classList.contains('active');
-                    
-                    // Close all open dropdowns
-                    document.querySelectorAll('.dropdown').forEach(dropdown => {
-                        dropdown.classList.remove('active');
-                    });
-                    
-                    // Toggle this dropdown
-                    if (!isActive) {
-                        parent.classList.add('active');
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const parent = this.parentElement;
+                        parent.classList.toggle('active');
                     }
                 });
             });
-            
-            // Close dropdowns when clicking outside
-            document.addEventListener('click', function(e) {
-                // If click is outside dropdown
-                if (!e.target.closest('.dropdown')) {
-                    document.querySelectorAll('.dropdown').forEach(dropdown => {
-                        dropdown.classList.remove('active');
-                    });
-                }
-            });
         });
+        document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    // Toggle mobile menu
+    mobileToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        
+        // Animate hamburger to X
+        this.classList.toggle('active');
+        const bars = this.querySelectorAll('.bar');
+        if (this.classList.contains('active')) {
+            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+            bars[1].style.opacity = '0';
+            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+        } else {
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle dropdown menus on mobile
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Only apply this behavior on mobile
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                const parentLi = this.parentElement;
+                
+                // Close all other open dropdowns
+                document.querySelectorAll('.dropdown.active').forEach(item => {
+                    if (item !== parentLi) {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                // Toggle this dropdown
+                parentLi.classList.toggle('active');
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
+        if (!isClickInsideNav && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle resize events
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+            
+            // Reset all dropdowns
+            document.querySelectorAll('.dropdown.active').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+    });
+});
     </script>
 </body>
 </html>
