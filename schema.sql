@@ -168,7 +168,7 @@ INSERT INTO teams (team_name, division) VALUES
 -- The Unbearables (team_id: 1)
 INSERT INTO players (player_name, team_id) VALUES
 ('John Smith', 1),
-('Mike Johnson', 1),
+('Clare Nicholson', 1),
 ('Chris Davis', 1),
 ('James Wilson', 1),
 ('Robert Brown', 1),
