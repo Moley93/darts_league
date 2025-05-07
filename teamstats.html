@@ -562,49 +562,80 @@
             }
         }
         
-        // Load all teams
-        async function loadTeams() {
-            try {
-                // Get Premier Division teams
-                const premierTeams = await fetchApi('teams', { division: 'premier' });
-                // Get A Division teams
-                const aTeams = await fetchApi('teams', { division: 'a' });
-                
-                // Combine and filter out bye teams
-                const allTeams = [...premierTeams, ...aTeams].filter(team => 
-                    team.team_name !== 'Bye' && team.team_name !== 'Division A Bye'
-                );
-                
-                // Sort alphabetically
-                allTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
-                
-                // Add options to select
-                const premierGroup = document.createElement('optgroup');
-                premierGroup.label = 'Premier Division';
-                
-                const aGroup = document.createElement('optgroup');
-                aGroup.label = 'A Division';
-                
-                allTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_name;
-                    option.textContent = team.team_name;
-                    
-                    if (team.division === 'premier') {
-                        premierGroup.appendChild(option);
-                    } else {
-                        aGroup.appendChild(option);
-                    }
-                });
-                
-                teamSelect.appendChild(premierGroup);
-                teamSelect.appendChild(aGroup);
-                
-            } catch (error) {
-                console.error('Error loading teams:', error);
-            }
+// This is the fixed implementation of the loadTeams() function
+// The issue was that the teams data fetching wasn't properly handling the A division teams
+
+// Load all teams
+async function loadTeams() {
+    try {
+        showLoading(true);
+        
+        // Get Premier Division teams
+        const premierTeams = await fetchApi('teams', { division: 'premier' });
+        console.log('Premier teams loaded:', premierTeams.length);
+        
+        // Get A Division teams
+        const aTeams = await fetchApi('teams', { division: 'a' });
+        console.log('A Division teams loaded:', aTeams.length);
+        
+        // Combine and filter out bye teams
+        const allTeams = [...premierTeams, ...aTeams].filter(team => 
+            team.team_name !== 'Bye' && team.team_name !== 'Division A Bye'
+        );
+        
+        console.log('All teams after filtering:', allTeams.length);
+        
+        // Clear any existing options except the first one
+        while (teamSelect.options.length > 1) {
+            teamSelect.remove(1);
         }
         
+        // Sort alphabetically within each division
+        premierTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
+        aTeams.sort((a, b) => a.team_name.localeCompare(b.team_name));
+        
+        // Create optgroups for each division
+        const premierGroup = document.createElement('optgroup');
+        premierGroup.label = 'Premier Division';
+        
+        const aGroup = document.createElement('optgroup');
+        aGroup.label = 'A Division';
+        
+        // Add Premier Division teams
+        premierTeams
+            .filter(team => team.team_name !== 'Bye')
+            .forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.team_name;
+                option.textContent = team.team_name;
+                premierGroup.appendChild(option);
+            });
+        
+        // Add A Division teams
+        aTeams
+            .filter(team => team.team_name !== 'Division A Bye')
+            .forEach(team => {
+                const option = document.createElement('option');
+                option.value = team.team_name;
+                option.textContent = team.team_name;
+                aGroup.appendChild(option);
+            });
+        
+        // Add the optgroups to the select element
+        teamSelect.appendChild(premierGroup);
+        teamSelect.appendChild(aGroup);
+        
+        console.log('Premier Group options:', premierGroup.children.length);
+        console.log('A Division Group options:', aGroup.children.length);
+        
+        showLoading(false);
+    } catch (error) {
+        console.error('Error loading teams:', error);
+        showLoading(false);
+    }
+}
+
+     
         // Load team data including all players and their stats
         async function loadTeamData(teamName) {
             showLoading(true);
@@ -987,24 +1018,24 @@
             });
         }
         
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', async () => {
-            await loadTeams();
-            
-            // If there's a team in the URL hash, load it
-            const hashTeam = window.location.hash.substring(1);
-            if (hashTeam) {
-                // Find the team option and select it
-                const option = Array.from(teamSelect.options).find(o => 
-                    o.value.toLowerCase() === decodeURIComponent(hashTeam).toLowerCase()
-                );
-                
-                if (option) {
-                    teamSelect.value = option.value;
-                    loadTeamData(option.value);
-                }
-            }
-        });
+// Initialize the page with the fixed loadTeams function
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadTeams();
+    
+    // If there's a team in the URL hash, load it
+    const hashTeam = window.location.hash.substring(1);
+    if (hashTeam) {
+        // Find the team option and select it
+        const option = Array.from(teamSelect.options).find(o => 
+            o.value.toLowerCase() === decodeURIComponent(hashTeam).toLowerCase()
+        );
+        
+        if (option) {
+            teamSelect.value = option.value;
+            loadTeamData(option.value);
+        }
+    }
+});   
         
         // Update URL hash when team is selected
         teamSelect.addEventListener('change', () => {
