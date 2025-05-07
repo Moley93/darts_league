@@ -1,9 +1,7 @@
-no show player assigned to all teams who will be exempt from player rankings
-
 register/add players to team via
 
 secretary / chairman / competitions
 
-bracket creation / randomiser
-
 rankings leg match win %
+
+ensure no show player can show multiple times across games for scoreinput, but doesn't show on player rankings or team statistics

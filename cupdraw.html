@@ -625,9 +625,7 @@
                         <span class="cup-icon">🏆</span> Start Cup Draw
                     </button>
                 </div>
-            </div>
-
-            <div class="draw-animation-container" id="draw-animation">
+            </div><div class="draw-animation-container" id="draw-animation">
                 <div class="draw-animation-title">Cup Draw</div>
                 <p>Add teams and click 'Start Cup Draw' to begin</p>
             </div>
@@ -731,4 +729,586 @@
             };
             
             // Update speed display
-            speedSlider.addEventListener('input', function
+            speedSlider.addEventListener('input', function() {
+                const speedValue = speedSlider.value;
+                speedDisplay.textContent = speedSettings[speedValue].name;
+            });
+            
+            // Add a team
+            function addTeam(teamName) {
+                if (!teamName.trim()) return;
+                
+                // Check if team already exists
+                if (teams.includes(teamName.trim())) {
+                    alert('This team has already been added!');
+                    return;
+                }
+                
+                // Add to teams array
+                teams.push(teamName.trim());
+                
+                // Create team chip
+                const teamChip = document.createElement('div');
+                teamChip.className = 'team-chip';
+                teamChip.dataset.team = teamName.trim();
+                teamChip.innerHTML = `
+                    <span>${teamName.trim()}</span>
+                    <span class="team-chip-remove">&times;</span>
+                `;
+                
+                // Add click event to remove button
+                teamChip.querySelector('.team-chip-remove').addEventListener('click', function() {
+                    teamChip.remove();
+                    teams = teams.filter(team => team !== teamName.trim());
+                });
+                
+                // Add to teams list
+                teamsList.appendChild(teamChip);
+                
+                // Clear input
+                teamInput.value = '';
+                teamInput.focus();
+            }
+            
+            // Add team button click
+            addTeamBtn.addEventListener('click', function() {
+                addTeam(teamInput.value);
+            });
+            
+            // Add team on Enter key
+            teamInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTeam(teamInput.value);
+                }
+            });
+            
+            // Add all Premier Division teams
+            addAllTeamsBtn.addEventListener('click', function() {
+                premierTeams.forEach(team => addTeam(team));
+            });
+            
+            // Add all A Division teams
+            addATeamsBtn.addEventListener('click', function() {
+                aDivisionTeams.forEach(team => addTeam(team));
+            });
+            
+            // Clear all teams
+            clearTeamsBtn.addEventListener('click', function() {
+                teams = [];
+                teamsList.innerHTML = '';
+            });
+            
+            // Create a delay function for animations
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            // Shuffle function that prevents "bye" teams from being drawn against each other
+            function shuffleTeamsPreventingByeMatches(teams, byeCount) {
+                // Create a copy of the array
+                const shuffledTeams = [...teams];
+                
+                // First, let's shuffle all teams using Fisher-Yates algorithm
+                for (let i = shuffledTeams.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
+                }
+                
+                // If we have bye teams, we need to ensure they're not paired together
+                if (byeCount > 0) {
+                    // Create the final array with proper distribution
+                    const finalOrder = [];
+                    const actualTeams = shuffledTeams.slice(0, shuffledTeams.length - byeCount);
+                    const byeTeams = shuffledTeams.slice(shuffledTeams.length - byeCount);
+                    
+                    // Place bye teams in positions that ensure they don't play each other
+                    // This works by placing them at alternate positions
+                    const matchCount = Math.ceil(shuffledTeams.length / 2);
+                    
+                    let byeIndex = 0;
+                    let actualIndex = 0;
+                    
+                    for (let i = 0; i < shuffledTeams.length; i++) {
+                        // Determine if this position should get a bye
+                        // We want to distribute byes evenly, never in consecutive positions
+                        if (byeIndex < byeCount && i % 2 === 0 && i / 2 < byeCount) {
+                            finalOrder.push(byeTeams[byeIndex]);
+                            byeIndex++;
+                        } else {
+                            // Place a real team
+                            finalOrder.push(actualTeams[actualIndex]);
+                            actualIndex++;
+                        }
+                    }
+                    
+                    return finalOrder;
+                }
+                
+                // If no bye teams, just return the shuffled array
+                return shuffledTeams;
+            }
+            
+            // Start the draw
+            startDrawBtn.addEventListener('click', function() {
+                if (teams.length < 2) {
+                    alert('Please add at least 2 teams for the draw!');
+                    return;
+                }
+                
+                // Disable controls
+                startDrawBtn.disabled = true;
+                teamInput.disabled = true;
+                addTeamBtn.disabled = true;
+                addAllTeamsBtn.disabled = true;
+                addATeamsBtn.disabled = true;
+                clearTeamsBtn.disabled = true;
+                drawFormat.disabled = true;
+                
+                // Start animation
+                startDrawAnimation();
+            });
+            
+            // Start the draw animation
+            async function startDrawAnimation() {
+                const shuffledTeams = [...teams];
+                const speed = speedSettings[speedSlider.value].delay;
+                const format = drawFormat.value;
+                const soundOn = soundOption.value === 'on';
+                
+                // Clear previous results
+                drawResults.classList.add('hidden');
+                
+                // Clear animation area
+                drawAnimation.innerHTML = `
+                    <div class="draw-animation-title">Cup Draw in Progress</div>
+                    <p>Shuffling teams...</p>
+                    <div class="draw-highlight"></div>
+                `;
+                
+                // Add bouncing balls animation
+                for (let i = 0; i < Math.min(teams.length, 5); i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'randomizing-ball';
+                    ball.textContent = i + 1;
+                    ball.style.animationDelay = `${i * 0.2}s`;
+                    ball.style.top = `${Math.random() * 50}px`;
+                    ball.style.left = `${Math.random() * 50}px`;
+                    drawAnimation.appendChild(ball);
+                }
+                
+                // Play sound if enabled
+                if (soundOn) drawSound.play();
+                
+                // Wait a moment
+                await delay(speed * 1.5);
+                
+                // Visual shuffle animation - still use regular Fisher-Yates algorithm for the visual effect
+                for (let i = shuffledTeams.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
+                    
+                    // Update animation to show shuffling
+                    const highlight = drawAnimation.querySelector('.draw-highlight');
+                    highlight.textContent = `${shuffledTeams[i]} ↔ ${shuffledTeams[j]}`;
+                    
+                    // Highlight the teams being swapped
+                    const teamChips = teamsList.querySelectorAll('.team-chip');
+                    teamChips.forEach(chip => {
+                        if (chip.dataset.team === shuffledTeams[i] || chip.dataset.team === shuffledTeams[j]) {
+                            chip.classList.add('highlighted');
+                        } else {
+                            chip.classList.remove('highlighted');
+                        }
+                    });
+                    
+                    // Play sound if enabled
+                    if (soundOn) popSound.play();
+                    
+                    // Wait a moment
+                    await delay(speed / 2);
+                }
+                
+                // Remove highlighting
+                const teamChips = teamsList.querySelectorAll('.team-chip');
+                teamChips.forEach(chip => chip.classList.remove('highlighted'));
+                
+                // Determine draw format
+                let drawRounds;
+                if (format === 'preliminary' && teams.length > 8 && teams.length < 16) {
+                    // Creating a draw with preliminary rounds to reach 8 teams
+                    const numPrelimTeams = (teams.length - 8) * 2;
+                    const prelimTeams = shuffledTeams.slice(0, numPrelimTeams);
+                    const qualifiedTeams = shuffledTeams.slice(numPrelimTeams);
+                    
+                    drawRounds = createDrawWithPreliminary(prelimTeams, qualifiedTeams);
+                } else {
+                    // Standard elimination format - we use the original teams array, not the visually shuffled one
+                    // The createDraw function will handle the proper shuffling with bye prevention
+                    drawRounds = createDraw(teams);
+                }
+                
+                // Show the final draw results
+                drawAnimation.innerHTML = `
+                    <div class="draw-animation-title">Cup Draw Complete</div>
+                    <p>The draw has been completed successfully!</p>
+                    <div class="draw-completed-message">See the results below</div>
+                `;
+                
+// Wait a moment
+await delay(speed);
+
+// Show results
+displayDrawResults(drawRounds);
+
+// Re-enable controls
+startDrawBtn.disabled = false;
+teamInput.disabled = false;
+addTeamBtn.disabled = false;
+addAllTeamsBtn.disabled = false;
+addATeamsBtn.disabled = false;
+clearTeamsBtn.disabled = false;
+drawFormat.disabled = false;
+}
+
+// Create a standard elimination draw
+function createDraw(shuffledTeams) {                const rounds = {
+                    preliminary: [],
+                    last16: [],
+                    quarterFinals: [],
+                    semiFinals: [],
+                    final: []
+                };
+                
+                // Determine the starting round based on the number of teams
+                let startingTeams = [...shuffledTeams];
+                
+                // Handle byes if necessary to reach a power of 2
+                const targetCount = nextPowerOfTwo(startingTeams.length);
+                const byesNeeded = targetCount - startingTeams.length;
+                
+                if (byesNeeded > 0) {
+                    for (let i = 0; i < byesNeeded; i++) {
+                        startingTeams.push("Bye");
+                    }
+                    
+                    // Use special shuffling to prevent bye vs bye
+                    startingTeams = shuffleTeamsPreventingByeMatches(startingTeams, byesNeeded);
+                }
+                
+                // Create first round (Round of 16 or less)
+                for (let i = 0; i < startingTeams.length; i += 2) {
+                    const match = {
+                        homeTeam: startingTeams[i],
+                        awayTeam: startingTeams[i + 1]
+                    };
+                    
+                    // Verify we don't have bye vs bye (sanity check)
+                    if (match.homeTeam === "Bye" && match.awayTeam === "Bye") {
+                        console.error("Error: Bye vs Bye match created!");
+                    }
+                    
+                    // Determine which round this belongs to based on team count
+                    if (startingTeams.length <= 16) {
+                        rounds.last16.push(match);
+                    } else {
+                        rounds.preliminary.push(match);
+                    }
+                }
+                
+                // Create quarter finals
+                if (rounds.last16.length > 0) {
+                    for (let i = 0; i < rounds.last16.length; i += 2) {
+                        rounds.quarterFinals.push({
+                            homeTeam: `Winner of Match ${i + 1}`,
+                            awayTeam: `Winner of Match ${i + 2}`
+                        });
+                    }
+                } else if (rounds.preliminary.length > 0) {
+                    // If we started with preliminary round
+                    for (let i = 0; i < rounds.preliminary.length; i += 2) {
+                        rounds.quarterFinals.push({
+                            homeTeam: `Winner of Prelim ${i + 1}`,
+                            awayTeam: `Winner of Prelim ${i + 2}`
+                        });
+                    }
+                }
+                
+                // Create semi finals
+                for (let i = 0; i < rounds.quarterFinals.length; i += 2) {
+                    rounds.semiFinals.push({
+                        homeTeam: `Winner of QF ${i + 1}`,
+                        awayTeam: `Winner of QF ${i + 2}`
+                    });
+                }
+                
+                // Create final
+                rounds.final.push({
+                    homeTeam: `Winner of SF 1`,
+                    awayTeam: `Winner of SF 2`
+                });
+                
+                return rounds;
+            }
+            
+            // Create a draw with preliminary round
+            function createDrawWithPreliminary(prelimTeams, qualifiedTeams) {
+                const rounds = {
+                    preliminary: [],
+                    last16: [],
+                    quarterFinals: [],
+                    semiFinals: [],
+                    final: []
+                };
+                
+                // Check if we need to add byes to the preliminary round
+                const targetPrelimCount = nextPowerOfTwo(prelimTeams.length);
+                const byesNeeded = targetPrelimCount - prelimTeams.length;
+                
+                if (byesNeeded > 0) {
+                    for (let i = 0; i < byesNeeded; i++) {
+                        prelimTeams.push("Bye");
+                    }
+                    
+                    // Use special shuffling to prevent bye vs bye
+                    prelimTeams = shuffleTeamsPreventingByeMatches(prelimTeams, byesNeeded);
+                }
+                
+                // Create preliminary round
+                for (let i = 0; i < prelimTeams.length; i += 2) {
+                    const match = {
+                        homeTeam: prelimTeams[i],
+                        awayTeam: prelimTeams[i + 1]
+                    };
+                    
+                    // Verify we don't have bye vs bye (sanity check)
+                    if (match.homeTeam === "Bye" && match.awayTeam === "Bye") {
+                        console.error("Error: Bye vs Bye match created in preliminary round!");
+                    }
+                    
+                    rounds.preliminary.push(match);
+                }
+                
+                // Prepare last 16 with qualified teams and preliminary winners
+                const last16Teams = [...qualifiedTeams];
+                for (let i = 0; i < rounds.preliminary.length; i++) {
+                    last16Teams.push(`Winner of Prelim ${i + 1}`);
+                }
+                
+                // Shuffle the last 16 teams
+                const shuffledLast16 = [];
+                for (let i = last16Teams.length - 1; i >= 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [last16Teams[i], last16Teams[j]] = [last16Teams[j], last16Teams[i]];
+                }
+                
+                // Create last 16 round
+                for (let i = 0; i < last16Teams.length; i += 2) {
+                    rounds.last16.push({
+                        homeTeam: last16Teams[i],
+                        awayTeam: last16Teams[i + 1]
+                    });
+                }
+                
+                // Create quarter finals
+                for (let i = 0; i < rounds.last16.length; i += 2) {
+                    rounds.quarterFinals.push({
+                        homeTeam: `Winner of Match ${i + 1}`,
+                        awayTeam: `Winner of Match ${i + 2}`
+                    });
+                }
+                
+                // Create semi finals
+                for (let i = 0; i < rounds.quarterFinals.length; i += 2) {
+                    rounds.semiFinals.push({
+                        homeTeam: `Winner of QF ${i + 1}`,
+                        awayTeam: `Winner of QF ${i + 2}`
+                    });
+                }
+                
+                // Create final
+                rounds.final.push({
+                    homeTeam: `Winner of SF 1`,
+                    awayTeam: `Winner of SF 2`
+                });
+                
+                return rounds;
+            }
+            
+            // Get the next power of 2
+            function nextPowerOfTwo(n) {
+                let power = 1;
+                while (power < n) {
+                    power *= 2;
+                }
+                return power;
+            }
+            
+            // Display draw results
+            function displayDrawResults(rounds) {
+                // Show results container
+                drawResults.classList.remove('hidden');
+                
+                // Preliminary round
+                const prelimRound = document.getElementById('preliminary-round');
+                const prelimMatches = document.getElementById('preliminary-matches');
+                
+                if (rounds.preliminary.length > 0) {
+                    prelimRound.classList.remove('hidden');
+                    prelimMatches.innerHTML = '';
+                    
+                    rounds.preliminary.forEach((match, index) => {
+                        const matchCard = document.createElement('div');
+                        matchCard.className = 'match-card';
+                        matchCard.innerHTML = `
+                            <div class="match-number">Preliminary Match ${index + 1}</div>
+                            <div class="match-team">${match.homeTeam}</div>
+                            <div class="versus-text">vs</div>
+                            <div class="match-team">${match.awayTeam}</div>
+                        `;
+                        prelimMatches.appendChild(matchCard);
+                    });
+                } else {
+                    prelimRound.classList.add('hidden');
+                }
+                
+                // Last 16
+                const last16Matches = document.getElementById('last-16-matches');
+                last16Matches.innerHTML = '';
+                
+                rounds.last16.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Match ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    last16Matches.appendChild(matchCard);
+                });
+                
+                // Quarter finals
+                const quarterFinalsMatches = document.getElementById('quarter-finals-matches');
+                quarterFinalsMatches.innerHTML = '';
+                
+                rounds.quarterFinals.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Quarter Final ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    quarterFinalsMatches.appendChild(matchCard);
+                });
+                
+                // Semi finals
+                const semiFinalsMatches = document.getElementById('semi-finals-matches');
+                semiFinalsMatches.innerHTML = '';
+                
+                rounds.semiFinals.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Semi Final ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    semiFinalsMatches.appendChild(matchCard);
+                });
+                
+                // Final
+                const finalMatches = document.getElementById('final-matches');
+                finalMatches.innerHTML = '';
+                
+                rounds.final.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Final</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    finalMatches.appendChild(matchCard);
+                });
+                
+                // Create tournament bracket
+                createBracket(rounds);
+            }
+            
+            // Create tournament bracket
+            function createBracket(rounds) {
+                const bracketContainer = document.getElementById('bracket-container');
+                bracketContainer.innerHTML = '';
+                
+                // Determine rounds to display
+                const displayRounds = [];
+                
+                if (rounds.preliminary.length > 0) {
+                    displayRounds.push({
+                        title: 'Preliminary Round',
+                        matches: rounds.preliminary
+                    });
+                }
+                
+                displayRounds.push(
+                    {
+                        title: 'Last 16',
+                        matches: rounds.last16
+                    },
+                    {
+                        title: 'Quarter Finals',
+                        matches: rounds.quarterFinals
+                    },
+                    {
+                        title: 'Semi Finals',
+                        matches: rounds.semiFinals
+                    },
+                    {
+                        title: 'Final',
+                        matches: rounds.final
+                    }
+                );
+                
+                // Create bracket rounds
+                displayRounds.forEach(round => {
+                    const roundDiv = document.createElement('div');
+                    roundDiv.className = 'bracket-round';
+                    
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'bracket-title';
+                    titleDiv.textContent = round.title;
+                    roundDiv.appendChild(titleDiv);
+                    
+                    // Add matches
+                    round.matches.forEach((match, index) => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'bracket-match';
+                        
+                        const homeDiv = document.createElement('div');
+                        homeDiv.className = 'bracket-team';
+                        homeDiv.textContent = match.homeTeam;
+                        matchDiv.appendChild(homeDiv);
+                        
+                        const awayDiv = document.createElement('div');
+                        awayDiv.className = 'bracket-team';
+                        awayDiv.textContent = match.awayTeam;
+                        matchDiv.appendChild(awayDiv);
+                        
+                        roundDiv.appendChild(matchDiv);
+                    });
+                    
+                    bracketContainer.appendChild(roundDiv);
+                });
+            }
+            
+            // Initialize speed display
+            speedDisplay.textContent = speedSettings[speedSlider.value].name;
+        });
+    </script>
+</body>
+</html>
