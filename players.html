@@ -310,6 +310,7 @@
                     <li><a href="180sfinishes.html">180s & High Finishes</a></li>
                     <li><a href="teamstats.html">Team Statistics</a></li>
                     <li><a href="playerrankings.html">Player Rankings</a></li>
+                    <li><a href="players.html">Players</a></li>
                 </ul>
             </li>
             
@@ -319,8 +320,6 @@
                     <li><a href="contactinfo.html">Contacts & Venues</a></li>
                     <li><a href="rules.html">League Rules</a></li>
                     <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                    <li><a href="players.html">Players</a></li>
                 </ul>
             </li>
             
@@ -472,44 +471,10 @@
             }
         }
         
-        // Populate team filter dropdown
+        // Initialize the team filter dropdown (called once at page load)
         function populateTeamFilter(teams) {
-            const teamFilter = document.getElementById('team-filter');
-            
-            // Clear existing options except the first one
-            teamFilter.innerHTML = '<option value="all">All Teams</option>';
-            
-            // Add Premier Division teams first
-            const premierTeams = teams.filter(team => team.division === 'premier' && team.team_name !== 'Bye');
-            if (premierTeams.length > 0) {
-                const premierOptgroup = document.createElement('optgroup');
-                premierOptgroup.label = 'Premier Division';
-                
-                premierTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_id;
-                    option.textContent = team.team_name;
-                    premierOptgroup.appendChild(option);
-                });
-                
-                teamFilter.appendChild(premierOptgroup);
-            }
-            
-            // Add A Division teams
-            const aTeams = teams.filter(team => team.division === 'a' && team.team_name !== 'Division A Bye');
-            if (aTeams.length > 0) {
-                const aOptgroup = document.createElement('optgroup');
-                aOptgroup.label = 'A Division';
-                
-                aTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_id;
-                    option.textContent = team.team_name;
-                    aOptgroup.appendChild(option);
-                });
-                
-                teamFilter.appendChild(aOptgroup);
-            }
+            // Just call updateTeamFilter which handles building the dropdown
+            updateTeamFilter();
         }
         
         // Filter and sort players based on current filter settings
@@ -615,10 +580,77 @@
             });
         }
         
+        // Update the team filter based on the selected division
+        function updateTeamFilter() {
+            const divisionValue = divisionFilter.value;
+            const currentTeamValue = teamFilter.value;
+            
+            // Store the currently selected team
+            const previousSelection = teamFilter.value;
+            
+            // Clear existing options except the first one
+            teamFilter.innerHTML = '<option value="all">All Teams</option>';
+            
+            // Filter teams based on the selected division
+            let filteredTeams = allTeams;
+            if (divisionValue !== 'all') {
+                filteredTeams = allTeams.filter(team => team.division === divisionValue);
+            }
+            
+            // Add Premier Division teams first (if they should be included)
+            const premierTeams = filteredTeams.filter(team => team.division === 'premier' && team.team_name !== 'Bye');
+            if (premierTeams.length > 0 && (divisionValue === 'all' || divisionValue === 'premier')) {
+                const premierOptgroup = document.createElement('optgroup');
+                premierOptgroup.label = 'Premier Division';
+                
+                premierTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.team_id;
+                    option.textContent = team.team_name;
+                    premierOptgroup.appendChild(option);
+                });
+                
+                teamFilter.appendChild(premierOptgroup);
+            }
+            
+            // Add A Division teams (if they should be included)
+            const aTeams = filteredTeams.filter(team => team.division === 'a' && team.team_name !== 'Division A Bye');
+            if (aTeams.length > 0 && (divisionValue === 'all' || divisionValue === 'a')) {
+                const aOptgroup = document.createElement('optgroup');
+                aOptgroup.label = 'A Division';
+                
+                aTeams.forEach(team => {
+                    const option = document.createElement('option');
+                    option.value = team.team_id;
+                    option.textContent = team.team_name;
+                    aOptgroup.appendChild(option);
+                });
+                
+                teamFilter.appendChild(aOptgroup);
+            }
+            
+            // Try to restore previous selection if it still exists
+            if (previousSelection !== 'all') {
+                // Find if the previous team is still in the filtered list
+                const teamExists = filteredTeams.some(team => team.team_id.toString() === previousSelection);
+                if (teamExists) {
+                    teamFilter.value = previousSelection;
+                } else {
+                    // Reset to "All Teams" if the previous selection no longer exists
+                    teamFilter.value = 'all';
+                }
+            }
+        }
+        
         // Set up event listeners
         function setupEventListeners() {
-            // Filter change events
-            divisionFilter.addEventListener('change', filterAndSortPlayers);
+            // Division filter change event
+            divisionFilter.addEventListener('change', () => {
+                updateTeamFilter(); // Update team filter options first
+                filterAndSortPlayers(); // Then filter and display players
+            });
+            
+            // Team filter change event
             teamFilter.addEventListener('change', filterAndSortPlayers);
             
             // Search input event with debounce
