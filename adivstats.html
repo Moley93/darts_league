@@ -544,13 +544,9 @@
             const queryString = new URLSearchParams(params).toString();
             const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
             
-            console.log(`Fetching API: ${url}`);
-            
             try {
                 const response = await fetch(url);
-                const data = await response.json();
-                console.log(`API Response for ${endpoint}:`, data);
-                return data;
+                return await response.json();
             } catch (error) {
                 console.error('API Error:', error);
                 return [];
@@ -576,25 +572,6 @@
                     teamSelect.appendChild(option);
                 });
                 
-                // If no teams were found, try again with alternative parameter
-                if (filteredTeams.length === 0) {
-                    console.log("No teams found with division='a', trying with division='A'");
-                    const aTeamsAlt = await fetchApi('teams', { division: 'A' });
-                    
-                    // Filter out bye teams
-                    const filteredTeamsAlt = aTeamsAlt.filter(team => 
-                        team.team_name !== 'Division A Bye'
-                    );
-                    
-                    // Add teams to select
-                    filteredTeamsAlt.forEach(team => {
-                        const option = document.createElement('option');
-                        option.value = team.team_name;
-                        option.textContent = team.team_name;
-                        teamSelect.appendChild(option);
-                    });
-                }
-                
             } catch (error) {
                 console.error('Error loading teams:', error);
             }
@@ -605,52 +582,26 @@
             showLoading(true);
             
             try {
-                // 1. Get team info - try with lowercase division name first
-                let allTeams = await fetchApi('teams');
-                let team = allTeams.find(t => t.team_name === teamName);
-                
-                // If team not found, check specifically with A division
-                if (!team) {
-                    const aTeams = await fetchApi('teams', { division: 'A' });
-                    team = aTeams.find(t => t.team_name === teamName);
-                }
-                
-                // If still not found, check with lowercase 'a'
-                if (!team) {
-                    const aTeams = await fetchApi('teams', { division: 'a' });
-                    team = aTeams.find(t => t.team_name === teamName);
-                }
+                // 1. Get team info
+                const allTeams = await fetchApi('teams');
+                const team = allTeams.find(t => t.team_name === teamName);
                 
                 if (!team) {
                     throw new Error(`Team not found: ${teamName}`);
                 }
                 
-                // Add debugging to see team info
-                console.log("Found team:", team);
-                
                 // 2. Get players for this team
                 const players = await fetchApi('players', { team_name: teamName });
-                
-                // Log the players data for debugging
-                console.log(`Players for team ${teamName}:`, players);
                 
                 if (!players || players.length === 0) {
                     throw new Error(`No players found for team: ${teamName}`);
                 }
                 
-                // 3. Get singles rankings for all players in A division with match_type=league
-                let singlesData = await fetchApi('singles-ranking', { 
-                    division: 'a',
+                // 3. Get singles rankings for all players in Premier division with match_type=league
+                const singlesData = await fetchApi('singles-ranking', { 
+                    division: 'premier',
                     match_type: 'league'
                 });
-                
-                // If no data returned, try with uppercase 'A'
-                if (!singlesData || singlesData.length === 0) {
-                    singlesData = await fetchApi('singles-ranking', { 
-                        division: 'A',
-                        match_type: 'league'
-                    });
-                }
                 
                 // 4. Filter and process player stats
                 const playerStats = processPlayerStats(players, singlesData);
@@ -683,6 +634,121 @@
                 
                 showLoading(false);
             }
+        }
+        
+        // Process player statistics from the API data
+        function processPlayerStats(players, singlesData) {
+            return players.map(player => {
+                // Find this player in the singles data
+                const playerSinglesData = singlesData.find(p => 
+                    p.player_name === player.player_name
+                ) || {};
+                
+                // Extract stats or set defaults
+                const played = playerSinglesData.played || 0;
+                const won = playerSinglesData.won || 0;
+                const lost = playerSinglesData.lost || 0;
+                
+                // Calculate derived stats
+                const winPercentage = played > 0 ? (won / played * 100).toFixed(1) : 0;
+                
+                // Calculate legs stats - Premier Division (best of 5)
+                const win_3_0 = playerSinglesData.win_3_0 || 0;
+                const win_3_1 = playerSinglesData.win_3_1 || 0;
+                const win_3_2 = playerSinglesData.win_3_2 || 0;
+                const loss_2_3 = playerSinglesData.loss_2_3 || 0;
+                const loss_1_3 = playerSinglesData.loss_1_3 || 0;
+                const loss_0_3 = playerSinglesData.loss_0_3 || 0;
+                
+                // Calculate leg stats - Premier Division logic (best of 5)
+                const legsPlayed = (win_3_0 * 3) + (win_3_1 * 4) + (win_3_2 * 5) + 
+                                (loss_2_3 * 5) + (loss_1_3 * 4) + (loss_0_3 * 3);
+                
+                const legsWon = (win_3_0 * 3) + (win_3_1 * 3) + (win_3_2 * 3) + 
+                            (loss_2_3 * 2) + (loss_1_3 * 1) + (loss_0_3 * 0);
+                
+                const legsLost = legsPlayed - legsWon;
+                
+                const legWinPercentage = legsPlayed > 0 ? (legsWon / legsPlayed * 100).toFixed(1) : 0;
+                
+                // Calculate points using the Premier Division scoring system
+                let points = 0;
+                // Premier Division scoring with corrected point values
+                points += (win_3_0 * 5);  // 5 points for 3-0 win
+                points += (win_3_1 * 4);  // 4 points for 3-1 win
+                points += (win_3_2 * 3);  // 3 points for 3-2 win
+                points += (loss_2_3 * 2); // 2 points for 2-3 loss
+                points += (loss_1_3 * 1); // 1 point for 1-3 loss
+                // 0 points for 0-3 loss
+                
+                return {
+                    ...player,
+                    singlesStats: {
+                        played,
+                        won,
+                        lost,
+                        winPercentage,
+                        legsPlayed,
+                        legsWon,
+                        legsLost,
+                        legWinPercentage,
+                        win_3_0,
+                        win_3_1,
+                        win_3_2,
+                        loss_2_3,
+                        loss_1_3,
+                        loss_0_3,
+                        points
+                    }
+                };
+            });
+        }
+        
+        // Calculate team summary statistics
+        function calculateTeamSummary(playerStats) {
+            // Initialize with default values
+            const summary = {
+                totalPlayers: playerStats.length,
+                activePlayers: 0,
+                totalMatches: 0,
+                totalMatchesWon: 0,
+                totalMatchesLost: 0,
+                totalLegsPlayed: 0,
+                totalLegsWon: 0,
+                totalLegsLost: 0
+            };
+            
+            // Loop through all players to accumulate stats
+            playerStats.forEach(player => {
+                const stats = player.singlesStats;
+                if (stats.played > 0) {
+                    summary.activePlayers++;
+                }
+                
+                // Add match stats
+                const played = parseInt(stats.played) || 0;
+                const won = parseInt(stats.won) || 0;
+                const lost = parseInt(stats.lost) || 0;
+                
+                summary.totalMatches += played;
+                summary.totalMatchesWon += won;
+                summary.totalMatchesLost += lost;
+                
+                // Add leg stats
+                summary.totalLegsPlayed += parseInt(stats.legsPlayed) || 0;
+                summary.totalLegsWon += parseInt(stats.legsWon) || 0;
+                summary.totalLegsLost += parseInt(stats.legsLost) || 0;
+            });
+            
+            return summary;
+        }
+        
+        // Render team information
+        function renderTeamInfo(team) {
+            teamInfoBanner.innerHTML = `
+                <h2>${team.team_name}</h2>
+                <p>Premier Division</p>
+            `;
         }
         
         // Render team summary statistics
