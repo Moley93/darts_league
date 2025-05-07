@@ -4,8 +4,8 @@
 // Database configuration
 $db_host = 'localhost';
 $db_name = 'darts_league';
-$db_user = 'root';
-$db_pass = '123';
+$db_user = 'darts_league';  // Update with your MySQL username
+$db_pass = 'M0l3y1993#cdl';   // Update with your MySQL password
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name", $db_user, $db_pass);
