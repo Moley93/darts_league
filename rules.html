@@ -468,6 +468,9 @@
         height: 48px;
     }
 }
+.hidden {
+    display: none !important;
+}
 </style>
 </head>
 <body>
@@ -844,28 +847,61 @@
     </div>
 
     <script>
+// Wait for the DOM content to fully load
 document.addEventListener('DOMContentLoaded', function() {
+    // Get all rule tab buttons and rule sections
+    const ruleTabs = document.querySelectorAll('.rules-tab');
+    const ruleSections = document.querySelectorAll('.rules-section');
+    
+    // Add click event listener to each tab
+    ruleTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Get the section this tab should show (from the data-section attribute)
+            const sectionToShow = this.getAttribute('data-section');
+            
+            // Remove active class from all tabs and hide all sections
+            ruleTabs.forEach(t => t.classList.remove('active'));
+            ruleSections.forEach(section => section.classList.add('hidden'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Show the corresponding section
+            document.getElementById(`${sectionToShow}-rules`).classList.remove('hidden');
+        });
+    });
+    
+    // Set up the initial state - show the Introduction section by default
+    // Remove 'hidden' class from the introduction section if it has it
+    const introSection = document.getElementById('introduction-rules');
+    if (introSection.classList.contains('hidden')) {
+        introSection.classList.remove('hidden');
+    }
+    
+    // Also handle mobile navigation (existing code merged here)
     const mobileToggle = document.querySelector('.mobile-toggle');
     const navMenu = document.querySelector('.nav-menu');
     const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
     // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            
+            // Animate hamburger to X
+            this.classList.toggle('active');
+            const bars = this.querySelectorAll('.bar');
+            if (this.classList.contains('active')) {
+                bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                bars[1].style.opacity = '0';
+                bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+            } else {
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+        });
+    }
     
     // Handle dropdown menus on mobile
     dropdownToggles.forEach(toggle => {
@@ -890,8 +926,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Close menu when clicking outside
     document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
+        const isClickInsideNav = navMenu?.contains(e.target) || mobileToggle?.contains(e.target);
+        if (!isClickInsideNav && navMenu?.classList.contains('active')) {
             navMenu.classList.remove('active');
             mobileToggle.classList.remove('active');
             const bars = mobileToggle.querySelectorAll('.bar');
@@ -904,12 +940,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle resize events
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+            navMenu?.classList.remove('active');
+            mobileToggle?.classList.remove('active');
+            if (mobileToggle) {
+                const bars = mobileToggle.querySelectorAll('.bar');
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
             
             // Reset all dropdowns
             document.querySelectorAll('.dropdown.active').forEach(item => {
