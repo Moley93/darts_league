@@ -6,6 +6,469 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Player Rankings - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
+<style>
+        /* Additional styles for the score breakdown table */
+        .rankings-table th {
+            text-align: center;
+        }
+        
+        .rankings-table td {
+            text-align: center;
+        }
+        
+        .rankings-table td:nth-child(2),
+        .rankings-table td:nth-child(3) {
+            text-align: left;
+        }
+        
+        /* Improved styling for the wins header - better contrast */
+        .rankings-table th.wins-header {
+            background-color: #4caf50; /* Green for wins */
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+        }
+        
+        /* Improved styling for the losses header - better contrast */
+        .rankings-table th.losses-header {
+            background-color: #f44336; /* Red for losses */
+            color: #ffffff;
+            font-weight: bold;
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+        }
+        
+        /* Make the second header row more visible */
+        .rankings-table tr:nth-child(2) th {
+            background-color: #e0e0e0; /* Lighter grey for the score numbers row */
+            color: #333333; /* Dark text for better contrast */
+            font-size: 0.9em;
+            font-weight: bold;
+            padding: 8px 12px;
+        }
+        
+        /* Hidden class */
+        .hidden {
+            display: none !important;
+        }
+        
+        /* Highlight winning scores in green and losing scores in light red */
+        .win-score {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+        
+        .loss-score {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        /* Tooltip for points scoring system */
+        .points-system-tooltip {
+            position: relative;
+            display: inline-block;
+            cursor: help;
+            margin-left: 5px;
+            font-size: 0.8em;
+            color: #1a237e;
+        }
+        
+        .points-system-tooltip .tooltip-content {
+            visibility: hidden;
+            width: 250px;
+            background-color: #fff;
+            color: #333;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1000; /* Higher z-index to ensure it appears above other elements */
+            top: 100%; /* Position below the info icon instead of above */
+            left: 50%;
+            margin-left: -125px;
+            margin-top: 10px; /* Add some spacing between the icon and tooltip */
+            opacity: 0;
+            transition: opacity 0.3s;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            font-weight: normal;
+            font-style: normal;
+            font-size: 0.9em;
+        }
+        
+        .points-system-tooltip:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        /* League only note */
+        .league-only-note {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--secondary);
+            font-style: italic;
+        }
+                /* Custom header style for the index page to position logo left and title centered */
+                .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 55%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 60px;
+            height: 58px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+        /* Basic dropdown styling */
+.nav .dropdown {
+    position: relative;
+}
+
+.nav .dropdown-toggle {
+    cursor: pointer;
+}
+
+.nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 10px 0;
+}
+
+.nav .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav .dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.nav .dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile navigation */
+.mobile-nav-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
+:root {
+    --primary: #1a237e;
+    --secondary: #3949ab;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #757575;
+    --card-bg: #ffffff;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+
+.header h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+/* Navigation Styles */
+.nav {
+    background-color: white;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-menu > li {
+    position: relative;
+    margin: 0;
+}
+
+.nav-menu > li > a {
+    display: block;
+    padding: 15px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-menu > li > a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle:after {
+    content: "▼";
+    font-size: 0.7em;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 200px;
+    padding: 5px 0;
+    margin: 0;
+    list-style: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 4px 4px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.mobile-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 992px) {
+    .nav-menu {
+        justify-content: flex-start;
+    }
+    
+    .nav-menu > li > a {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        z-index: 100;
+    }
+    
+    .nav-menu.active {
+        max-height: 1000px;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+    }
+    
+    .dropdown-toggle:after {
+        float: right;
+    }
+    
+    .dropdown.active .dropdown-toggle:after {
+        content: "▲";
+    }
+    
+    .nav-menu > li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .dropdown-menu li {
+        background-color: var(--light-gray);
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 48px;
+    }
+}
+</style>
 </head>
 <body>
 <header class="header">
