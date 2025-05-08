@@ -468,130 +468,6 @@
         height: 48px;
     }
 }
-
-/* Mobile-friendly table styles */
-@media screen and (max-width: 768px) {
-    /* Container for tables */
-    .table-container {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        margin-bottom: 15px;
-        border-radius: 4px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    
-    /* Make tables fit nicely on mobile */
-    .rankings-table {
-        width: 100%;
-        min-width: 600px; /* Ensure minimum width for all content */
-        margin-bottom: 0;
-    }
-    
-    /* Adjust font sizes for better readability */
-    .rankings-table th, 
-    .rankings-table td {
-        padding: 6px 4px;
-        font-size: 0.85rem;
-    }
-    
-    /* Increase specificity for rank column */
-    .rankings-table td:first-child,
-    .rankings-table th:first-child {
-        position: sticky;
-        left: 0;
-        background-color: #fff;
-        z-index: 2;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        min-width: 40px;
-    }
-    
-    /* Sticky player name column */
-    .rankings-table td:nth-child(2),
-    .rankings-table th:nth-child(2) {
-        position: sticky;
-        left: 40px;
-        background-color: #fff;
-        z-index: 2;
-        box-shadow: 2px 0 5px rgba(0,0,0,0.1);
-        min-width: 120px;
-    }
-    
-    /* Ensure sticky headers maintain their colors */
-    .rankings-table th:first-child,
-    .rankings-table th:nth-child(2) {
-        background-color: #f5f5f5;
-        z-index: 3;
-    }
-    
-    .rankings-table tr:nth-child(2) th:first-child,
-    .rankings-table tr:nth-child(2) th:nth-child(2) {
-        background-color: #e0e0e0;
-        z-index: 3;
-    }
-    
-    /* Scroll indicator */
-    .scroll-indicator {
-        display: block;
-        text-align: center;
-        color: var(--secondary);
-        font-size: 0.8rem;
-        padding: 5px;
-        background-color: #f5f5f5;
-        border-radius: 0 0 4px 4px;
-    }
-    
-    /* Hide the indicator once the user has scrolled */
-    .scrolled .scroll-indicator {
-        display: none;
-    }
-    
-    /* Card adjustments for mobile */
-    .card {
-        padding: 15px 10px;
-    }
-    
-    /* Adjust heading for mobile */
-    h2 {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
-    }
-    
-    /* More visible division toggle on mobile */
-    .division-toggle {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 15px;
-    }
-    
-    .division-toggle button {
-        flex: 1;
-        max-width: 150px;
-        padding: 8px 5px;
-        font-size: 0.9rem;
-    }
-}
-
-/* Compact view for very small screens */
-@media screen and (max-width: 375px) {
-    .rankings-table th, 
-    .rankings-table td {
-        padding: 5px 3px;
-        font-size: 0.8rem;
-    }
-    
-    /* Make first columns even more compact */
-    .rankings-table td:first-child,
-    .rankings-table th:first-child {
-        min-width: 35px;
-    }
-    
-    .rankings-table td:nth-child(2),
-    .rankings-table th:nth-child(2) {
-        min-width: 100px;
-        left: 35px;
-    }
-}
 </style>
 </head>
 <body>
@@ -697,71 +573,65 @@
                     </div>
                 </h2>
                 
-                <!-- Premier Division Table with scrollable container -->
-                <div class="table-container" id="premier-table-container">
-                    <table id="premier-rankings-table" class="rankings-table">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Player</th>
-                                <th>Team</th>
-                                <th>Played</th>
-                                <th colspan="3" class="wins-header">Wins</th>
-                                <th colspan="3" class="losses-header">Losses</th>
-                                <th>Points</th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th>3-0</th>
-                                <th>3-1</th>
-                                <th>3-2</th>
-                                <th>2-3</th>
-                                <th>1-3</th>
-                                <th>0-3</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="premier-rankings-body">
-                            <!-- Dynamic content will be loaded here -->
-                        </tbody>
-                    </table>
-                    <div class="scroll-indicator">← Swipe to see more →</div>
-                </div>
+                <!-- Premier Division Table -->
+                <table id="premier-rankings-table" class="rankings-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Played</th>
+                            <th colspan="3" class="wins-header">Wins</th>
+                            <th colspan="3" class="losses-header">Losses</th>
+                            <th>Points</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>3-0</th>
+                            <th>3-1</th>
+                            <th>3-2</th>
+                            <th>2-3</th>
+                            <th>1-3</th>
+                            <th>0-3</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="premier-rankings-body">
+                        <!-- Dynamic content will be loaded here -->
+                    </tbody>
+                </table>
                 
-                <!-- A Division Table with scrollable container -->
-                <div class="table-container hidden" id="a-table-container">
-                    <table id="a-rankings-table" class="rankings-table">
-                        <thead>
-                            <tr>
-                                <th>Rank</th>
-                                <th>Player</th>
-                                <th>Team</th>
-                                <th>Played</th>
-                                <th colspan="2" class="wins-header">Wins</th>
-                                <th colspan="2" class="losses-header">Losses</th>
-                                <th>Points</th>
-                            </tr>
-                            <tr>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th></th>
-                                <th>2-0</th>
-                                <th>2-1</th>
-                                <th>1-2</th>
-                                <th>0-2</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody id="a-rankings-body">
-                            <!-- Dynamic content will be loaded here -->
-                        </tbody>
-                    </table>
-                    <div class="scroll-indicator">← Swipe to see more →</div>
-                </div>
+                <!-- A Division Table -->
+                <table id="a-rankings-table" class="rankings-table hidden">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Player</th>
+                            <th>Team</th>
+                            <th>Played</th>
+                            <th colspan="2" class="wins-header">Wins</th>
+                            <th colspan="2" class="losses-header">Losses</th>
+                            <th>Points</th>
+                        </tr>
+                        <tr>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th></th>
+                            <th>2-0</th>
+                            <th>2-1</th>
+                            <th>1-2</th>
+                            <th>0-2</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="a-rankings-body">
+                        <!-- Dynamic content will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -840,18 +710,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Hide scroll indicators once the user has scrolled
-    const tableContainers = document.querySelectorAll('.table-container');
-    tableContainers.forEach(container => {
-        container.addEventListener('scroll', function() {
-            if (this.scrollLeft > 10) {
-                this.classList.add('scrolled');
-            } else if (this.scrollLeft < 5) {
-                this.classList.remove('scrolled');
-            }
-        });
-    });
 });
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
@@ -867,13 +725,9 @@ document.addEventListener('DOMContentLoaded', function() {
             if (currentDivision === 'premier') {
                 document.getElementById('premier-tooltip').classList.remove('hidden');
                 document.getElementById('a-tooltip').classList.add('hidden');
-                document.getElementById('premier-table-container').classList.remove('hidden');
-                document.getElementById('a-table-container').classList.add('hidden');
             } else {
                 document.getElementById('premier-tooltip').classList.add('hidden');
                 document.getElementById('a-tooltip').classList.remove('hidden');
-                document.getElementById('premier-table-container').classList.add('hidden');
-                document.getElementById('a-table-container').classList.remove('hidden');
             }
         });
 
@@ -887,14 +741,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Toggle table visibility based on division
                 if (division === 'premier') {
-                    document.getElementById('premier-table-container').classList.remove('hidden');
-                    document.getElementById('a-table-container').classList.add('hidden');
+                    document.getElementById('premier-rankings-table').classList.remove('hidden');
+                    document.getElementById('a-rankings-table').classList.add('hidden');
                     // Show Premier tooltip, hide A tooltip
                     document.getElementById('premier-tooltip').classList.remove('hidden');
                     document.getElementById('a-tooltip').classList.add('hidden');
                 } else {
-                    document.getElementById('premier-table-container').classList.add('hidden');
-                    document.getElementById('a-table-container').classList.remove('hidden');
+                    document.getElementById('premier-rankings-table').classList.add('hidden');
+                    document.getElementById('a-rankings-table').classList.remove('hidden');
                     // Show A tooltip, hide Premier tooltip
                     document.getElementById('premier-tooltip').classList.add('hidden');
                     document.getElementById('a-tooltip').classList.remove('hidden');
