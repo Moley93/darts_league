@@ -12,6 +12,9 @@
             --medium-gray: #e0e0e0;
             --dark-gray: #757575;
             --card-bg: #ffffff;
+            --row-alt: rgba(0, 0, 0, 0.03);
+            --win-bg: rgba(76, 175, 80, 0.1);
+            --loss-bg: rgba(244, 67, 54, 0.1);
         }
 
         body {
@@ -92,31 +95,45 @@
             font-weight: bold;
         }
 
+        /* Alternating row colors for better readability */
+        .rankings-table tbody tr:nth-child(even) {
+            background-color: var(--row-alt);
+        }
+
         .rankings-table td:nth-child(2),
         .rankings-table td:nth-child(3) {
             text-align: left;
         }
 
         .wins-header {
-            background-color: #4caf50;
+            background-color: #4caf50; /* Green for wins */
             color: #ffffff;
             font-weight: bold;
             text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
 
         .losses-header {
-            background-color: #f44336;
+            background-color: #f44336; /* Red for losses */
             color: #ffffff;
             font-weight: bold;
             text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
 
         .win-score {
-            background-color: rgba(76, 175, 80, 0.1);
+            background-color: var(--win-bg);
         }
 
         .loss-score {
-            background-color: rgba(244, 67, 54, 0.1);
+            background-color: var(--loss-bg);
+        }
+
+        /* Preserve the win/loss colors even with alternating rows */
+        .rankings-table tbody tr:nth-child(even) td.win-score {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+
+        .rankings-table tbody tr:nth-child(even) td.loss-score {
+            background-color: rgba(244, 67, 54, 0.15);
         }
 
         .hidden {
@@ -175,6 +192,11 @@
             margin-bottom: 15px;
             padding: 15px;
             position: relative;
+        }
+
+        /* Alternating card colors */
+        .player-card:nth-child(even) {
+            background-color: var(--row-alt);
         }
 
         .player-card .rank {
@@ -261,12 +283,26 @@
             font-size: 14px;
         }
 
+        /* Use the exact same colors as in the table for consistency */
         .wins-label {
-            background-color: #4caf50;
+            background-color: #4caf50; /* Green for wins - matches the table header */
         }
 
         .losses-label {
-            background-color: #f44336;
+            background-color: #f44336; /* Red for losses - matches the table header */
+        }
+
+        /* Win/Loss stat items in cards with consistent coloring */
+        .player-card .win-stat {
+            background-color: var(--win-bg);
+            border-radius: 4px;
+            padding: 4px;
+        }
+
+        .player-card .loss-stat {
+            background-color: var(--loss-bg);
+            border-radius: 4px;
+            padding: 4px;
         }
 
         /* Responsive Designs */
