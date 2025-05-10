@@ -1,16 +1,10 @@
 :root {
     --primary: #1a237e;
-    --secondary: #f50057;
-    --accent: #00bcd4;
-    --text: #333;
-    --bg: #f5f5f5;
+    --secondary: #3949ab;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #757575;
     --card-bg: #ffffff;
-    --success: #4caf50;
-    --warning: #ff9800;
-    --error: #f44336;
-    --light-gray: #f0f0f0;
-    --medium-gray: #ddd;
-    --dark-gray: #666;
 }
 
 /* Base Styles */
