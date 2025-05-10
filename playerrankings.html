@@ -1,70 +1,136 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Player rankings and statistics for the Crawley Darts League. View top singles players in both Premier and A Divisions based on match performance.">
-<meta property="og:title" content="Player Rankings - Crawley Darts League">
-<meta property="og:description" content="Player rankings and statistics for the Crawley Darts League. View top singles players in both Premier and A Divisions based on match performance.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
-    <title>Player Rankings - Crawley Darts League</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Additional styles for the score breakdown table */
-        .rankings-table th {
-            text-align: center;
+    <title>Mobile-Friendly Player Rankings</title>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #3949ab;
+            --light-gray: #f5f5f5;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #757575;
+            --card-bg: #ffffff;
         }
-        
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-gray);
+        }
+
+        .container {
+            padding: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .division-toggle {
+            display: flex;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .division-toggle button {
+            background: var(--light-gray);
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--dark-gray);
+            transition: all 0.3s ease;
+        }
+
+        .division-toggle button:first-child {
+            border-radius: 4px 0 0 4px;
+        }
+
+        .division-toggle button:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+        .division-toggle button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        h2 {
+            color: var(--primary);
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* Standard Table Styles */
+        .rankings-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .rankings-table th, 
         .rankings-table td {
             text-align: center;
+            padding: 10px 8px;
+            border-bottom: 1px solid var(--medium-gray);
         }
-        
+
+        .rankings-table th {
+            background-color: var(--light-gray);
+            font-weight: bold;
+        }
+
         .rankings-table td:nth-child(2),
         .rankings-table td:nth-child(3) {
             text-align: left;
         }
-        
-        /* Improved styling for the wins header - better contrast */
-        .rankings-table th.wins-header {
-            background-color: #4caf50; /* Green for wins */
+
+        .wins-header {
+            background-color: #4caf50;
             color: #ffffff;
             font-weight: bold;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
-        
-        /* Improved styling for the losses header - better contrast */
-        .rankings-table th.losses-header {
-            background-color: #f44336; /* Red for losses */
+
+        .losses-header {
+            background-color: #f44336;
             color: #ffffff;
             font-weight: bold;
-            text-shadow: 0 1px 1px rgba(0,0,0,0.2); /* Add text shadow for better readability */
+            text-shadow: 0 1px 1px rgba(0,0,0,0.2);
         }
-        
-        /* Make the second header row more visible */
-        .rankings-table tr:nth-child(2) th {
-            background-color: #e0e0e0; /* Lighter grey for the score numbers row */
-            color: #333333; /* Dark text for better contrast */
-            font-size: 0.9em;
-            font-weight: bold;
-            padding: 8px 12px;
-        }
-        
-        /* Hidden class */
-        .hidden {
-            display: none !important;
-        }
-        
-        /* Highlight winning scores in green and losing scores in light red */
+
         .win-score {
             background-color: rgba(76, 175, 80, 0.1);
         }
-        
+
         .loss-score {
             background-color: rgba(244, 67, 54, 0.1);
         }
-        
-        /* Tooltip for points scoring system */
+
+        .hidden {
+            display: none !important;
+        }
+
+        .league-only-note {
+            font-size: 0.8em;
+            font-weight: normal;
+            color: var(--secondary);
+            font-style: italic;
+            margin-left: 10px;
+        }
+
         .points-system-tooltip {
             position: relative;
             display: inline-block;
@@ -73,8 +139,8 @@
             font-size: 0.8em;
             color: #1a237e;
         }
-        
-        .points-system-tooltip .tooltip-content {
+
+        .tooltip-content {
             visibility: hidden;
             width: 250px;
             background-color: #fff;
@@ -83,11 +149,11 @@
             border-radius: 6px;
             padding: 10px;
             position: absolute;
-            z-index: 1000; /* Higher z-index to ensure it appears above other elements */
-            top: 100%; /* Position below the info icon instead of above */
+            z-index: 1000;
+            top: 100%;
             left: 50%;
             margin-left: -125px;
-            margin-top: 10px; /* Add some spacing between the icon and tooltip */
+            margin-top: 10px;
             opacity: 0;
             transition: opacity 0.3s;
             box-shadow: 0 0 10px rgba(0,0,0,0.2);
@@ -95,455 +161,166 @@
             font-style: normal;
             font-size: 0.9em;
         }
-        
+
         .points-system-tooltip:hover .tooltip-content {
             visibility: visible;
             opacity: 1;
         }
-        
-        /* League only note */
-        .league-only-note {
-            font-size: 0.8em;
-            font-weight: normal;
-            color: var(--secondary);
-            font-style: italic;
-        }
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+
+        /* Mobile Card View Styles */
+        .player-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 15px;
+            padding: 15px;
             position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
-        
-        .logo-container {
+
+        .player-card .rank {
             position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
+            top: 10px;
+            right: 10px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
         }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
+
+        .player-card .name {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 5px;
+            padding-right: 35px; /* Space for rank */
         }
-        
-        .header h1 {
-            margin: 0;
+
+        .player-card .team {
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+        }
+
+        .player-card .stats {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            border-top: 1px solid var(--light-gray);
+            padding-top: 10px;
+            margin-top: 5px;
+        }
+
+        .player-card .stat-item {
+            flex: 1 0 50%;
+            margin-bottom: 8px;
+            min-width: 120px;
+        }
+
+        .player-card .stat-label {
+            font-size: 12px;
+            color: var(--dark-gray);
+            display: block;
+        }
+
+        .player-card .stat-value {
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .player-card .points {
+            background-color: #f5f5f5;
+            padding: 8px 12px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .player-card .points .stat-value {
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .stat-group {
+            display: flex;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .stat-group-label {
+            flex: 100%;
+            font-weight: bold;
+            margin-bottom: 5px;
+            padding: 4px 8px;
+            border-radius: 4px;
             text-align: center;
+            color: white;
+            font-size: 14px;
         }
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
 
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
+        .wins-label {
+            background-color: #4caf50;
+        }
 
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
+        .losses-label {
+            background-color: #f44336;
+        }
 
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
+        /* Responsive Designs */
+        @media screen and (max-width: 991px) {
+            .rankings-table th, 
+            .rankings-table td {
+                padding: 8px 6px;
+                font-size: 13px;
+            }
+        }
 
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
+        /* Mobile Card View Trigger */
+        @media screen and (max-width: 767px) {
+            /* Hide standard tables on mobile */
+            .desktop-table {
+                display: none;
+            }
 
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
+            /* Show card view on mobile */
+            .mobile-cards {
+                display: block;
+            }
 
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
+            .card {
+                padding: 15px;
+            }
 
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
+            h2 {
+                font-size: 1.3rem;
+            }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
+            .division-toggle button {
+                padding: 8px 12px;
+                font-size: 14px;
+            }
 
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
+            .league-only-note {
+                display: block;
+                margin: 5px 0 0 0;
+            }
+        }
 
+        /* Default show tables, hide cards */
+        .desktop-table {
+            display: table;
+        }
 
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+        .mobile-cards {
+            display: none;
+        }
+    </style>
 </head>
 <body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="cupfixtures.html">Fixtures</a></li>
-                <li><a href="cupresults.html">Results</a></li>
-                <li><a href="cupdraw.html">Cup Draw</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Submit Score</a>
-            <ul class="dropdown-menu">
-                <li><a href="scoreinput.html">Submit Score</a></li>
-                <li><a href="editscores.html">Edit Score</a></li>
-            </ul>
-        </li>
-
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Join</a>
-            <ul class="dropdown-menu">
-                <li><a href="registration.html">Registration Form</a></li>
-            </ul>
-        </li>
-    </ul>
-    </nav>    <div class="container">
-        <!-- Player Rankings Page -->
+    <div class="container">
         <div id="player-rankings" class="page">
             <div class="card">
                 <div class="division-toggle">
@@ -577,8 +354,8 @@
                     </div>
                 </h2>
                 
-                <!-- Premier Division Table -->
-                <table id="premier-rankings-table" class="rankings-table">
+                <!-- Premier Division Table (Desktop View) -->
+                <table id="premier-rankings-table" class="rankings-table desktop-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
@@ -608,8 +385,13 @@
                     </tbody>
                 </table>
                 
-                <!-- A Division Table -->
-                <table id="a-rankings-table" class="rankings-table hidden">
+                <!-- Premier Division Mobile Cards View -->
+                <div id="premier-rankings-cards" class="mobile-cards">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
+                
+                <!-- A Division Table (Desktop View) -->
+                <table id="a-rankings-table" class="rankings-table desktop-table hidden">
                     <thead>
                         <tr>
                             <th>Rank</th>
@@ -636,85 +418,16 @@
                         <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
+                
+                <!-- A Division Mobile Cards View -->
+                <div id="a-rankings-cards" class="mobile-cards hidden">
+                    <!-- Dynamic content will be loaded here -->
+                </div>
             </div>
         </div>
     </div>
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
 
@@ -743,17 +456,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                // Toggle table visibility based on division
+                // Toggle table/cards visibility based on division
                 if (division === 'premier') {
+                    // Desktop tables
                     document.getElementById('premier-rankings-table').classList.remove('hidden');
                     document.getElementById('a-rankings-table').classList.add('hidden');
-                    // Show Premier tooltip, hide A tooltip
+                    // Mobile card views
+                    document.getElementById('premier-rankings-cards').classList.remove('hidden');
+                    document.getElementById('a-rankings-cards').classList.add('hidden');
+                    // Tooltips
                     document.getElementById('premier-tooltip').classList.remove('hidden');
                     document.getElementById('a-tooltip').classList.add('hidden');
                 } else {
+                    // Desktop tables
                     document.getElementById('premier-rankings-table').classList.add('hidden');
                     document.getElementById('a-rankings-table').classList.remove('hidden');
-                    // Show A tooltip, hide Premier tooltip
+                    // Mobile card views
+                    document.getElementById('premier-rankings-cards').classList.add('hidden');
+                    document.getElementById('a-rankings-cards').classList.remove('hidden');
+                    // Tooltips
                     document.getElementById('premier-tooltip').classList.add('hidden');
                     document.getElementById('a-tooltip').classList.remove('hidden');
                 }
@@ -803,20 +524,32 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add match_type=league parameter to only get league singles rankings
             const data = await fetchApi('singles-ranking', { division, match_type: 'league' });
             
-            // Get the appropriate table body based on division
+            // Get the appropriate table body and cards container based on division
             const tbody = document.getElementById(`${division}-rankings-body`);
-            if (!tbody) return;
+            const cardsContainer = document.getElementById(`${division}-rankings-cards`);
+            if (!tbody || !cardsContainer) return;
             
             tbody.innerHTML = '';
+            cardsContainer.innerHTML = '';
             
             if (data.length === 0) {
-                // Display a message if no data is found
-                const row = document.createElement('tr');
+                // Display a message if no data is found - for both desktop and mobile views
                 const colSpan = division === 'premier' ? 11 : 9; // Different column count based on division
+                
+                // Desktop table message
+                const row = document.createElement('tr');
                 row.innerHTML = `
                     <td colspan="${colSpan}" style="text-align: center;">No player rankings data available for league singles games in this division yet.</td>
                 `;
                 tbody.appendChild(row);
+                
+                // Mobile cards message
+                const messageCard = document.createElement('div');
+                messageCard.className = 'player-card';
+                messageCard.innerHTML = `
+                    <p style="text-align: center;">No player rankings data available for league singles games in this division yet.</p>
+                `;
+                cardsContainer.appendChild(messageCard);
                 return;
             }
             
@@ -836,6 +569,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Display the processed data
             processedData.forEach((player, index) => {
+                // 1. Create row for desktop table view
                 const row = document.createElement('tr');
                 
                 if (division === 'premier') {
@@ -853,6 +587,61 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="loss-score">${player.loss_0_3 || 0}</td>
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
+                    
+                    // 2. Create card for mobile view
+                    const card = document.createElement('div');
+                    card.className = 'player-card';
+                    card.innerHTML = `
+                        <div class="rank">${index + 1}</div>
+                        <div class="name">${player.player_name}</div>
+                        <div class="team">${player.team_name}</div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Played</span>
+                                <span class="stat-value">${player.played}</span>
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-group-label wins-label">Wins</div>
+                                <div class="stat-item">
+                                    <span class="stat-label">3-0</span>
+                                    <span class="stat-value">${player.win_3_0 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">3-1</span>
+                                    <span class="stat-value">${player.win_3_1 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">3-2</span>
+                                    <span class="stat-value">${player.win_3_2 || 0}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-group-label losses-label">Losses</div>
+                                <div class="stat-item">
+                                    <span class="stat-label">2-3</span>
+                                    <span class="stat-value">${player.loss_2_3 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">1-3</span>
+                                    <span class="stat-value">${player.loss_1_3 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">0-3</span>
+                                    <span class="stat-value">${player.loss_0_3 || 0}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="points">
+                                <span class="stat-label">Total Points</span>
+                                <span class="stat-value">${player.recalculated_points}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    cardsContainer.appendChild(card);
+                    
                 } else {
                     // A Division format (2-0, 2-1, 1-2, 0-2)
                     row.innerHTML = `
@@ -866,7 +655,54 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="loss-score">${player.loss_0_2 || 0}</td>
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
+                    
+                    // Create card for mobile view
+                    const card = document.createElement('div');
+                    card.className = 'player-card';
+                    card.innerHTML = `
+                        <div class="rank">${index + 1}</div>
+                        <div class="name">${player.player_name}</div>
+                        <div class="team">${player.team_name}</div>
+                        <div class="stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Played</span>
+                                <span class="stat-value">${player.played}</span>
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-group-label wins-label">Wins</div>
+                                <div class="stat-item">
+                                    <span class="stat-label">2-0</span>
+                                    <span class="stat-value">${player.win_2_0 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">2-1</span>
+                                    <span class="stat-value">${player.win_2_1 || 0}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="stat-group">
+                                <div class="stat-group-label losses-label">Losses</div>
+                                <div class="stat-item">
+                                    <span class="stat-label">1-2</span>
+                                    <span class="stat-value">${player.loss_1_2 || 0}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">0-2</span>
+                                    <span class="stat-value">${player.loss_0_2 || 0}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="points">
+                                <span class="stat-label">Total Points</span>
+                                <span class="stat-value">${player.recalculated_points}</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    cardsContainer.appendChild(card);
                 }
+                
                 tbody.appendChild(row);
             });
         }
