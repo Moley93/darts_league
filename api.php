@@ -85,7 +85,7 @@ switch ($endpoint) {
         break;
     
     case 'cup-fixtures':
-        getCupFixtures();
+        getcupbracket();
         break;
     
     case 'cup-results':
@@ -407,7 +407,7 @@ function getLeagueResults() {
         returnJson(['success' => false, 'error' => 'Error fetching league results']);
     }
 }
-function getCupFixtures() {
+function getcupbracket() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
     
@@ -430,7 +430,7 @@ function getCupFixtures() {
         $stmt->execute([$division]);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
-        error_log("Error in getCupFixtures: " . $e->getMessage());
+        error_log("Error in getcupbracket: " . $e->getMessage());
         returnJson(['success' => false, 'error' => 'Error fetching cup fixtures']);
     }
 }
