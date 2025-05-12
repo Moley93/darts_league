@@ -1058,6 +1058,160 @@
     </div>
 
     <script>
+        // Mock database for the demo - simulates server-side storage
+        // In a real implementation, this would be replaced with proper backend database storage
+        const mockDatabase = {
+            teamsLookingForPlayers: [
+                {
+                    id: 1,
+                    teamName: 'Dartbreakers',
+                    division: 'premier',
+                    venue: 'The Swan',
+                    playersNeeded: 2,
+                    notes: 'Looking for experienced players who can commit to regular Friday matches.',
+                    contactName: 'Andrew Tester',
+                    contactEmail: 'andrew@example.com',
+                    contactPhone: '07564011444'
+                },
+                {
+                    id: 2,
+                    teamName: 'Jubilee Club',
+                    division: 'premier',
+                    venue: 'Jubilee Club',
+                    playersNeeded: 1,
+                    notes: 'Friendly team seeking one additional player for the upcoming season.',
+                    contactName: 'Dave Critchley',
+                    contactEmail: 'dave@example.com',
+                    contactPhone: '07786518046'
+                },
+                {
+                    id: 3,
+                    teamName: 'Dr Samuel Johnson',
+                    division: 'a',
+                    venue: 'Dr Samuel Johnson',
+                    playersNeeded: 3,
+                    notes: 'New players welcome, all skill levels considered.',
+                    contactName: 'Darren Ayling',
+                    contactEmail: 'darren@example.com',
+                    contactPhone: '07305152889'
+                },
+                {
+                    id: 4,
+                    teamName: 'Pelham',
+                    division: 'a',
+                    venue: 'The Pelham Buckle',
+                    playersNeeded: 2,
+                    notes: 'Looking for committed players who can attend practice sessions on Wednesdays.',
+                    contactName: 'Alan Tulip',
+                    contactEmail: 'alan@example.com',
+                    contactPhone: '07777633844'
+                }
+            ],
+            individualPlayers: [],
+            partialTeams: []
+        };
+        
+        // Function to generate a random ID for new records
+        function generateId() {
+            return Math.floor(Math.random() * 100000) + 5;
+        }
+        
+        // Function to render teams table
+        function renderTeamsTable() {
+            const teamsTableBody = document.querySelector('.teams-table tbody');
+            teamsTableBody.innerHTML = '';
+            
+            mockDatabase.teamsLookingForPlayers.forEach(team => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${team.teamName}</td>
+                    <td><span class="team-badge division-${team.division}">${team.division === 'premier' ? 'Premier' : 'A Division'}</span></td>
+                    <td>${team.venue}</td>
+                    <td>${team.playersNeeded}</td>
+                    <td>${team.notes}</td>
+                    <td><a href="#" class="contact-btn" data-team-id="${team.id}">Contact</a></td>
+                `;
+                teamsTableBody.appendChild(row);
+            });
+            
+            // Re-add event listeners to contact buttons
+            document.querySelectorAll('.contact-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const teamId = this.getAttribute('data-team-id');
+                    const team = mockDatabase.teamsLookingForPlayers.find(t => t.id == teamId);
+                    
+                    if (team) {
+                        alert(`Contact Information for ${team.teamName}:\n\nContact Person: ${team.contactName}\nEmail: ${team.contactEmail}\nPhone: ${team.contactPhone}\n\nNote: In a real implementation, this would either open a contact form or show details based on privacy settings.`);
+                    } else {
+                        alert('Team information not found.');
+                    }
+                });
+            });
+        }
+        
+        // Function to add a new team looking for players
+        function addTeamLookingForPlayers(teamData) {
+            const newTeam = {
+                id: generateId(),
+                teamName: teamData.teamName,
+                division: teamData.division,
+                venue: teamData.venue,
+                playersNeeded: teamData.playersNeeded,
+                notes: teamData.notes,
+                contactName: teamData.contactName,
+                contactEmail: teamData.contactEmail,
+                contactPhone: teamData.contactPhone,
+                experienceRequired: teamData.experienceRequired,
+                practiceDays: teamData.practiceDays
+            };
+            
+            mockDatabase.teamsLookingForPlayers.push(newTeam);
+            renderTeamsTable();
+            
+            // In a real implementation, this would also:
+            // 1. Send data to server via API call
+            // 2. Update the database
+            // 3. Possibly send notification emails to administrators
+            console.log('New team added to database:', newTeam);
+        }
+        
+        // Function to add individual player
+        function addIndividualPlayer(playerData) {
+            const newPlayer = {
+                id: generateId(),
+                ...playerData,
+                timestamp: new Date()
+            };
+            
+            mockDatabase.individualPlayers.push(newPlayer);
+            
+            // In a real implementation, this would also:
+            // 1. Send data to server via API call
+            // 2. Update the database
+            // 3. Possibly send notification emails to team captains looking for players
+            console.log('New individual player added to database:', newPlayer);
+            console.log('Current player database:', mockDatabase.individualPlayers);
+        }
+        
+        // Function to add partial team
+        function addPartialTeam(teamData) {
+            const newPartialTeam = {
+                id: generateId(),
+                ...teamData,
+                timestamp: new Date()
+            };
+            
+            mockDatabase.partialTeams.push(newPartialTeam);
+            
+            // In a real implementation, this would also:
+            // 1. Send data to server via API call
+            // 2. Update the database
+            // 3. Possibly send notification emails to administrators
+            console.log('New partial team added to database:', newPartialTeam);
+            console.log('Current partial teams database:', mockDatabase.partialTeams);
+        }
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Mobile navigation toggle
             const mobileToggle = document.querySelector('.mobile-toggle');
@@ -1162,50 +1316,130 @@
                 document.getElementById('partial-team-form').scrollIntoView({ behavior: 'smooth' });
             });
             
-            // Handle form submissions
+            // Handle individual player form submission
             document.getElementById('individual-player-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                // In a real application, this would send the form data to a server
+                
+                // Gather form data
+                const formData = {
+                    playerName: document.getElementById('player-name').value,
+                    email: document.getElementById('player-email').value,
+                    phone: document.getElementById('player-phone').value,
+                    location: document.getElementById('player-location').value,
+                    experience: document.querySelector('input[name="experience"]:checked').value,
+                    leagueExperience: document.querySelector('input[name="league-experience"]:checked')?.value || 'no',
+                    previousLeague: document.getElementById('previous-league').value,
+                    divisionPreference: document.querySelector('input[name="division-preference"]:checked').value,
+                    availableDays: Array.from(document.querySelectorAll('input[name="available-days"]:checked')).map(cb => cb.value),
+                    notes: document.getElementById('player-notes').value
+                };
+                
+                // Add to database
+                addIndividualPlayer(formData);
                 
                 // Show success message
                 document.getElementById('player-success').style.display = 'block';
+                
+                // Reset form
                 this.reset();
                 
                 // Scroll to success message
                 document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
             });
             
+            // Handle team needs form submission
             document.getElementById('team-needs-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                // In a real application, this would send the form data to a server
+                
+                // Gather form data
+                const formData = {
+                    teamName: document.getElementById('team-name').value,
+                    division: document.getElementById('team-division').value,
+                    venue: document.getElementById('team-venue').value,
+                    playersNeeded: document.getElementById('players-needed').value,
+                    contactName: document.getElementById('captain-name').value,
+                    contactEmail: document.getElementById('captain-email').value,
+                    contactPhone: document.getElementById('captain-phone').value,
+                    experienceRequired: document.getElementById('experience-required').value,
+                    practiceDays: document.getElementById('practice-days').value,
+                    notes: document.getElementById('team-notes').value
+                };
+                
+                // Add to database and update table
+                addTeamLookingForPlayers(formData);
                 
                 // Show success message
                 document.getElementById('team-success').style.display = 'block';
+                
+                // Reset form
                 this.reset();
                 
                 // Scroll to success message
                 document.getElementById('team-success').scrollIntoView({ behavior: 'smooth' });
+                
+                // After 3 seconds, hide the success message and switch back to teams tab
+                setTimeout(() => {
+                    document.getElementById('team-success').style.display = 'none';
+                    document.getElementById('team-recruitment-form').style.display = 'none';
+                    document.querySelector('.tab[data-tab="teams-looking"]').click();
+                }, 3000);
             });
             
+            // Handle partial team form submission
             document.getElementById('partial-team-needs-form').addEventListener('submit', function(e) {
                 e.preventDefault();
-                // In a real application, this would send the form data to a server
+                
+                // Gather form data
+                const formData = {
+                    groupName: document.getElementById('group-name').value,
+                    currentPlayers: document.getElementById('current-players').value,
+                    contactName: document.getElementById('contact-name').value,
+                    contactEmail: document.getElementById('contact-email').value,
+                    contactPhone: document.getElementById('contact-phone').value,
+                    preferredLocation: document.getElementById('preferred-location').value,
+                    preferredVenue: document.getElementById('preferred-venue').value,
+                    preferredDivision: document.getElementById('preferred-division').value,
+                    groupExperience: document.querySelector('input[name="group-experience"]:checked').value,
+                    notes: document.getElementById('group-notes').value,
+                    mergeWilling: document.getElementById('merge-willing').checked
+                };
+                
+                // Add to database
+                addPartialTeam(formData);
                 
                 // Show success message
                 document.getElementById('partial-success').style.display = 'block';
+                
+                // Reset form
                 this.reset();
                 
                 // Scroll to success message
                 document.getElementById('partial-success').scrollIntoView({ behavior: 'smooth' });
             });
             
-            // Make contact buttons show alert for demo purposes
-            document.querySelectorAll('.contact-btn').forEach(btn => {
-                btn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    alert('In the live version, this would open a contact form or display the team captain\'s contact information. For data protection reasons, contact details are not publicly displayed.');
-                });
-            });
+            // Initial render of teams table
+            renderTeamsTable();
+            
+            // Add notice at the bottom of the page explaining how this would be implemented in production
+            const noticeDiv = document.createElement('div');
+            noticeDiv.style.padding = '20px';
+            noticeDiv.style.marginTop = '30px';
+            noticeDiv.style.backgroundColor = '#f8f9fa';
+            noticeDiv.style.border = '1px solid #dee2e6';
+            noticeDiv.style.borderRadius = '4px';
+            noticeDiv.innerHTML = `
+                <h3 style="color: #1a237e">Implementation Note</h3>
+                <p>This page demonstrates the automated update functionality using client-side JavaScript and a mock database. In a real production environment, this would be implemented with:</p>
+                <ul>
+                    <li><strong>Server-side database</strong> to store the submissions (e.g., MySQL, PostgreSQL)</li>
+                    <li><strong>Server-side API</strong> to handle form submissions and validate data (e.g., PHP, Node.js)</li>
+                    <li><strong>Authentication system</strong> for team captains to manage their listings</li>
+                    <li><strong>Admin panel</strong> for league officials to review and approve submissions</li>
+                    <li><strong>Notification system</strong> to alert administrators and team captains about new submissions</li>
+                </ul>
+                <p>For this demo, the data is stored temporarily in browser memory and will reset when the page is refreshed.</p>
+            `;
+            document.querySelector('.container').appendChild(noticeDiv);
         });
     </script>
 </body>
