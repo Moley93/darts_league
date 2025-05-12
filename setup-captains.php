@@ -16,21 +16,21 @@ try {
 
 // List of team captains to create
 $captains = [
-    ['team_id' => 1, 'username' => 'unbearables', 'password' => 'unbearables123'],
-    ['team_id' => 2, 'username' => 'jubileeclub', 'password' => 'jubilee123'],
-    ['team_id' => 3, 'username' => 'rebels', 'password' => 'rebels123'],
-    ['team_id' => 4, 'username' => 'dsotm', 'password' => 'darkmoon123'],
-    ['team_id' => 5, 'username' => 'dartbreakers', 'password' => 'dartbreakers123'],
-    ['team_id' => 6, 'username' => 'rugbyclub', 'password' => 'rugby123'],
-    ['team_id' => 7, 'username' => 'grasshopper', 'password' => 'grasshopper123'],
+    ['team_id' => 1, 'username' => 'unbear', 'password' => 'unbear'],
+    ['team_id' => 2, 'username' => 'jubile', 'password' => 'jubile'],
+    ['team_id' => 3, 'username' => 'rebel', 'password' => 'rebel'],
+    ['team_id' => 4, 'username' => 'dsotm', 'password' => 'dsotm'],
+    ['team_id' => 5, 'username' => 'dartb', 'password' => 'dartb'],
+    ['team_id' => 6, 'username' => 'rugby', 'password' => 'rugby'],
+    ['team_id' => 7, 'username' => 'grass', 'password' => 'grass'],
     ['team_id' => 8, 'username' => 'premier_bye', 'password' => 'premierbye123'],  // Premier division bye
-    ['team_id' => 9, 'username' => 'ewhurstarrows', 'password' => 'arrows123'],
-    ['team_id' => 10, 'username' => 'dingles', 'password' => 'dingles123'],
-    ['team_id' => 11, 'username' => 'johnson', 'password' => 'johnson123'],
-    ['team_id' => 12, 'username' => 'disappointers', 'password' => 'disappointers123'],
-    ['team_id' => 13, 'username' => 'apv', 'password' => 'apv123'],
-    ['team_id' => 14, 'username' => 'ewhurstwoodys', 'password' => 'woodys123'],
-    ['team_id' => 15, 'username' => 'pelham', 'password' => 'pelham123'],
+    ['team_id' => 9, 'username' => 'arrow', 'password' => 'arrows'],
+    ['team_id' => 10, 'username' => 'dingl', 'password' => 'dingl'],
+    ['team_id' => 11, 'username' => 'johns', 'password' => 'johns'],
+    ['team_id' => 12, 'username' => 'disap', 'password' => 'disap'],
+    ['team_id' => 13, 'username' => 'apv', 'password' => 'apv'],
+    ['team_id' => 14, 'username' => 'woody', 'password' => 'woody'],
+    ['team_id' => 15, 'username' => 'pelha', 'password' => 'pelha'],
     ['team_id' => 16, 'username' => 'division_a_bye', 'password' => 'abye123']  // Division A bye
 ];
 
