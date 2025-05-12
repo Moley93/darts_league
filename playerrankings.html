@@ -30,6 +30,34 @@
             margin: 0 auto;
         }
 
+        /* Landscape Notice Banner */
+        .landscape-notice {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: #ff9800;
+            color: white;
+            text-align: center;
+            padding: 10px;
+            z-index: 9999;
+            display: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .notice-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .landscape-icon {
+            transform: rotate(90deg);
+            display: inline-block;
+            font-size: 1.5em;
+        }
+
         .card {
             background-color: var(--card-bg);
             border-radius: 8px;
@@ -382,10 +410,23 @@
         .mobile-cards {
             display: none;
         }
+
+        /* Add top padding to container when notice is visible */
+        .container.with-notice {
+            padding-top: 60px;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Landscape mode notice -->
+    <div id="landscape-notice" class="landscape-notice">
+        <div class="notice-content">
+            <span class="landscape-icon">📱</span>
+            <strong>For better viewing of tables, please rotate your device to landscape mode</strong>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
         <div id="player-rankings" class="page">
             <div class="card">
                 <div class="division-toggle">
@@ -489,6 +530,28 @@
     </div>
 
     <script>
+        // Landscape notification management
+        function checkOrientation() {
+            const landscapeNotice = document.getElementById('landscape-notice');
+            const mainContainer = document.getElementById('main-container');
+            const isPortrait = window.innerHeight > window.innerWidth;
+            const isNarrow = window.innerWidth < 767;
+            
+            // Only show notice if in portrait mode AND screen is narrow (mobile)
+            if (isPortrait && isNarrow && document.querySelector('.desktop-table:not(.hidden)')) {
+                landscapeNotice.style.display = 'block';
+                mainContainer.classList.add('with-notice');
+            } else {
+                landscapeNotice.style.display = 'none';
+                mainContainer.classList.remove('with-notice');
+            }
+        }
+
+        // Check on page load and whenever orientation or window size changes
+        window.addEventListener('load', checkOrientation);
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('orientationchange', checkOrientation);
+
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
 
@@ -507,6 +570,9 @@
                 document.getElementById('premier-tooltip').classList.add('hidden');
                 document.getElementById('a-tooltip').classList.remove('hidden');
             }
+            
+            // Check orientation immediately on load
+            checkOrientation();
         });
 
         // Division toggle handling
@@ -541,6 +607,9 @@
                 }
                 
                 loadPlayerRankings(division);
+                
+                // Check orientation when division is changed
+                checkOrientation();
             });
         });
 
@@ -713,7 +782,7 @@
                         <td class="loss-score score-col">${player.loss_0_2 || 0}</td>
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
-                    
+                                       
                     // Create card for mobile view - removed team name
                     const card = document.createElement('div');
                     card.className = 'player-card';
