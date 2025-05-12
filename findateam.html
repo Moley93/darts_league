@@ -1,161 +1,4 @@
-<div id="player-register" class="tab-content active">
-                    <h2>Register as a Player Looking for a Team</h2>
-                    
-                    <p>Fill out the form below to register your interest in joining a team. The league organizers will work to match you with a team that suits your location, experience level, and availability.</p>
-                    
-                    <div class="registration-form">
-                        <form id="individual-player-form">
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="player-name">Full Name <span class="required">*</span></label>
-                                        <input type="text" id="player-name" name="from_name" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="player-email">Email <span class="required">*</span></label>
-                                        <input type="email" id="player-email" name="from_email" required>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="player-phone">Contact Number <span class="required">*</span></label>
-                                        <input type="tel" id="player-phone" name="phone_number" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="player-location">Area/Location <span class="required">*</span></label>
-                                        <input type="text" id="player-location" name="location" placeholder="e.g. Three Bridges, Crawley" required>
-                                        <div class="field-help">This helps us match you with nearby teams</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Playing Experience <span class="required">*</span></label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="experience-beginner" name="experience" value="beginner" required>
-                                        <label for="experience-beginner">Beginner</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="experience-casual" name="experience" value="casual">
-                                        <label for="experience-casual">Casual Player</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="experience-experienced" name="experience" value="experienced">
-                                        <label for="experience-experienced">Experienced</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="experience-competitive" name="experience" value="competitive">
-                                        <label for="experience-competitive">Competitive</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Played in a league before?</label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="league-yes" name="league_experience" value="yes">
-                                        <label for="league-yes">Yes</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="league-no" name="league_experience" value="no">
-                                        <label for="league-no">No</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group" id="previous-league-container" style="display: none;">
-                                <label for="previous-league">Which league(s) have you played in?</label>
-                                <input type="text" id="previous-league" name="previous_league" placeholder="e.g. Crawley Darts League, Sussex Super League, etc.">
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Division Preference (if any)</label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="division-premier" name="division_preference" value="premier">
-                                        <label for="division-premier">Premier Division</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="division-a" name="division_preference" value="a">
-                                        <label for="division-a">A Division</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="division-any" name="division_preference" value="any" checked>
-                                        <label for="division-any">No Preference</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Available Days <span class="required">*</span></label>
-                                <div class="field-help">League matches are typically on Friday evenings, but please indicate other days you might be available for practice</div>
-                                <div class="days-grid">
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-monday" name="available_days" value="monday">
-                                        <label for="day-monday">Monday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-tuesday" name="available_days" value="tuesday">
-                                        <label for="day-tuesday">Tuesday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-wednesday" name="available_days" value="wednesday">
-                                        <label for="day-wednesday">Wednesday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-thursday" name="available_days" value="thursday">
-                                        <label for="day-thursday">Thursday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-friday" name="available_days" value="friday" checked>
-                                        <label for="day-friday">Friday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-saturday" name="available_days" value="saturday">
-                                        <label for="day-saturday">Saturday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-sunday" name="available_days" value="sunday">
-                                        <label for="day-sunday">Sunday</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="player-notes">Additional Information</label>
-                                <textarea id="player-notes" name="additional_notes" placeholder="Tell us anything else that might be relevant (e.g. transport limitations, venue preferences, etc.)"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <div class="checkbox-option">
-                                    <input type="checkbox" id="player-consent" name="consent" required>
-                                    <label for="player-consent">I consent for my information to be shared with the Crawley Darts League committee and team captains <span class="required">*</span></label>
-                                </div>
-                            </div>
-                            
-                            <div class="spinner" id="player-spinner"></div>
-                            <button type="submit" class="btn">Submit Registration</button>
-                        </form>
-                    </div>
-                    
-                    <div class="success-message" id="player-success">
-                        <h3>Registration Successful!</h3>
-                        <p>Thank you for registering your interest in joining a team in the Crawley Darts League. Your information has been sent to our League Secretary who will be in touch soon.</p>
-                        <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
-                    </div>
-
-                    <div class="error-message" id="player-error">
-                        <h3>Registration Error</h3>
-                        <p>There was<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="icon" href="cdl.png">
@@ -174,7 +17,7 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script type="text/javascript">
         (function() {
-            // Public key from EmailJS - Replace with your public key from EmailJS Account page
+            // Public key from EmailJS - Replace with your public key
             emailjs.init({
                 publicKey: "5XHyqMEiwL1q1rLRE"
             });
@@ -619,50 +462,6 @@
                 </ul>
             </li>
         </ul>
-    </nav>>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Cup</a>
-                <ul class="dropdown-menu">
-                    <li><a href="cupbracket.html">Bracket</a></li>
-                    <li><a href="cupdraw.html">Cup Draw</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Statistics</a>
-                <ul class="dropdown-menu">
-                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="playerrankings.html">Player Rankings</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Information</a>
-                <ul class="dropdown-menu">
-                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                    <li><a href="rules.html">League Rules</a></li>
-                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Submit Score</a>
-                <ul class="dropdown-menu">
-                    <li><a href="scoreinput.html">Submit Score</a></li>
-                    <li><a href="editscores.html">Edit Score</a></li>
-                </ul>
-            </li>
-    
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-            </li>
-        </ul>
     </nav>
 
     <div class="container">
@@ -691,18 +490,23 @@
                     <p>Fill out the form below to register your interest in joining a team. The league organizers will work to match you with a team that suits your location, experience level, and availability.</p>
                     
                     <div class="registration-form">
+                        <!-- Use EmailJS-compatible form field names -->
                         <form id="individual-player-form">
+                            <!-- Add hidden inputs for EmailJS template -->
+                            <input type="hidden" name="registration_type" value="Individual Player">
+                            <input type="hidden" name="to_email" value="example@crawleydartsleague.com">
+                            
                             <div class="form-row">
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="player-name">Full Name <span class="required">*</span></label>
-                                        <input type="text" id="player-name" name="playerName" required>
+                                        <input type="text" id="player-name" name="from_name" required>
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="player-email">Email <span class="required">*</span></label>
-                                        <input type="email" id="player-email" name="playerEmail" required>
+                                        <input type="email" id="player-email" name="from_email" required>
                                     </div>
                                 </div>
                             </div>
@@ -711,13 +515,13 @@
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="player-phone">Contact Number <span class="required">*</span></label>
-                                        <input type="tel" id="player-phone" name="playerPhone" required>
+                                        <input type="tel" id="player-phone" name="phone_number" required>
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="player-location">Area/Location <span class="required">*</span></label>
-                                        <input type="text" id="player-location" name="playerLocation" placeholder="e.g. Three Bridges, Crawley" required>
+                                        <input type="text" id="player-location" name="location" placeholder="e.g. Three Bridges, Crawley" required>
                                         <div class="field-help">This helps us match you with nearby teams</div>
                                     </div>
                                 </div>
@@ -749,11 +553,11 @@
                                 <label>Played in a league before?</label>
                                 <div class="radio-group">
                                     <div class="radio-option">
-                                        <input type="radio" id="league-yes" name="league-experience" value="yes">
+                                        <input type="radio" id="league-yes" name="league_experience" value="yes">
                                         <label for="league-yes">Yes</label>
                                     </div>
                                     <div class="radio-option">
-                                        <input type="radio" id="league-no" name="league-experience" value="no">
+                                        <input type="radio" id="league-no" name="league_experience" value="no" checked>
                                         <label for="league-no">No</label>
                                     </div>
                                 </div>
@@ -761,22 +565,22 @@
                             
                             <div class="form-group" id="previous-league-container" style="display: none;">
                                 <label for="previous-league">Which league(s) have you played in?</label>
-                                <input type="text" id="previous-league" name="previousLeague" placeholder="e.g. Crawley Darts League, Sussex Super League, etc.">
+                                <input type="text" id="previous-league" name="previous_league" placeholder="e.g. Crawley Darts League, Sussex Super League, etc.">
                             </div>
                             
                             <div class="form-group">
                                 <label>Division Preference (if any)</label>
                                 <div class="radio-group">
                                     <div class="radio-option">
-                                        <input type="radio" id="division-premier" name="division-preference" value="premier">
+                                        <input type="radio" id="division-premier" name="division_preference" value="premier">
                                         <label for="division-premier">Premier Division</label>
                                     </div>
                                     <div class="radio-option">
-                                        <input type="radio" id="division-a" name="division-preference" value="a">
+                                        <input type="radio" id="division-a" name="division_preference" value="a">
                                         <label for="division-a">A Division</label>
                                     </div>
                                     <div class="radio-option">
-                                        <input type="radio" id="division-any" name="division-preference" value="any" checked>
+                                        <input type="radio" id="division-any" name="division_preference" value="any" checked>
                                         <label for="division-any">No Preference</label>
                                     </div>
                                 </div>
@@ -787,177 +591,7 @@
                                 <div class="field-help">League matches are typically on Friday evenings, but please indicate other days you might be available for practice</div>
                                 <div class="days-grid">
                                     <div class="checkbox-option">
-                                        <input type="checkbox" id="day-monday" name="availableDays" value="monday">
-                                        <label for="day-monday">Monday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-tuesday" name="availableDays" value="tuesday">
-                                        <label for="day-tuesday">Tuesday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-wednesday" name="availableDays" value="wednesday">
-                                        <label for="day-wednesday">Wednesday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-thursday" name="availableDays" value="thursday">
-                                        <label for="day-thursday">Thursday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-friday" name="availableDays" value="friday" checked>
-                                        <label for="day-friday">Friday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-saturday" name="availableDays" value="saturday">
-                                        <label for="day-saturday">Saturday</label>
-                                    </div>
-                                    <div class="checkbox-option">
-                                        <input type="checkbox" id="day-sunday" name="availableDays" value="sunday">
-                                        <label for="day-sunday">Sunday</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="player-notes">Additional Information</label>
-                                <textarea id="player-notes" name="playerNotes" placeholder="Tell us anything else that might be relevant (e.g. transport limitations, venue preferences, etc.)"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <div class="checkbox-option">
-                                    <input type="checkbox" id="player-consent" name="consent" required>
-                                    <label for="player-consent">I consent for my information to be shared with the Crawley Darts League committee and team captains <span class="required">*</span></label>
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn">Submit Registration</button>
-                        </form>
-                    </div>
-                    
-                    <div class="success-message" id="player-success">
-                        <h3>Registration Successful!</h3>
-                        <p>Thank you for registering your interest in joining a team in the Crawley Darts League. Your information has been sent to our League Secretary who will be in touch soon.</p>
-                        <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
-                    </div>
-
-                    <div class="error-message" id="player-error">
-                        <h3>Registration Error</h3>
-                        <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
-                    </div>
-                </div>
-                
-                <!-- Partial Team Registration Tab -->
-                <div id="partial-team" class="tab-content">
-                    <h2>Register as a Partial Team</h2>
-                    <p>If you have a group of players but not enough to form a complete team (minimum 8 players required), complete this form and we'll help you find additional players or potentially merge with another group.</p>
-                    
-                    <div class="registration-form">
-                        <form id="partial-team-form">
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="group-name">Group/Team Name (if any)</label>
-                                        <input type="text" id="group-name" name="group_name" placeholder="Optional - what you call your group">
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="current-players">Current Number of Players <span class="required">*</span></label>
-                                        <select id="current-players" name="current_players" required>
-                                            <option value="">Select Number</option>
-                                            <option value="1">1 (Just me)</option>
-                                            <option value="2">2</option>
-                                            <option value="3">3</option>
-                                            <option value="4">4</option>
-                                            <option value="5">5</option>
-                                            <option value="6">6</option>
-                                            <option value="7">7</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="contact-name">Main Contact Name <span class="required">*</span></label>
-                                        <input type="text" id="contact-name" name="from_name" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="contact-email">Contact Email <span class="required">*</span></label>
-                                        <input type="email" id="contact-email" name="from_email" required>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="contact-phone">Contact Phone <span class="required">*</span></label>
-                                        <input type="tel" id="contact-phone" name="phone_number" required>
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="preferred-location">Preferred Location/Area <span class="required">*</span></label>
-                                        <input type="text" id="preferred-location" name="preferred_location" placeholder="e.g. Three Bridges, Crawley" required>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-row">
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="preferred-venue">Preferred Venue (if any)</label>
-                                        <input type="text" id="preferred-venue" name="preferred_venue" placeholder="Do you have a venue in mind?">
-                                    </div>
-                                </div>
-                                <div class="form-col">
-                                    <div class="form-group">
-                                        <label for="preferred-division">Preferred Division</label>
-                                        <select id="preferred-division" name="preferred_division">
-                                            <option value="any">No Preference</option>
-                                            <option value="premier">Premier Division</option>
-                                            <option value="a">A Division</option>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label>Player Experience Levels <span class="required">*</span></label>
-                                <div class="radio-group">
-                                    <div class="radio-option">
-                                        <input type="radio" id="group-beginner" name="group_experience" value="beginner" required>
-                                        <label for="group-beginner">Mostly Beginners</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="group-mixed" name="group_experience" value="mixed">
-                                        <label for="group-mixed">Mixed Experience Levels</label>
-                                    </div>
-                                    <div class="radio-option">
-                                        <input type="radio" id="group-experienced" name="group_experience" value="experienced">
-                                        <label for="group-experienced">Mostly Experienced</label>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label for="group-notes">Additional Information</label>
-                                <textarea id="group-notes" name="additional_notes" placeholder="Tell us more about your group and what you're looking for"></textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <div class="checkbox-option">
-                                    <input type="checkbox" id="merge-willing" name="merge_willing" checked>
-                                    <label for="merge-willing">We are willing to consider merging with another partial team</label>
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <div class="checkbox-option">
-                                    <input type="checkbox" id="group-consent" name="consent" required>
+                                        <input type="checkbox" id="group-consent" name="consent" required>
                                     <label for="group-consent">I consent for our information to be shared with the Crawley Darts League committee <span class="required">*</span></label>
                                 </div>
                             </div>
@@ -1018,41 +652,26 @@
                 });
             });
             
-            // Function to get checked values from checkboxes with the same name
-            function getCheckedValues(name) {
+            // Helper function to collect checkbox values as a string
+            function getCheckboxValues(name) {
                 const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
-                return Array.from(checkboxes).map(cb => cb.value);
+                const values = Array.from(checkboxes).map(cb => cb.value);
+                return values.join(', ');
             }
             
-            // Handle individual player form submission with EmailJS
+            // Handle Individual Player Form Submission
             document.getElementById('individual-player-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Hide any existing messages
+                // Hide messages
                 document.getElementById('player-success').style.display = 'none';
                 document.getElementById('player-error').style.display = 'none';
                 
                 // Show spinner
                 document.getElementById('player-spinner').style.display = 'block';
                 
-                // Get available days as a string
-                const availableDays = getCheckedValues('available_days').join(', ');
-                
-                // Get selected experience level
-                const experienceEl = document.querySelector('input[name="experience"]:checked');
-                const experience = experienceEl ? experienceEl.value : '';
-                
-                // Get league experience
-                const leagueExpEl = document.querySelector('input[name="league_experience"]:checked');
-                const leagueExperience = leagueExpEl ? leagueExpEl.value : 'no';
-                
-                // Get division preference
-                const divisionPrefEl = document.querySelector('input[name="division_preference"]:checked');
-                const divisionPreference = divisionPrefEl ? divisionPrefEl.value : 'any';
-                
-                // Get previous league
-                const previousLeague = leagueExperience === 'yes' ? 
-                    document.getElementById('previous-league').value : 'N/A';
+                // Get checkbox values for available days (since EmailJS doesn't handle multiple values with the same name)
+                const availableDaysStr = getCheckboxValues('available_days');
                 
                 // Create template params for EmailJS
                 const templateParams = {
@@ -1060,18 +679,20 @@
                     from_email: document.getElementById('player-email').value,
                     phone_number: document.getElementById('player-phone').value,
                     location: document.getElementById('player-location').value,
-                    experience: experience,
-                    league_experience: leagueExperience,
-                    previous_league: previousLeague,
-                    division_preference: divisionPreference,
-                    available_days: availableDays,
-                    additional_notes: document.getElementById('player-notes').value,
+                    experience: document.querySelector('input[name="experience"]:checked')?.value || '',
+                    league_experience: document.querySelector('input[name="league_experience"]:checked')?.value || 'no',
+                    previous_league: (document.querySelector('input[name="league_experience"]:checked')?.value === 'yes') 
+                        ? document.getElementById('previous-league').value 
+                        : 'N/A',
+                    division_preference: document.querySelector('input[name="division_preference"]:checked')?.value || 'any',
+                    available_days: availableDaysStr,
+                    additional_notes: document.getElementById('player-notes').value || 'None',
                     registration_type: 'Individual Player',
-                    to_email: 'example@crawleydartsleague.com' // Replace with your actual email
+                    to_email: 'example@crawleydartsleague.com'
                 };
                 
                 // Send email using EmailJS
-                emailjs.send('service_908yx9n', 'Ytemplate_962sd7d', templateParams)
+                emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                     .then(function(response) {
                         console.log('SUCCESS!', response.status, response.text);
                         
@@ -1089,7 +710,8 @@
                         
                         // Scroll to success message
                         document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
-                    }, function(error) {
+                    })
+                    .catch(function(error) {
                         console.log('FAILED...', error);
                         
                         // Hide spinner
@@ -1101,20 +723,16 @@
                     });
             });
             
-            // Handle partial team form submission with EmailJS
+            // Handle Partial Team Form Submission
             document.getElementById('partial-team-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
-                // Hide any existing messages
+                // Hide messages
                 document.getElementById('partial-team-success').style.display = 'none';
                 document.getElementById('partial-team-error').style.display = 'none';
                 
                 // Show spinner
                 document.getElementById('partial-team-spinner').style.display = 'block';
-                
-                // Get group experience
-                const groupExpEl = document.querySelector('input[name="group_experience"]:checked');
-                const groupExperience = groupExpEl ? groupExpEl.value : '';
                 
                 // Create template params for EmailJS
                 const templateParams = {
@@ -1126,15 +744,15 @@
                     preferred_location: document.getElementById('preferred-location').value,
                     preferred_venue: document.getElementById('preferred-venue').value || 'Not specified',
                     preferred_division: document.getElementById('preferred-division').value,
-                    group_experience: groupExperience,
+                    group_experience: document.querySelector('input[name="group_experience"]:checked')?.value || '',
                     merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
                     additional_notes: document.getElementById('group-notes').value || 'None',
                     registration_type: 'Partial Team',
-                    to_email: 'example@crawleydartsleague.com' // Replace with your actual email
+                    to_email: 'example@crawleydartsleague.com'
                 };
                 
                 // Send email using EmailJS
-                emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+                emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                     .then(function(response) {
                         console.log('SUCCESS!', response.status, response.text);
                         
@@ -1149,7 +767,8 @@
                         
                         // Scroll to success message
                         document.getElementById('partial-team-success').scrollIntoView({ behavior: 'smooth' });
-                    }, function(error) {
+                    })
+                    .catch(function(error) {
                         console.log('FAILED...', error);
                         
                         // Hide spinner
@@ -1241,160 +860,6 @@
                 }
             });
         });
-    </script>
-</body>
-</html> messages
-                document.getElementById('player-success').style.display = 'none';
-                document.getElementById('player-error').style.display = 'none';
-                
-                try {
-                    // Collect form data
-                    const formData = collectFormData(this);
-                    
-                    // Format email body
-                    const emailBody = formatIndividualPlayerEmail(formData);
-                    
-                    // Send email
-                    await sendEmail(
-                        'example@crawleydartsleague.com',
-                        'New Player Registration - Crawley Darts League',
-                        emailBody
-                    );
-                    
-                    // Show success message
-                    document.getElementById('player-success').style.display = 'block';
-                    
-                    // Reset form
-                    this.reset();
-                    
-                    // Hide previous league container
-                    document.getElementById('previous-league-container').style.display = 'none';
-                    
-                    // Scroll to success message
-                    document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    document.getElementById('player-error').style.display = 'block';
-                    document.getElementById('player-error').scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-            
-            // Handle partial team form submission
-            document.getElementById('partial-team-form').addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                // Hide any existing messages
-                document.getElementById('partial-team-success').style.display = 'none';
-                document.getElementById('partial-team-error').style.display = 'none';
-                
-                try {
-                    // Collect form data
-                    const formData = collectFormData(this);
-                    
-                    // Format email body
-                    const emailBody = formatPartialTeamEmail(formData);
-                    
-                    // Send email
-                    await sendEmail(
-                        'example@crawleydartsleague.com',
-                        'New Partial Team Registration - Crawley Darts League',
-                        emailBody
-                    );
-                    
-                    // Show success message
-                    document.getElementById('partial-team-success').style.display = 'block';
-                    
-                    // Reset form
-                    this.reset();
-                    
-                    // Scroll to success message
-                    document.getElementById('partial-team-success').scrollIntoView({ behavior: 'smooth' });
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    document.getElementById('partial-team-error').style.display = 'block';
-                    document.getElementById('partial-team-error').scrollIntoView({ behavior: 'smooth' });
-                }
-            });
-            
-            // Mobile navigation functionality
-            const mobileToggle = document.querySelector('.mobile-toggle');
-            const navMenu = document.querySelector('.nav-menu');
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            
-            // Toggle mobile menu
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function() {
-                    navMenu.classList.toggle('active');
-                    
-                    // Animate hamburger to X
-                    this.classList.toggle('active');
-                    const bars = this.querySelectorAll('.bar');
-                    if (this.classList.contains('active')) {
-                        bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-                        bars[1].style.opacity = '0';
-                        bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-                    } else {
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                });
-            }
-            
-            // Handle dropdown menus on mobile
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this behavior on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const parentLi = this.parentElement;
-                        
-                        // Close all other open dropdowns
-                        document.querySelectorAll('.dropdown.active').forEach(item => {
-                            if (item !== parentLi) {
-                                item.classList.remove('active');
-                            }
-                        });
-                        
-                        // Toggle this dropdown
-                        parentLi.classList.toggle('active');
-                    }
-                });
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(e) {
-                const isClickInsideNav = navMenu.contains(e.target) || (mobileToggle && mobileToggle.contains(e.target));
-                if (!isClickInsideNav && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    if (mobileToggle) {
-                        mobileToggle.classList.remove('active');
-                        const bars = mobileToggle.querySelectorAll('.bar');
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                }
-            });
-            
-            // Handle resize events
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    navMenu.classList.remove('active');
-                    if (mobileToggle) {
-                        mobileToggle.classList.remove('active');
-                        const bars = mobileToggle.querySelectorAll('.bar');
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                    
-                    // Reset all dropdowns
-                    document.querySelectorAll('.dropdown.active').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                }
-            });
     </script>
 </body>
 </html>
