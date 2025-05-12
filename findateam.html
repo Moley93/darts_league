@@ -1423,27 +1423,7 @@
             // Initial render of teams table
             renderTeamsTable();
             
-            // Add notice at the bottom of the page explaining how this would be implemented in production
-            const noticeDiv = document.createElement('div');
-            noticeDiv.style.padding = '20px';
-            noticeDiv.style.marginTop = '30px';
-            noticeDiv.style.backgroundColor = '#f8f9fa';
-            noticeDiv.style.border = '1px solid #dee2e6';
-            noticeDiv.style.borderRadius = '4px';
-            noticeDiv.innerHTML = `
-                <h3 style="color: #1a237e">Implementation Note</h3>
-                <p>This page demonstrates the automated update functionality using client-side JavaScript and a mock database. In a real production environment, this would be implemented with:</p>
-                <ul>
-                    <li><strong>Server-side database</strong> to store the submissions (e.g., MySQL, PostgreSQL)</li>
-                    <li><strong>Server-side API</strong> to handle form submissions and validate data (e.g., PHP, Node.js)</li>
-                    <li><strong>Authentication system</strong> for team captains to manage their listings</li>
-                    <li><strong>Admin panel</strong> for league officials to review and approve submissions</li>
-                    <li><strong>Notification system</strong> to alert administrators and team captains about new submissions</li>
-                </ul>
-                <p>For this demo, the data is stored temporarily in browser memory and will reset when the page is refreshed.</p>
-            `;
-            document.querySelector('.container').appendChild(noticeDiv);
-        });
+       });
     </script>
 </body>
 </html>
