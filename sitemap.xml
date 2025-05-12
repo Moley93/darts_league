@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Home Page -->
+  <url>
+    <loc>https://crawleydartsleague.com/index.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  
+  <!-- League Section -->
+  <url>
+    <loc>https://crawleydartsleague.com/leaguetable.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/leaguefixtures.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/leagueresults.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Cup Section -->
+  <url>
+    <loc>https://crawleydartsleague.com/cupbracket.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/cupdraw.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Statistics Section -->
+  <url>
+    <loc>https://crawleydartsleague.com/180sfinishes.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/playerrankings.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  
+  <!-- Information Section -->
+  <url>
+    <loc>https://crawleydartsleague.com/contactinfo.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/rules.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/agm-minutes.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/players.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Score Submission Pages -->
+  <url>
+    <loc>https://crawleydartsleague.com/scoreinput.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/editscores.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  
+  <!-- Join Section -->
+  <url>
+    <loc>https://crawleydartsleague.com/registration.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://crawleydartsleague.com/findateam.html</loc>
+    <lastmod>2025-05-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+</urlset>
