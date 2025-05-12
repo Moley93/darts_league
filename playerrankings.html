@@ -81,6 +81,7 @@
             border-collapse: collapse;
             margin-top: 20px;
             font-size: 14px;
+            table-layout: fixed; /* Added for better column width control */
         }
 
         .rankings-table th, 
@@ -88,6 +89,36 @@
             text-align: center;
             padding: 10px 8px;
             border-bottom: 1px solid var(--medium-gray);
+        }
+
+        /* Set specific widths for columns */
+        .rankings-table th:first-child, 
+        .rankings-table td:first-child {
+            width: 50px; /* Rank column */
+        }
+
+        .rankings-table th:nth-child(2), 
+        .rankings-table td:nth-child(2) {
+            width: auto; /* Player name column - flexible */
+            text-align: left;
+        }
+
+        .rankings-table th:nth-child(3), 
+        .rankings-table td:nth-child(3) {
+            width: 60px; /* Played column */
+        }
+
+        /* Score columns - make narrower and prevent wrapping */
+        .rankings-table th.score-col,
+        .rankings-table td.score-col {
+            width: 40px;
+            white-space: nowrap;
+        }
+
+        /* Points column */
+        .rankings-table th:last-child, 
+        .rankings-table td:last-child {
+            width: 60px;
         }
 
         .rankings-table th {
@@ -301,8 +332,14 @@
         @media screen and (max-width: 991px) {
             .rankings-table th, 
             .rankings-table td {
-                padding: 8px 6px;
+                padding: 8px 4px; /* Reduced horizontal padding */
                 font-size: 13px;
+            }
+            
+            /* Further reduce widths on smaller screens */
+            .rankings-table th.score-col,
+            .rankings-table td.score-col {
+                width: 32px;
             }
         }
 
@@ -397,12 +434,12 @@
                             <th></th>
                             <th></th>
                             <th></th>
-                            <th>3-0</th>
-                            <th>3-1</th>
-                            <th>3-2</th>
-                            <th>2-3</th>
-                            <th>1-3</th>
-                            <th>0-3</th>
+                            <th class="score-col">3-0</th>
+                            <th class="score-col">3-1</th>
+                            <th class="score-col">3-2</th>
+                            <th class="score-col">2-3</th>
+                            <th class="score-col">1-3</th>
+                            <th class="score-col">0-3</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -431,10 +468,10 @@
                             <th></th>
                             <th></th>
                             <th></th>
-                            <th>2-0</th>
-                            <th>2-1</th>
-                            <th>1-2</th>
-                            <th>0-2</th>
+                            <th class="score-col">2-0</th>
+                            <th class="score-col">2-1</th>
+                            <th class="score-col">1-2</th>
+                            <th class="score-col">0-2</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -602,12 +639,12 @@
                         <td>${index + 1}</td>
                         <td>${player.player_name}</td>
                         <td>${player.played}</td>
-                        <td class="win-score">${player.win_3_0 || 0}</td>
-                        <td class="win-score">${player.win_3_1 || 0}</td>
-                        <td class="win-score">${player.win_3_2 || 0}</td>
-                        <td class="loss-score">${player.loss_2_3 || 0}</td>
-                        <td class="loss-score">${player.loss_1_3 || 0}</td>
-                        <td class="loss-score">${player.loss_0_3 || 0}</td>
+                        <td class="win-score score-col">${player.win_3_0 || 0}</td>
+                        <td class="win-score score-col">${player.win_3_1 || 0}</td>
+                        <td class="win-score score-col">${player.win_3_2 || 0}</td>
+                        <td class="loss-score score-col">${player.loss_2_3 || 0}</td>
+                        <td class="loss-score score-col">${player.loss_1_3 || 0}</td>
+                        <td class="loss-score score-col">${player.loss_0_3 || 0}</td>
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
                     
@@ -670,10 +707,10 @@
                         <td>${index + 1}</td>
                         <td>${player.player_name}</td>
                         <td>${player.played}</td>
-                        <td class="win-score">${player.win_2_0 || 0}</td>
-                        <td class="win-score">${player.win_2_1 || 0}</td>
-                        <td class="loss-score">${player.loss_1_2 || 0}</td>
-                        <td class="loss-score">${player.loss_0_2 || 0}</td>
+                        <td class="win-score score-col">${player.win_2_0 || 0}</td>
+                        <td class="win-score score-col">${player.win_2_1 || 0}</td>
+                        <td class="loss-score score-col">${player.loss_1_2 || 0}</td>
+                        <td class="loss-score score-col">${player.loss_0_2 || 0}</td>
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
                     
