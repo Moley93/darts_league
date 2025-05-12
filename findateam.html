@@ -258,13 +258,16 @@
         }
         
         .team-badge {
-            display: inline-block;
-            padding: 3px 8px;
-            font-size: 0.8em;
-            border-radius: 12px;
-            color: white;
-            background-color: var(--primary);
-        }
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 0.8em;
+    border-radius: 12px;
+    color: white;
+    background-color: var(--primary);
+    white-space: nowrap;    /* Prevents text from wrapping */
+    min-width: 75px;        /* Ensures consistent width */
+    text-align: center;     /* Centers the text */
+}
         
         .division-premier {
             background-color: var(--primary);
