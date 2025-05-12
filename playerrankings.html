@@ -100,8 +100,7 @@
             background-color: var(--row-alt);
         }
 
-        .rankings-table td:nth-child(2),
-        .rankings-table td:nth-child(3) {
+        .rankings-table td:nth-child(2) {
             text-align: left;
         }
 
@@ -218,11 +217,6 @@
             color: var(--primary);
             margin-bottom: 5px;
             padding-right: 35px; /* Space for rank */
-        }
-
-        .player-card .team {
-            color: var(--dark-gray);
-            margin-bottom: 10px;
         }
 
         .player-card .stats {
@@ -388,20 +382,18 @@
                     </div>
                 </h2>
                 
-                <!-- Premier Division Table (Desktop View) -->
+                <!-- Premier Division Table (Desktop View) - TEAM COLUMN REMOVED -->
                 <table id="premier-rankings-table" class="rankings-table desktop-table">
                     <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Player</th>
-                            <th>Team</th>
                             <th>Played</th>
                             <th colspan="3" class="wins-header">Wins</th>
                             <th colspan="3" class="losses-header">Losses</th>
                             <th>Points</th>
                         </tr>
                         <tr>
-                            <th></th>
                             <th></th>
                             <th></th>
                             <th></th>
@@ -424,20 +416,18 @@
                     <!-- Dynamic content will be loaded here -->
                 </div>
                 
-                <!-- A Division Table (Desktop View) -->
+                <!-- A Division Table (Desktop View) - TEAM COLUMN REMOVED -->
                 <table id="a-rankings-table" class="rankings-table desktop-table hidden">
                     <thead>
                         <tr>
                             <th>Rank</th>
                             <th>Player</th>
-                            <th>Team</th>
                             <th>Played</th>
                             <th colspan="2" class="wins-header">Wins</th>
                             <th colspan="2" class="losses-header">Losses</th>
                             <th>Points</th>
                         </tr>
                         <tr>
-                            <th></th>
                             <th></th>
                             <th></th>
                             <th></th>
@@ -568,7 +558,7 @@
             
             if (data.length === 0) {
                 // Display a message if no data is found - for both desktop and mobile views
-                const colSpan = division === 'premier' ? 11 : 9; // Different column count based on division
+                const colSpan = division === 'premier' ? 10 : 8; // Different column count based on division (reduced by 1 since team column was removed)
                 
                 // Desktop table message
                 const row = document.createElement('tr');
@@ -611,7 +601,6 @@
                     row.innerHTML = `
                         <td>${index + 1}</td>
                         <td>${player.player_name}</td>
-                        <td>${player.team_name}</td>
                         <td>${player.played}</td>
                         <td class="win-score">${player.win_3_0 || 0}</td>
                         <td class="win-score">${player.win_3_1 || 0}</td>
@@ -622,13 +611,12 @@
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
                     
-                    // 2. Create card for mobile view
+                    // 2. Create card for mobile view - removed team name
                     const card = document.createElement('div');
                     card.className = 'player-card';
                     card.innerHTML = `
                         <div class="rank">${index + 1}</div>
                         <div class="name">${player.player_name}</div>
-                        <div class="team">${player.team_name}</div>
                         <div class="stats">
                             <div class="stat-item">
                                 <span class="stat-label">Played</span>
@@ -681,7 +669,6 @@
                     row.innerHTML = `
                         <td>${index + 1}</td>
                         <td>${player.player_name}</td>
-                        <td>${player.team_name}</td>
                         <td>${player.played}</td>
                         <td class="win-score">${player.win_2_0 || 0}</td>
                         <td class="win-score">${player.win_2_1 || 0}</td>
@@ -690,13 +677,12 @@
                         <td><strong>${player.recalculated_points}</strong></td>
                     `;
                     
-                    // Create card for mobile view
+                    // Create card for mobile view - removed team name
                     const card = document.createElement('div');
                     card.className = 'player-card';
                     card.innerHTML = `
                         <div class="rank">${index + 1}</div>
                         <div class="name">${player.player_name}</div>
-                        <div class="team">${player.team_name}</div>
                         <div class="stats">
                             <div class="stat-item">
                                 <span class="stat-label">Played</span>
