@@ -601,265 +601,447 @@
                         </form>
                     </div>
                     
-                    <div class="success-message" id="partial-team-success">
-                        <h3>Partial Team Registration Successful!</h3>
-                        <p>Thank you for registering your partial team. Your information has been sent to our League Secretary who will be in touch to help you find additional players or potentially merge with another group.</p>
-                        <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
-                    </div>
+<!-- Add the missing success and error messages for individual player form -->
+<div class="success-message" id="player-success">
+    <h3>Player Registration Successful!</h3>
+    <p>Thank you for registering your interest in joining a team. Your information has been sent to our League Secretary who will be in touch soon to help match you with a suitable team.</p>
+    <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
+</div>
 
-                    <div class="error-message" id="partial-team-error">
-                        <h3>Registration Error</h3>
-                        <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
+<div class="error-message" id="player-error">
+    <h3>Registration Error</h3>
+    <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
+</div>
+
+<!-- Add the missing available days checkboxes to the individual player form -->
+<div class="days-grid">
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-monday" name="available_days" value="Monday">
+        <label for="day-monday">Monday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-tuesday" name="available_days" value="Tuesday">
+        <label for="day-tuesday">Tuesday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-wednesday" name="available_days" value="Wednesday">
+        <label for="day-wednesday">Wednesday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-thursday" name="available_days" value="Thursday">
+        <label for="day-thursday">Thursday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-friday" name="available_days" value="Friday" checked>
+        <label for="day-friday">Friday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-saturday" name="available_days" value="Saturday">
+        <label for="day-saturday">Saturday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-sunday" name="available_days" value="Sunday">
+        <label for="day-sunday">Sunday</label>
+    </div>
+</div>
+
+<!-- Add the missing additional notes textarea -->
+<div class="form-group">
+    <label for="player-notes">Additional Information</label>
+    <textarea id="player-notes" name="additional_notes" placeholder="Any additional information that might help us match you with a suitable team..."></textarea>
+</div>
+
+<!-- Add the missing spinner element -->
+<div class="spinner" id="player-spinner"></div>
+
+<!-- Add the missing partial team form and content -->
+<div id="partial-team" class="tab-content">
+    <h2>Register as a Partial Team Looking for More Players</h2>
+    
+    <p>If you have a group of players but not enough to form a complete team, fill out the form below. The league organizers will help connect you with other players or partial teams.</p>
+    
+    <div class="registration-form">
+        <form id="partial-team-form">
+            <!-- Add hidden inputs for EmailJS template -->
+            <input type="hidden" name="registration_type" value="Partial Team">
+            <input type="hidden" name="to_email" value="example@crawleydartsleague.com">
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="group-name">Team/Group Name (if any)</label>
+                        <input type="text" id="group-name" name="group_name" placeholder="Leave blank if none">
                     </div>
                 </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="current-players">Number of Current Players <span class="required">*</span></label>
+                        <input type="number" id="current-players" name="current_players" min="1" max="7" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="contact-name">Contact Name <span class="required">*</span></label>
+                        <input type="text" id="contact-name" name="from_name" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="contact-email">Contact Email <span class="required">*</span></label>
+                        <input type="email" id="contact-email" name="from_email" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="contact-phone">Contact Number <span class="required">*</span></label>
+                        <input type="tel" id="contact-phone" name="phone_number" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="preferred-location">Preferred Area/Location <span class="required">*</span></label>
+                        <input type="text" id="preferred-location" name="preferred_location" placeholder="e.g. Three Bridges, Crawley" required>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="preferred-venue">Preferred Venue (if any)</label>
+                        <input type="text" id="preferred-venue" name="preferred_venue" placeholder="Leave blank if no preference">
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="preferred-division">Preferred Division <span class="required">*</span></label>
+                        <select id="preferred-division" name="preferred_division" required>
+                            <option value="">-- Select --</option>
+                            <option value="Premier">Premier Division</option>
+                            <option value="A">A Division</option>
+                            <option value="No Preference">No Preference</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Team Experience Level <span class="required">*</span></label>
+                <div class="radio-group">
+                    <div class="radio-option">
+                        <input type="radio" id="experience-beginner-group" name="group_experience" value="beginner" required>
+                        <label for="experience-beginner-group">Beginner</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="experience-casual-group" name="group_experience" value="casual">
+                        <label for="experience-casual-group">Casual</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="experience-experienced-group" name="group_experience" value="experienced">
+                        <label for="experience-experienced-group">Experienced</label>
+                    </div>
+                    <div class="radio-option">
+                        <input type="radio" id="experience-competitive-group" name="group_experience" value="competitive">
+                        <label for="experience-competitive-group">Competitive</label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checkbox-option">
+                <input type="checkbox" id="merge-willing" name="merge_willing">
+                <label for="merge-willing">Willing to merge with another partial team</label>
+            </div>
+            
+            <div class="form-group">
+                <label for="group-notes">Additional Information</label>
+                <textarea id="group-notes" name="additional_notes" placeholder="Any additional information about your team that might be helpful..."></textarea>
+            </div>
+            
+            <div class="checkbox-option">
+                <input type="checkbox" id="partial-team-consent" name="consent" required>
+                <label for="partial-team-consent">I consent for our information to be shared with the Crawley Darts League committee <span class="required">*</span></label>
+            </div>
+            
+            <button type="submit" class="btn">Submit Registration</button>
+        </form>
+    </div>
+</div>                </div>
             </div>
         </div>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Tab functionality
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', function() {
-                    // Remove active class from all tabs
-                    tabs.forEach(t => t.classList.remove('active'));
-                    
-                    // Add active class to clicked tab
-                    this.classList.add('active');
-                    
-                    // Hide all content
-                    document.querySelectorAll('.tab-content').forEach(content => {
-                        content.classList.remove('active');
-                    });
-                    
-                    // Show content for clicked tab
-                    const contentId = this.getAttribute('data-tab');
-                    document.getElementById(contentId).classList.add('active');
-                });
+// This is the fixed JavaScript code for the Find a Team page
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab functionality
+    const tabs = document.querySelectorAll('.tab');
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Remove active class from all tabs
+            tabs.forEach(t => t.classList.remove('active'));
+            
+            // Add active class to clicked tab
+            this.classList.add('active');
+            
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
             });
             
-            // Toggle league experience fields
-            const leagueExperienceRadios = document.querySelectorAll('input[name="league_experience"]');
-            leagueExperienceRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const previousLeagueContainer = document.getElementById('previous-league-container');
-                    if (this.value === 'yes') {
-                        previousLeagueContainer.style.display = 'block';
-                    } else {
-                        previousLeagueContainer.style.display = 'none';
-                    }
-                });
-            });
-            
-            // Helper function to collect checkbox values as a string
-            function getCheckboxValues(name) {
-                const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
-                const values = Array.from(checkboxes).map(cb => cb.value);
-                return values.join(', ');
-            }
-            
-            // Handle Individual Player Form Submission
-            document.getElementById('individual-player-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Hide messages
-                document.getElementById('player-success').style.display = 'none';
-                document.getElementById('player-error').style.display = 'none';
-                
-                // Show spinner
-                document.getElementById('player-spinner').style.display = 'block';
-                
-                // Get checkbox values for available days (since EmailJS doesn't handle multiple values with the same name)
-                const availableDaysStr = getCheckboxValues('available_days');
-                
-                // Create template params for EmailJS
-                const templateParams = {
-                    from_name: document.getElementById('player-name').value,
-                    from_email: document.getElementById('player-email').value,
-                    phone_number: document.getElementById('player-phone').value,
-                    location: document.getElementById('player-location').value,
-                    experience: document.querySelector('input[name="experience"]:checked')?.value || '',
-                    league_experience: document.querySelector('input[name="league_experience"]:checked')?.value || 'no',
-                    previous_league: (document.querySelector('input[name="league_experience"]:checked')?.value === 'yes') 
-                        ? document.getElementById('previous-league').value 
-                        : 'N/A',
-                    division_preference: document.querySelector('input[name="division_preference"]:checked')?.value || 'any',
-                    available_days: availableDaysStr,
-                    additional_notes: document.getElementById('player-notes').value || 'None',
-                    registration_type: 'Individual Player',
-                    to_email: 'example@crawleydartsleague.com'
-                };
-                
-                // Send email using EmailJS
-                emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
-                    .then(function(response) {
-                        console.log('SUCCESS!', response.status, response.text);
-                        
-                        // Hide spinner
-                        document.getElementById('player-spinner').style.display = 'none';
-                        
-                        // Show success message
-                        document.getElementById('player-success').style.display = 'block';
-                        
-                        // Reset form
-                        document.getElementById('individual-player-form').reset();
-                        
-                        // Hide previous league container
-                        document.getElementById('previous-league-container').style.display = 'none';
-                        
-                        // Scroll to success message
-                        document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
-                    })
-                    .catch(function(error) {
-                        console.log('FAILED...', error);
-                        
-                        // Hide spinner
-                        document.getElementById('player-spinner').style.display = 'none';
-                        
-                        // Show error message
-                        document.getElementById('player-error').style.display = 'block';
-                        document.getElementById('player-error').scrollIntoView({ behavior: 'smooth' });
-                    });
-            });
-            
-            // Handle Partial Team Form Submission
-            document.getElementById('partial-team-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-                
-                // Hide messages
-                document.getElementById('partial-team-success').style.display = 'none';
-                document.getElementById('partial-team-error').style.display = 'none';
-                
-                // Show spinner
-                document.getElementById('partial-team-spinner').style.display = 'block';
-                
-                // Create template params for EmailJS
-                const templateParams = {
-                    group_name: document.getElementById('group-name').value || 'Not provided',
-                    current_players: document.getElementById('current-players').value,
-                    from_name: document.getElementById('contact-name').value,
-                    from_email: document.getElementById('contact-email').value,
-                    phone_number: document.getElementById('contact-phone').value,
-                    preferred_location: document.getElementById('preferred-location').value,
-                    preferred_venue: document.getElementById('preferred-venue').value || 'Not specified',
-                    preferred_division: document.getElementById('preferred-division').value,
-                    group_experience: document.querySelector('input[name="group_experience"]:checked')?.value || '',
-                    merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
-                    additional_notes: document.getElementById('group-notes').value || 'None',
-                    registration_type: 'Partial Team',
-                    to_email: 'example@crawleydartsleague.com'
-                };
-                
-                // Send email using EmailJS
-                emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
-                    .then(function(response) {
-                        console.log('SUCCESS!', response.status, response.text);
-                        
-                        // Hide spinner
-                        document.getElementById('partial-team-spinner').style.display = 'none';
-                        
-                        // Show success message
-                        document.getElementById('partial-team-success').style.display = 'block';
-                        
-                        // Reset form
-                        document.getElementById('partial-team-form').reset();
-                        
-                        // Scroll to success message
-                        document.getElementById('partial-team-success').scrollIntoView({ behavior: 'smooth' });
-                    })
-                    .catch(function(error) {
-                        console.log('FAILED...', error);
-                        
-                        // Hide spinner
-                        document.getElementById('partial-team-spinner').style.display = 'none';
-                        
-                        // Show error message
-                        document.getElementById('partial-team-error').style.display = 'block';
-                        document.getElementById('partial-team-error').scrollIntoView({ behavior: 'smooth' });
-                    });
-            });
-            
-            // Mobile navigation functionality
-            const mobileToggle = document.querySelector('.mobile-toggle');
-            const navMenu = document.querySelector('.nav-menu');
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            
-            // Toggle mobile menu
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function() {
-                    navMenu.classList.toggle('active');
-                    
-                    // Animate hamburger to X
-                    this.classList.toggle('active');
-                    const bars = this.querySelectorAll('.bar');
-                    if (this.classList.contains('active')) {
-                        bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-                        bars[1].style.opacity = '0';
-                        bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-                    } else {
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                });
-            }
-            
-            // Handle dropdown menus on mobile
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this behavior on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const parentLi = this.parentElement;
-                        
-                        // Close all other open dropdowns
-                        document.querySelectorAll('.dropdown.active').forEach(item => {
-                            if (item !== parentLi) {
-                                item.classList.remove('active');
-                            }
-                        });
-                        
-                        // Toggle this dropdown
-                        parentLi.classList.toggle('active');
-                    }
-                });
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(e) {
-                const isClickInsideNav = navMenu.contains(e.target) || (mobileToggle && mobileToggle.contains(e.target));
-                if (!isClickInsideNav && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    if (mobileToggle) {
-                        mobileToggle.classList.remove('active');
-                        const bars = mobileToggle.querySelectorAll('.bar');
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                }
-            });
-            
-            // Handle resize events
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    navMenu.classList.remove('active');
-                    if (mobileToggle) {
-                        mobileToggle.classList.remove('active');
-                        const bars = mobileToggle.querySelectorAll('.bar');
-                        bars[0].style.transform = 'none';
-                        bars[1].style.opacity = '1';
-                        bars[2].style.transform = 'none';
-                    }
-                    
-                    // Reset all dropdowns
-                    document.querySelectorAll('.dropdown.active').forEach(item => {
-                        item.classList.remove('active');
-                    });
-                }
-            });
+            // Show content for clicked tab
+            const contentId = this.getAttribute('data-tab');
+            document.getElementById(contentId).classList.add('active');
         });
-    </script>
+    });
+    
+    // Toggle league experience fields
+    const leagueExperienceRadios = document.querySelectorAll('input[name="league_experience"]');
+    leagueExperienceRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            const previousLeagueContainer = document.getElementById('previous-league-container');
+            if (this.value === 'yes') {
+                previousLeagueContainer.style.display = 'block';
+            } else {
+                previousLeagueContainer.style.display = 'none';
+            }
+        });
+    });
+    
+    // Helper function to collect checkbox values as a string
+    function getCheckboxValues(name) {
+        const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+        const values = Array.from(checkboxes).map(cb => cb.value);
+        return values.join(', ');
+    }
+    
+    // Handle Individual Player Form Submission
+    const individualForm = document.getElementById('individual-player-form');
+    if (individualForm) {
+        individualForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!this.checkValidity()) {
+                this.reportValidity();
+                return;
+            }
+            
+            // Hide messages
+            document.getElementById('player-success').style.display = 'none';
+            document.getElementById('player-error').style.display = 'none';
+            
+            // Show spinner
+            document.getElementById('player-spinner').style.display = 'block';
+            
+            // Get checkbox values for available days
+            const availableDaysStr = getCheckboxValues('available_days');
+            
+            // Create template params for EmailJS
+            const templateParams = {
+                from_name: document.getElementById('player-name').value,
+                from_email: document.getElementById('player-email').value,
+                phone_number: document.getElementById('player-phone').value,
+                location: document.getElementById('player-location').value,
+                experience: document.querySelector('input[name="experience"]:checked')?.value || '',
+                league_experience: document.querySelector('input[name="league_experience"]:checked')?.value || 'no',
+                previous_league: (document.querySelector('input[name="league_experience"]:checked')?.value === 'yes') 
+                    ? document.getElementById('previous-league').value 
+                    : 'N/A',
+                division_preference: document.querySelector('input[name="division_preference"]:checked')?.value || 'any',
+                available_days: availableDaysStr,
+                additional_notes: document.getElementById('player-notes').value || 'None',
+                registration_type: 'Individual Player',
+                to_email: 'example@crawleydartsleague.com'
+            };
+            
+            console.log('Sending email with params:', templateParams);
+            
+            // Send email using EmailJS
+            emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    
+                    // Hide spinner
+                    document.getElementById('player-spinner').style.display = 'none';
+                    
+                    // Show success message
+                    document.getElementById('player-success').style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('individual-player-form').reset();
+                    
+                    // Hide previous league container
+                    document.getElementById('previous-league-container').style.display = 'none';
+                    
+                    // Scroll to success message
+                    document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(function(error) {
+                    console.log('FAILED...', error);
+                    
+                    // Hide spinner
+                    document.getElementById('player-spinner').style.display = 'none';
+                    
+                    // Show error message
+                    document.getElementById('player-error').style.display = 'block';
+                    document.getElementById('player-error').scrollIntoView({ behavior: 'smooth' });
+                });
+        });
+    }
+    
+    // Handle Partial Team Form Submission
+    const partialTeamForm = document.getElementById('partial-team-form');
+    if (partialTeamForm) {
+        partialTeamForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validate form
+            if (!this.checkValidity()) {
+                this.reportValidity();
+                return;
+            }
+            
+            // Hide messages
+            document.getElementById('partial-team-success').style.display = 'none';
+            document.getElementById('partial-team-error').style.display = 'none';
+            
+            // Show spinner
+            document.getElementById('partial-team-spinner').style.display = 'block';
+            
+            // Create template params for EmailJS
+            const templateParams = {
+                group_name: document.getElementById('group-name').value || 'Not provided',
+                current_players: document.getElementById('current-players').value,
+                from_name: document.getElementById('contact-name').value,
+                from_email: document.getElementById('contact-email').value,
+                phone_number: document.getElementById('contact-phone').value,
+                preferred_location: document.getElementById('preferred-location').value,
+                preferred_venue: document.getElementById('preferred-venue').value || 'Not specified',
+                preferred_division: document.getElementById('preferred-division').value,
+                group_experience: document.querySelector('input[name="group_experience"]:checked')?.value || '',
+                merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
+                additional_notes: document.getElementById('group-notes').value || 'None',
+                registration_type: 'Partial Team',
+                to_email: 'example@crawleydartsleague.com'
+            };
+            
+            console.log('Sending email with params:', templateParams);
+            
+            // Send email using EmailJS
+            emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
+                .then(function(response) {
+                    console.log('SUCCESS!', response.status, response.text);
+                    
+                    // Hide spinner
+                    document.getElementById('partial-team-spinner').style.display = 'none';
+                    
+                    // Show success message
+                    document.getElementById('partial-team-success').style.display = 'block';
+                    
+                    // Reset form
+                    document.getElementById('partial-team-form').reset();
+                    
+                    // Scroll to success message
+                    document.getElementById('partial-team-success').scrollIntoView({ behavior: 'smooth' });
+                })
+                .catch(function(error) {
+                    console.log('FAILED...', error);
+                    
+                    // Hide spinner
+                    document.getElementById('partial-team-spinner').style.display = 'none';
+                    
+                    // Show error message
+                    document.getElementById('partial-team-error').style.display = 'block';
+                    document.getElementById('partial-team-error').scrollIntoView({ behavior: 'smooth' });
+                });
+        });
+    }
+    
+    // Mobile navigation functionality
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    // Toggle mobile menu
+    if (mobileToggle) {
+        mobileToggle.addEventListener('click', function() {
+            navMenu.classList.toggle('active');
+            
+            // Animate hamburger to X
+            this.classList.toggle('active');
+            const bars = this.querySelectorAll('.bar');
+            if (this.classList.contains('active')) {
+                bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                bars[1].style.opacity = '0';
+                bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+            } else {
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+        });
+    }
+    
+    // Handle dropdown menus on mobile
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Only apply this behavior on mobile
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                const parentLi = this.parentElement;
+                
+                // Close all other open dropdowns
+                document.querySelectorAll('.dropdown.active').forEach(item => {
+                    if (item !== parentLi) {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                // Toggle this dropdown
+                parentLi.classList.toggle('active');
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInsideNav = navMenu.contains(e.target) || (mobileToggle && mobileToggle.contains(e.target));
+        if (!isClickInsideNav && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            if (mobileToggle) {
+                mobileToggle.classList.remove('active');
+                const bars = mobileToggle.querySelectorAll('.bar');
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+        }
+    });
+    
+    // Handle resize events
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            navMenu.classList.remove('active');
+            if (mobileToggle) {
+                mobileToggle.classList.remove('active');
+                const bars = mobileToggle.querySelectorAll('.bar');
+                bars[0].style.transform = 'none';
+                bars[1].style.opacity = '1';
+                bars[2].style.transform = 'none';
+            }
+            
+            // Reset all dropdowns
+            document.querySelectorAll('.dropdown.active').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+    });
+});    </script>
 </body>
 </html>
