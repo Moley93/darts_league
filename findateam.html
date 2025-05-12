@@ -1,4 +1,161 @@
-<!DOCTYPE html>
+<div id="player-register" class="tab-content active">
+                    <h2>Register as a Player Looking for a Team</h2>
+                    
+                    <p>Fill out the form below to register your interest in joining a team. The league organizers will work to match you with a team that suits your location, experience level, and availability.</p>
+                    
+                    <div class="registration-form">
+                        <form id="individual-player-form">
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="player-name">Full Name <span class="required">*</span></label>
+                                        <input type="text" id="player-name" name="from_name" required>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="player-email">Email <span class="required">*</span></label>
+                                        <input type="email" id="player-email" name="from_email" required>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-row">
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="player-phone">Contact Number <span class="required">*</span></label>
+                                        <input type="tel" id="player-phone" name="phone_number" required>
+                                    </div>
+                                </div>
+                                <div class="form-col">
+                                    <div class="form-group">
+                                        <label for="player-location">Area/Location <span class="required">*</span></label>
+                                        <input type="text" id="player-location" name="location" placeholder="e.g. Three Bridges, Crawley" required>
+                                        <div class="field-help">This helps us match you with nearby teams</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Playing Experience <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="experience-beginner" name="experience" value="beginner" required>
+                                        <label for="experience-beginner">Beginner</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="experience-casual" name="experience" value="casual">
+                                        <label for="experience-casual">Casual Player</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="experience-experienced" name="experience" value="experienced">
+                                        <label for="experience-experienced">Experienced</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="experience-competitive" name="experience" value="competitive">
+                                        <label for="experience-competitive">Competitive</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Played in a league before?</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="league-yes" name="league_experience" value="yes">
+                                        <label for="league-yes">Yes</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="league-no" name="league_experience" value="no">
+                                        <label for="league-no">No</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group" id="previous-league-container" style="display: none;">
+                                <label for="previous-league">Which league(s) have you played in?</label>
+                                <input type="text" id="previous-league" name="previous_league" placeholder="e.g. Crawley Darts League, Sussex Super League, etc.">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Division Preference (if any)</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="division-premier" name="division_preference" value="premier">
+                                        <label for="division-premier">Premier Division</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="division-a" name="division_preference" value="a">
+                                        <label for="division-a">A Division</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="division-any" name="division_preference" value="any" checked>
+                                        <label for="division-any">No Preference</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Available Days <span class="required">*</span></label>
+                                <div class="field-help">League matches are typically on Friday evenings, but please indicate other days you might be available for practice</div>
+                                <div class="days-grid">
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-monday" name="available_days" value="monday">
+                                        <label for="day-monday">Monday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-tuesday" name="available_days" value="tuesday">
+                                        <label for="day-tuesday">Tuesday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-wednesday" name="available_days" value="wednesday">
+                                        <label for="day-wednesday">Wednesday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-thursday" name="available_days" value="thursday">
+                                        <label for="day-thursday">Thursday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-friday" name="available_days" value="friday" checked>
+                                        <label for="day-friday">Friday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-saturday" name="available_days" value="saturday">
+                                        <label for="day-saturday">Saturday</label>
+                                    </div>
+                                    <div class="checkbox-option">
+                                        <input type="checkbox" id="day-sunday" name="available_days" value="sunday">
+                                        <label for="day-sunday">Sunday</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="player-notes">Additional Information</label>
+                                <textarea id="player-notes" name="additional_notes" placeholder="Tell us anything else that might be relevant (e.g. transport limitations, venue preferences, etc.)"></textarea>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="checkbox-option">
+                                    <input type="checkbox" id="player-consent" name="consent" required>
+                                    <label for="player-consent">I consent for my information to be shared with the Crawley Darts League committee and team captains <span class="required">*</span></label>
+                                </div>
+                            </div>
+                            
+                            <div class="spinner" id="player-spinner"></div>
+                            <button type="submit" class="btn">Submit Registration</button>
+                        </form>
+                    </div>
+                    
+                    <div class="success-message" id="player-success">
+                        <h3>Registration Successful!</h3>
+                        <p>Thank you for registering your interest in joining a team in the Crawley Darts League. Your information has been sent to our League Secretary who will be in touch soon.</p>
+                        <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
+                    </div>
+
+                    <div class="error-message" id="player-error">
+                        <h3>Registration Error</h3>
+                        <p>There was<!DOCTYPE html>
 <html lang="en">
 <head>
     <link rel="icon" href="cdl.png">
@@ -12,6 +169,17 @@
     
     <title>CDL | Find a Team</title>
     <link rel="stylesheet" href="styles.css">
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Public key from EmailJS - Replace with your public key from EmailJS Account page
+            emailjs.init({
+                publicKey: "5XHyqMEiwL1q1rLRE"
+            });
+        })();
+    </script>
     
     <style>
         /* Additional styles for the simplified Find a Team page */
@@ -364,6 +532,23 @@
                 gap: 8px;
             }
         }
+        
+        /* Loading spinner */
+        .spinner {
+            display: none;
+            margin: 15px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
@@ -391,6 +576,50 @@
                     <li><a href="leagueresults.html">Results</a></li>
                 </ul>
             </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="cupbracket.html">Bracket</a></li>
+                    <li><a href="cupdraw.html">Cup Draw</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                    <li><a href="players.html">Players</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+    
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Join</a>
+                <ul class="dropdown-menu">
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="findateam.html">Find a Team</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>>
             
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Cup</a>
@@ -627,13 +856,13 @@
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="group-name">Group/Team Name (if any)</label>
-                                        <input type="text" id="group-name" name="groupName" placeholder="Optional - what you call your group">
+                                        <input type="text" id="group-name" name="group_name" placeholder="Optional - what you call your group">
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="current-players">Current Number of Players <span class="required">*</span></label>
-                                        <select id="current-players" name="currentPlayers" required>
+                                        <select id="current-players" name="current_players" required>
                                             <option value="">Select Number</option>
                                             <option value="1">1 (Just me)</option>
                                             <option value="2">2</option>
@@ -651,13 +880,13 @@
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="contact-name">Main Contact Name <span class="required">*</span></label>
-                                        <input type="text" id="contact-name" name="contactName" required>
+                                        <input type="text" id="contact-name" name="from_name" required>
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="contact-email">Contact Email <span class="required">*</span></label>
-                                        <input type="email" id="contact-email" name="contactEmail" required>
+                                        <input type="email" id="contact-email" name="from_email" required>
                                     </div>
                                 </div>
                             </div>
@@ -666,13 +895,13 @@
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="contact-phone">Contact Phone <span class="required">*</span></label>
-                                        <input type="tel" id="contact-phone" name="contactPhone" required>
+                                        <input type="tel" id="contact-phone" name="phone_number" required>
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="preferred-location">Preferred Location/Area <span class="required">*</span></label>
-                                        <input type="text" id="preferred-location" name="preferredLocation" placeholder="e.g. Three Bridges, Crawley" required>
+                                        <input type="text" id="preferred-location" name="preferred_location" placeholder="e.g. Three Bridges, Crawley" required>
                                     </div>
                                 </div>
                             </div>
@@ -681,13 +910,13 @@
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="preferred-venue">Preferred Venue (if any)</label>
-                                        <input type="text" id="preferred-venue" name="preferredVenue" placeholder="Do you have a venue in mind?">
+                                        <input type="text" id="preferred-venue" name="preferred_venue" placeholder="Do you have a venue in mind?">
                                     </div>
                                 </div>
                                 <div class="form-col">
                                     <div class="form-group">
                                         <label for="preferred-division">Preferred Division</label>
-                                        <select id="preferred-division" name="preferredDivision">
+                                        <select id="preferred-division" name="preferred_division">
                                             <option value="any">No Preference</option>
                                             <option value="premier">Premier Division</option>
                                             <option value="a">A Division</option>
@@ -700,15 +929,15 @@
                                 <label>Player Experience Levels <span class="required">*</span></label>
                                 <div class="radio-group">
                                     <div class="radio-option">
-                                        <input type="radio" id="group-beginner" name="group-experience" value="beginner" required>
+                                        <input type="radio" id="group-beginner" name="group_experience" value="beginner" required>
                                         <label for="group-beginner">Mostly Beginners</label>
                                     </div>
                                     <div class="radio-option">
-                                        <input type="radio" id="group-mixed" name="group-experience" value="mixed">
+                                        <input type="radio" id="group-mixed" name="group_experience" value="mixed">
                                         <label for="group-mixed">Mixed Experience Levels</label>
                                     </div>
                                     <div class="radio-option">
-                                        <input type="radio" id="group-experienced" name="group-experience" value="experienced">
+                                        <input type="radio" id="group-experienced" name="group_experience" value="experienced">
                                         <label for="group-experienced">Mostly Experienced</label>
                                     </div>
                                 </div>
@@ -716,12 +945,12 @@
                             
                             <div class="form-group">
                                 <label for="group-notes">Additional Information</label>
-                                <textarea id="group-notes" name="groupNotes" placeholder="Tell us more about your group and what you're looking for"></textarea>
+                                <textarea id="group-notes" name="additional_notes" placeholder="Tell us more about your group and what you're looking for"></textarea>
                             </div>
                             
                             <div class="form-group">
                                 <div class="checkbox-option">
-                                    <input type="checkbox" id="merge-willing" name="mergeWilling" checked>
+                                    <input type="checkbox" id="merge-willing" name="merge_willing" checked>
                                     <label for="merge-willing">We are willing to consider merging with another partial team</label>
                                 </div>
                             </div>
@@ -733,6 +962,7 @@
                                 </div>
                             </div>
                             
+                            <div class="spinner" id="partial-team-spinner"></div>
                             <button type="submit" class="btn">Submit Registration</button>
                         </form>
                     </div>
@@ -776,7 +1006,7 @@
             });
             
             // Toggle league experience fields
-            const leagueExperienceRadios = document.querySelectorAll('input[name="league-experience"]');
+            const leagueExperienceRadios = document.querySelectorAll('input[name="league_experience"]');
             leagueExperienceRadios.forEach(radio => {
                 radio.addEventListener('change', function() {
                     const previousLeagueContainer = document.getElementById('previous-league-container');
@@ -788,97 +1018,232 @@
                 });
             });
             
-            // Function to collect form data
-            function collectFormData(form) {
-                const formData = new FormData(form);
-                let formDataObject = {};
-                
-                // Convert FormData to object
-                formData.forEach((value, key) => {
-                    // Handle checkboxes (multiple values with same name)
-                    if (key === 'availableDays') {
-                        if (!formDataObject[key]) {
-                            formDataObject[key] = [];
-                        }
-                        formDataObject[key].push(value);
-                    } else {
-                        formDataObject[key] = value;
-                    }
-                });
-                
-                return formDataObject;
+            // Function to get checked values from checkboxes with the same name
+            function getCheckedValues(name) {
+                const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
+                return Array.from(checkboxes).map(cb => cb.value);
             }
             
-            // Function to format email body
-            function formatIndividualPlayerEmail(data) {
-                // Convert available days array to string if it exists
-                let availableDays = data.availableDays || [];
-                if (!Array.isArray(availableDays)) {
-                    availableDays = [availableDays]; // Convert single value to array
-                }
-                
-                return `
-New Player Registration
-======================
-
-Name: ${data.playerName || 'Not provided'}
-Email: ${data.playerEmail || 'Not provided'}
-Phone: ${data.playerPhone || 'Not provided'}
-Location: ${data.playerLocation || 'Not provided'}
-Experience: ${data.experience || 'Not provided'}
-League Experience: ${data.leagueExperience || 'No'}
-${data.leagueExperience === 'yes' ? 'Previous League: ' + (data.previousLeague || 'Not specified') : ''}
-Division Preference: ${data.divisionPreference || 'Any'}
-Available Days: ${availableDays.join(', ') || 'None selected'}
-Additional Notes: ${data.playerNotes || 'None'}
-`;
-            }
-            
-            // Function to format partial team email
-            function formatPartialTeamEmail(data) {
-                return `
-Partial Team Registration
-========================
-
-Group/Team Name: ${data.groupName || 'Not provided'}
-Current Players: ${data.currentPlayers || 'Not provided'}
-Contact Name: ${data.contactName || 'Not provided'}
-Contact Email: ${data.contactEmail || 'Not provided'}
-Contact Phone: ${data.contactPhone || 'Not provided'}
-Preferred Location: ${data.preferredLocation || 'Not provided'}
-Preferred Venue: ${data.preferredVenue || 'Not provided'}
-Preferred Division: ${data.preferredDivision || 'Any'}
-Experience Level: ${data.groupExperience || 'Not provided'}
-Willing to Merge: ${data.mergeWilling ? 'Yes' : 'No'}
-Additional Notes: ${data.groupNotes || 'None'}
-`;
-            }
-            
-            // Function to simulate sending an email
-            function sendEmail(recipient, subject, body) {
-                // In a real implementation, this would use a web API service like EmailJS, Formspree, or a server-side processing
-                console.log(`Sending email to: ${recipient}`);
-                console.log(`Subject: ${subject}`);
-                console.log(`Body: ${body}`);
-                
-                // Simulate network request with a timeout and random success/failure
-                return new Promise((resolve, reject) => {
-                    setTimeout(() => {
-                        // 90% success rate for demonstration
-                        if (Math.random() < 0.9) {
-                            resolve('Email sent successfully');
-                        } else {
-                            reject('Failed to send email');
-                        }
-                    }, 1000);
-                });
-            }
-            
-            // Handle individual player form submission
-            document.getElementById('individual-player-form').addEventListener('submit', async function(e) {
+            // Handle individual player form submission with EmailJS
+            document.getElementById('individual-player-form').addEventListener('submit', function(e) {
                 e.preventDefault();
                 
                 // Hide any existing messages
+                document.getElementById('player-success').style.display = 'none';
+                document.getElementById('player-error').style.display = 'none';
+                
+                // Show spinner
+                document.getElementById('player-spinner').style.display = 'block';
+                
+                // Get available days as a string
+                const availableDays = getCheckedValues('available_days').join(', ');
+                
+                // Get selected experience level
+                const experienceEl = document.querySelector('input[name="experience"]:checked');
+                const experience = experienceEl ? experienceEl.value : '';
+                
+                // Get league experience
+                const leagueExpEl = document.querySelector('input[name="league_experience"]:checked');
+                const leagueExperience = leagueExpEl ? leagueExpEl.value : 'no';
+                
+                // Get division preference
+                const divisionPrefEl = document.querySelector('input[name="division_preference"]:checked');
+                const divisionPreference = divisionPrefEl ? divisionPrefEl.value : 'any';
+                
+                // Get previous league
+                const previousLeague = leagueExperience === 'yes' ? 
+                    document.getElementById('previous-league').value : 'N/A';
+                
+                // Create template params for EmailJS
+                const templateParams = {
+                    from_name: document.getElementById('player-name').value,
+                    from_email: document.getElementById('player-email').value,
+                    phone_number: document.getElementById('player-phone').value,
+                    location: document.getElementById('player-location').value,
+                    experience: experience,
+                    league_experience: leagueExperience,
+                    previous_league: previousLeague,
+                    division_preference: divisionPreference,
+                    available_days: availableDays,
+                    additional_notes: document.getElementById('player-notes').value,
+                    registration_type: 'Individual Player',
+                    to_email: 'example@crawleydartsleague.com' // Replace with your actual email
+                };
+                
+                // Send email using EmailJS
+                emailjs.send('service_908yx9n', 'Ytemplate_962sd7d', templateParams)
+                    .then(function(response) {
+                        console.log('SUCCESS!', response.status, response.text);
+                        
+                        // Hide spinner
+                        document.getElementById('player-spinner').style.display = 'none';
+                        
+                        // Show success message
+                        document.getElementById('player-success').style.display = 'block';
+                        
+                        // Reset form
+                        document.getElementById('individual-player-form').reset();
+                        
+                        // Hide previous league container
+                        document.getElementById('previous-league-container').style.display = 'none';
+                        
+                        // Scroll to success message
+                        document.getElementById('player-success').scrollIntoView({ behavior: 'smooth' });
+                    }, function(error) {
+                        console.log('FAILED...', error);
+                        
+                        // Hide spinner
+                        document.getElementById('player-spinner').style.display = 'none';
+                        
+                        // Show error message
+                        document.getElementById('player-error').style.display = 'block';
+                        document.getElementById('player-error').scrollIntoView({ behavior: 'smooth' });
+                    });
+            });
+            
+            // Handle partial team form submission with EmailJS
+            document.getElementById('partial-team-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // Hide any existing messages
+                document.getElementById('partial-team-success').style.display = 'none';
+                document.getElementById('partial-team-error').style.display = 'none';
+                
+                // Show spinner
+                document.getElementById('partial-team-spinner').style.display = 'block';
+                
+                // Get group experience
+                const groupExpEl = document.querySelector('input[name="group_experience"]:checked');
+                const groupExperience = groupExpEl ? groupExpEl.value : '';
+                
+                // Create template params for EmailJS
+                const templateParams = {
+                    group_name: document.getElementById('group-name').value || 'Not provided',
+                    current_players: document.getElementById('current-players').value,
+                    from_name: document.getElementById('contact-name').value,
+                    from_email: document.getElementById('contact-email').value,
+                    phone_number: document.getElementById('contact-phone').value,
+                    preferred_location: document.getElementById('preferred-location').value,
+                    preferred_venue: document.getElementById('preferred-venue').value || 'Not specified',
+                    preferred_division: document.getElementById('preferred-division').value,
+                    group_experience: groupExperience,
+                    merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
+                    additional_notes: document.getElementById('group-notes').value || 'None',
+                    registration_type: 'Partial Team',
+                    to_email: 'example@crawleydartsleague.com' // Replace with your actual email
+                };
+                
+                // Send email using EmailJS
+                emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', templateParams)
+                    .then(function(response) {
+                        console.log('SUCCESS!', response.status, response.text);
+                        
+                        // Hide spinner
+                        document.getElementById('partial-team-spinner').style.display = 'none';
+                        
+                        // Show success message
+                        document.getElementById('partial-team-success').style.display = 'block';
+                        
+                        // Reset form
+                        document.getElementById('partial-team-form').reset();
+                        
+                        // Scroll to success message
+                        document.getElementById('partial-team-success').scrollIntoView({ behavior: 'smooth' });
+                    }, function(error) {
+                        console.log('FAILED...', error);
+                        
+                        // Hide spinner
+                        document.getElementById('partial-team-spinner').style.display = 'none';
+                        
+                        // Show error message
+                        document.getElementById('partial-team-error').style.display = 'block';
+                        document.getElementById('partial-team-error').scrollIntoView({ behavior: 'smooth' });
+                    });
+            });
+            
+            // Mobile navigation functionality
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+            
+            // Toggle mobile menu
+            if (mobileToggle) {
+                mobileToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    
+                    // Animate hamburger to X
+                    this.classList.toggle('active');
+                    const bars = this.querySelectorAll('.bar');
+                    if (this.classList.contains('active')) {
+                        bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                        bars[1].style.opacity = '0';
+                        bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+                    } else {
+                        bars[0].style.transform = 'none';
+                        bars[1].style.opacity = '1';
+                        bars[2].style.transform = 'none';
+                    }
+                });
+            }
+            
+            // Handle dropdown menus on mobile
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    // Only apply this behavior on mobile
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const parentLi = this.parentElement;
+                        
+                        // Close all other open dropdowns
+                        document.querySelectorAll('.dropdown.active').forEach(item => {
+                            if (item !== parentLi) {
+                                item.classList.remove('active');
+                            }
+                        });
+                        
+                        // Toggle this dropdown
+                        parentLi.classList.toggle('active');
+                    }
+                });
+            });
+            
+            // Close menu when clicking outside
+            document.addEventListener('click', function(e) {
+                const isClickInsideNav = navMenu.contains(e.target) || (mobileToggle && mobileToggle.contains(e.target));
+                if (!isClickInsideNav && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    if (mobileToggle) {
+                        mobileToggle.classList.remove('active');
+                        const bars = mobileToggle.querySelectorAll('.bar');
+                        bars[0].style.transform = 'none';
+                        bars[1].style.opacity = '1';
+                        bars[2].style.transform = 'none';
+                    }
+                }
+            });
+            
+            // Handle resize events
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    navMenu.classList.remove('active');
+                    if (mobileToggle) {
+                        mobileToggle.classList.remove('active');
+                        const bars = mobileToggle.querySelectorAll('.bar');
+                        bars[0].style.transform = 'none';
+                        bars[1].style.opacity = '1';
+                        bars[2].style.transform = 'none';
+                    }
+                    
+                    // Reset all dropdowns
+                    document.querySelectorAll('.dropdown.active').forEach(item => {
+                        item.classList.remove('active');
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html> messages
                 document.getElementById('player-success').style.display = 'none';
                 document.getElementById('player-error').style.display = 'none';
                 
@@ -1030,7 +1395,6 @@ Additional Notes: ${data.groupNotes || 'None'}
                     });
                 }
             });
-        });
     </script>
 </body>
 </html>
