@@ -613,37 +613,6 @@
     <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:example@crawleydartsleague.com">example@crawleydartsleague.com</a>.</p>
 </div>
 
-<!-- Add the missing available days checkboxes to the individual player form -->
-<div class="days-grid">
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-monday" name="available_days" value="Monday">
-        <label for="day-monday">Monday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-tuesday" name="available_days" value="Tuesday">
-        <label for="day-tuesday">Tuesday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-wednesday" name="available_days" value="Wednesday">
-        <label for="day-wednesday">Wednesday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-thursday" name="available_days" value="Thursday">
-        <label for="day-thursday">Thursday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-friday" name="available_days" value="Friday" checked>
-        <label for="day-friday">Friday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-saturday" name="available_days" value="Saturday">
-        <label for="day-saturday">Saturday</label>
-    </div>
-    <div class="checkbox-option">
-        <input type="checkbox" id="day-sunday" name="available_days" value="Sunday">
-        <label for="day-sunday">Sunday</label>
-    </div>
-</div>
 
 <!-- Add the missing additional notes textarea -->
 <div class="form-group">
@@ -752,6 +721,39 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Add the missing available days checkboxes to the individual player form -->
+<div class="days-grid">
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-monday" name="available_days" value="Monday">
+        <label for="day-monday">Monday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-tuesday" name="available_days" value="Tuesday">
+        <label for="day-tuesday">Tuesday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-wednesday" name="available_days" value="Wednesday">
+        <label for="day-wednesday">Wednesday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-thursday" name="available_days" value="Thursday">
+        <label for="day-thursday">Thursday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-friday" name="available_days" value="Friday" checked>
+        <label for="day-friday">Friday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-saturday" name="available_days" value="Saturday">
+        <label for="day-saturday">Saturday</label>
+    </div>
+    <div class="checkbox-option">
+        <input type="checkbox" id="day-sunday" name="available_days" value="Sunday">
+        <label for="day-sunday">Sunday</label>
+    </div>
+</div>
+
             
             <div class="checkbox-option">
                 <input type="checkbox" id="merge-willing" name="merge_willing">
@@ -774,8 +776,16 @@
 </div>
 
     <script>
-// This is the fixed JavaScript code for the Find a Team page
+// Fixed EmailJS implementation for Crawley Darts League registration forms
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize EmailJS
+    (function() {
+        // Make sure you're using the correct public key
+        emailjs.init({
+            publicKey: "5XHyqMEiwL1q1rLRE" // Ensure this is your actual public key
+        });
+    })();
+    
     // Tab functionality
     const tabs = document.querySelectorAll('.tab');
     tabs.forEach(tab => {
@@ -817,6 +827,76 @@ document.addEventListener('DOMContentLoaded', function() {
         return values.join(', ');
     }
     
+    // Make sure success and error message elements exist for both forms
+    // If they don't exist, create them
+    function ensureMessageElements() {
+        // For player form
+        if (!document.getElementById('player-success')) {
+            const playerSuccess = document.createElement('div');
+            playerSuccess.id = 'player-success';
+            playerSuccess.className = 'success-message';
+            playerSuccess.innerHTML = `
+                <h3>Player Registration Successful!</h3>
+                <p>Thank you for registering your interest in joining a team. Your information has been sent to our League Secretary who will be in touch soon to help match you with a suitable team.</p>
+                <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
+            `;
+            document.getElementById('player-register').appendChild(playerSuccess);
+        }
+        
+        if (!document.getElementById('player-error')) {
+            const playerError = document.createElement('div');
+            playerError.id = 'player-error';
+            playerError.className = 'error-message';
+            playerError.innerHTML = `
+                <h3>Registration Error</h3>
+                <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
+            `;
+            document.getElementById('player-register').appendChild(playerError);
+        }
+        
+        // For partial team form
+        if (!document.getElementById('partial-team-success')) {
+            const teamSuccess = document.createElement('div');
+            teamSuccess.id = 'partial-team-success';
+            teamSuccess.className = 'success-message';
+            teamSuccess.innerHTML = `
+                <h3>Team Registration Successful!</h3>
+                <p>Thank you for registering your partial team. Your information has been sent to our League Secretary who will be in touch soon to help find additional players.</p>
+                <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
+            `;
+            document.getElementById('partial-team').appendChild(teamSuccess);
+        }
+        
+        if (!document.getElementById('partial-team-error')) {
+            const teamError = document.createElement('div');
+            teamError.id = 'partial-team-error';
+            teamError.className = 'error-message';
+            teamError.innerHTML = `
+                <h3>Registration Error</h3>
+                <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
+            `;
+            document.getElementById('partial-team').appendChild(teamError);
+        }
+        
+        // For spinners
+        if (!document.getElementById('player-spinner')) {
+            const playerSpinner = document.createElement('div');
+            playerSpinner.id = 'player-spinner';
+            playerSpinner.className = 'spinner';
+            document.getElementById('individual-player-form').appendChild(playerSpinner);
+        }
+        
+        if (!document.getElementById('partial-team-spinner')) {
+            const teamSpinner = document.createElement('div');
+            teamSpinner.id = 'partial-team-spinner';
+            teamSpinner.className = 'spinner';
+            document.getElementById('partial-team-form').appendChild(teamSpinner);
+        }
+    }
+    
+    // Create or ensure message elements
+    ensureMessageElements();
+    
     // Handle Individual Player Form Submission
     const individualForm = document.getElementById('individual-player-form');
     if (individualForm) {
@@ -852,14 +932,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     : 'N/A',
                 division_preference: document.querySelector('input[name="division_preference"]:checked')?.value || 'any',
                 available_days: availableDaysStr,
-                additional_notes: document.getElementById('player-notes').value || 'None',
+                additional_notes: document.getElementById('player-notes')?.value || 'None',
                 registration_type: 'Individual Player',
-                to_email: 'example@crawleydartsleague.com'
+                to_email: 'registrations@crawleydartsleague.com' // Updated email address
             };
             
             console.log('Sending email with params:', templateParams);
             
-            // Send email using EmailJS
+            // Send email using EmailJS - use your correct service and template IDs
             emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
@@ -925,12 +1005,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
                 additional_notes: document.getElementById('group-notes').value || 'None',
                 registration_type: 'Partial Team',
-                to_email: 'example@crawleydartsleague.com'
+                to_email: 'registrations@crawleydartsleague.com' // Updated email address
             };
             
             console.log('Sending email with params:', templateParams);
             
-            // Send email using EmailJS
+            // Send email using EmailJS - use your correct service and template IDs
             emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
