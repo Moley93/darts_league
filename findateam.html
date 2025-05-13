@@ -27,55 +27,186 @@
     --card-bg: #ffffff;
 }
 
-body {
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    line-height: 1.6;
-    color: #333;
-    background-color: #f9f9f9;
-}
-
 .container {
-    width: 100%;
     max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
-    box-sizing: border-box;
 }
 
 .card {
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    padding: 25px;
+    padding: 30px;
     margin-bottom: 30px;
 }
 
 /* Header styles */
+                .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 55%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 60px;
+            height: 58px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+
+/* Navigation Styles */
+.nav .dropdown {
+    position: relative;
+}
+
+.nav .dropdown-toggle {
+    cursor: pointer;
+}
+
+.nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 10px 0;
+}
+
+.nav .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav .dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.nav .dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile navigation */
+.mobile-nav-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
+:root {
+    --primary: #1a237e;
+    --secondary: #3949ab;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #757575;
+    --card-bg: #ffffff;
+}
+
+/* Header Styles */
 .header {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
     color: white;
     padding: 15px 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
 
-.logo-container {
-    position: absolute;
-    right: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-}
 
-.logo {
-    width: 60px;
-    height: 58px;
-    object-fit: contain;
-}
 
 .header h1 {
     margin: 0;
@@ -178,7 +309,7 @@ body {
     cursor: pointer;
     padding: 10px;
     position: absolute;
-    left: 15px;
+    left: 20px;
     top: 50%;
     transform: translateY(-50%);
     z-index: 10;
@@ -193,15 +324,97 @@ body {
     transition: all 0.3s ease;
 }
 
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 992px) {
+    .nav-menu {
+        justify-content: flex-start;
+    }
+    
+    .nav-menu > li > a {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        z-index: 100;
+    }
+    
+    .nav-menu.active {
+        max-height: 1000px;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+    }
+    
+    .dropdown-toggle:after {
+        float: right;
+    }
+    
+    .dropdown.active .dropdown-toggle:after {
+        content: "▲";
+    }
+    
+    .nav-menu > li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .dropdown-menu li {
+        background-color: var(--light-gray);
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 48px;
+    }
+}
+
 /* Form styles */
 .player-registration-section {
-    margin-bottom: 30px;
+    margin-bottom: 40px;
 }
 
 .player-registration-section h1 {
     color: var(--primary);
     margin-bottom: 15px;
-    font-size: 1.8rem;
 }
 
 .player-registration-section h2 {
@@ -209,7 +422,6 @@ body {
     border-bottom: 2px solid var(--secondary);
     padding-bottom: 10px;
     margin-bottom: 20px;
-    font-size: 1.5rem;
 }
 
 .info-alert {
@@ -223,27 +435,23 @@ body {
 .info-alert h3 {
     margin-top: 0;
     color: var(--primary);
-    font-size: 1.2rem;
 }
 
 .tabs {
     display: flex;
     margin-bottom: 20px;
     border-bottom: 1px solid var(--medium-gray);
-    flex-wrap: wrap;
 }
 
 .tab {
-    padding: 10px 15px;
+    padding: 10px 20px;
     cursor: pointer;
     border: 1px solid transparent;
     border-bottom: none;
     border-radius: 4px 4px 0 0;
     margin-right: 5px;
-    margin-bottom: 5px;
     background-color: var(--light-gray);
     transition: all 0.3s ease;
-    font-size: 0.9rem;
 }
 
 .tab.active {
@@ -281,9 +489,9 @@ body {
 /* Form styles */
 .registration-form {
     background-color: #f9f9f9;
-    padding: 20px;
+    padding: 25px;
     border-radius: 8px;
-    margin-top: 20px;
+    margin-top: 30px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
@@ -304,11 +512,10 @@ input[type="number"],
 select,
 textarea {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid var(--medium-gray);
     border-radius: 4px;
     font-size: 16px;
-    box-sizing: border-box;
 }
 
 input:focus,
@@ -341,13 +548,10 @@ textarea:focus {
     display: flex;
     align-items: center;
     margin-right: 20px;
-    margin-bottom: 10px;
 }
 
 .radio-option input[type="radio"] {
     margin-right: 5px;
-    min-width: 20px;
-    min-height: 20px;
 }
 
 .checkbox-option {
@@ -359,18 +563,15 @@ textarea:focus {
 .checkbox-option input[type="checkbox"] {
     margin-right: 10px;
     margin-top: 4px;
-    min-width: 20px;
-    min-height: 20px;
 }
 
 textarea {
     width: 100%;
-    padding: 12px;
+    padding: 10px;
     border: 1px solid var(--medium-gray);
     border-radius: 4px;
     min-height: 100px;
     resize: vertical;
-    box-sizing: border-box;
 }
 
 .btn {
@@ -383,8 +584,6 @@ textarea {
     font-size: 16px;
     font-weight: 500;
     transition: all 0.3s ease;
-    display: inline-block;
-    text-align: center;
 }
 
 .btn:hover {
@@ -403,7 +602,7 @@ textarea {
 .btn-add {
     background-color: #28a745;
     color: white;
-    padding: 10px 16px;
+    padding: 8px 16px;
     font-size: 14px;
     margin-top: 10px;
 }
@@ -417,7 +616,7 @@ textarea {
     color: white;
     padding: 8px 16px;
     font-size: 14px;
-    margin-top: 10px;
+    margin-left: 10px;
 }
 
 .btn-remove:hover {
@@ -433,7 +632,7 @@ textarea {
     background-color: #fff;
     padding: 15px;
     border-radius: 4px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     position: relative;
 }
@@ -514,33 +713,11 @@ textarea {
         padding: 15px 10px;
         font-size: 0.9rem;
     }
-    
-    .card {
-        padding: 20px;
-    }
-    
-    .player-registration-section h1 {
-        font-size: 1.6rem;
-    }
-    
-    .player-registration-section h2 {
-        font-size: 1.3rem;
-    }
 }
 
 @media screen and (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .card {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
     .header h1 {
         font-size: 1.3rem;
-        margin-left: 40px; /* Make room for mobile menu button */
     }
     
     .mobile-toggle {
@@ -604,51 +781,7 @@ textarea {
     
     .radio-group {
         flex-direction: column;
-        align-items: flex-start;
         gap: 8px;
-    }
-    
-    .radio-option {
-        margin-right: 0;
-    }
-    
-    .tabs {
-        flex-direction: column;
-    }
-    
-    .tab {
-        margin-right: 0;
-        border-radius: 0;
-        text-align: center;
-    }
-    
-    .tab:first-child {
-        border-radius: 4px 4px 0 0;
-    }
-    
-    .tab:last-child {
-        border-radius: 0 0 4px 4px;
-        margin-bottom: 0;
-    }
-    
-    .btn {
-        width: 100%;
-        padding: 15px;
-    }
-    
-    .btn-remove {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-    
-    input[type="text"],
-    input[type="email"],
-    input[type="tel"],
-    input[type="number"],
-    select,
-    textarea {
-        font-size: 16px; /* Prevents iOS zoom on focus */
-        padding: 15px;
     }
 }
 
@@ -658,31 +791,10 @@ textarea {
     }
     
     .logo {
-        width: 45px;
-        height: 43px;
-        right: 10px;
+        width: 50px;
+        height: 48px;
     }
-    
-    .player-registration-section h1 {
-        font-size: 1.4rem;
-    }
-    
-    .player-registration-section h2 {
-        font-size: 1.2rem;
-    }
-    
-    .info-alert h3 {
-        font-size: 1.1rem;
-    }
-    
-    .card {
-        padding: 12px;
-    }
-    
-    .registration-form {
-        padding: 15px;
-    }
-}
+}        
     </style>
 </head>
 <body>
