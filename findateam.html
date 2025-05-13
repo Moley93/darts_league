@@ -800,13 +800,12 @@
     </div>
 </div>
     <script>
-// Fixed EmailJS implementation for Crawley Darts League registration forms
+// Updated EmailJS implementation without available days
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS
     (function() {
-        // Make sure you're using the correct public key
         emailjs.init({
-            publicKey: "5XHyqMEiwL1q1rLRE" // Ensure this is your actual public key
+            publicKey: "5XHyqMEiwL1q1rLRE"
         });
     })();
     
@@ -844,83 +843,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Helper function to collect checkbox values as a string
-    function getCheckboxValues(name) {
-        const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
-        const values = Array.from(checkboxes).map(cb => cb.value);
-        return values.join(', ');
-    }
-    
-    // Make sure success and error message elements exist for both forms
-    // If they don't exist, create them
-    function ensureMessageElements() {
-        // For player form
-        if (!document.getElementById('player-success')) {
-            const playerSuccess = document.createElement('div');
-            playerSuccess.id = 'player-success';
-            playerSuccess.className = 'success-message';
-            playerSuccess.innerHTML = `
-                <h3>Player Registration Successful!</h3>
-                <p>Thank you for registering your interest in joining a team. Your information has been sent to our League Secretary who will be in touch soon to help match you with a suitable team.</p>
-                <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
-            `;
-            document.getElementById('player-register').appendChild(playerSuccess);
-        }
-        
-        if (!document.getElementById('player-error')) {
-            const playerError = document.createElement('div');
-            playerError.id = 'player-error';
-            playerError.className = 'error-message';
-            playerError.innerHTML = `
-                <h3>Registration Error</h3>
-                <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
-            `;
-            document.getElementById('player-register').appendChild(playerError);
-        }
-        
-        // For partial team form
-        if (!document.getElementById('partial-team-success')) {
-            const teamSuccess = document.createElement('div');
-            teamSuccess.id = 'partial-team-success';
-            teamSuccess.className = 'success-message';
-            teamSuccess.innerHTML = `
-                <h3>Team Registration Successful!</h3>
-                <p>Thank you for registering your partial team. Your information has been sent to our League Secretary who will be in touch soon to help find additional players.</p>
-                <p>If you have any questions in the meantime, please contact our League Secretary at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
-            `;
-            document.getElementById('partial-team').appendChild(teamSuccess);
-        }
-        
-        if (!document.getElementById('partial-team-error')) {
-            const teamError = document.createElement('div');
-            teamError.id = 'partial-team-error';
-            teamError.className = 'error-message';
-            teamError.innerHTML = `
-                <h3>Registration Error</h3>
-                <p>There was a problem submitting your registration. Please try again or contact our League Secretary directly at <a href="mailto:registrations@crawleydartsleague.com">registrations@crawleydartsleague.com</a>.</p>
-            `;
-            document.getElementById('partial-team').appendChild(teamError);
-        }
-        
-        // For spinners
-        if (!document.getElementById('player-spinner')) {
-            const playerSpinner = document.createElement('div');
-            playerSpinner.id = 'player-spinner';
-            playerSpinner.className = 'spinner';
-            document.getElementById('individual-player-form').appendChild(playerSpinner);
-        }
-        
-        if (!document.getElementById('partial-team-spinner')) {
-            const teamSpinner = document.createElement('div');
-            teamSpinner.id = 'partial-team-spinner';
-            teamSpinner.className = 'spinner';
-            document.getElementById('partial-team-form').appendChild(teamSpinner);
-        }
-    }
-    
-    // Create or ensure message elements
-    ensureMessageElements();
-    
     // Handle Individual Player Form Submission
     const individualForm = document.getElementById('individual-player-form');
     if (individualForm) {
@@ -940,9 +862,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Show spinner
             document.getElementById('player-spinner').style.display = 'block';
             
-            // Get checkbox values for available days
-            const availableDaysStr = getCheckboxValues('available_days');
-            
             // Create template params for EmailJS
             const templateParams = {
                 from_name: document.getElementById('player-name').value,
@@ -955,15 +874,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     ? document.getElementById('previous-league').value 
                     : 'N/A',
                 division_preference: document.querySelector('input[name="division_preference"]:checked')?.value || 'any',
-                available_days: availableDaysStr,
                 additional_notes: document.getElementById('player-notes')?.value || 'None',
                 registration_type: 'Individual Player',
-                to_email: 'registrations@crawleydartsleague.com' // Updated email address
+                to_email: 'registrations@crawleydartsleague.com'
             };
             
-            console.log('Sending email with params:', templateParams);
-            
-            // Send email using EmailJS - use your correct service and template IDs
+            // Send email using EmailJS
             emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
@@ -1029,12 +945,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 merge_willing: document.getElementById('merge-willing').checked ? 'Yes' : 'No',
                 additional_notes: document.getElementById('group-notes').value || 'None',
                 registration_type: 'Partial Team',
-                to_email: 'registrations@crawleydartsleague.com' // Updated email address
+                to_email: 'registrations@crawleydartsleague.com'
             };
             
-            console.log('Sending email with params:', templateParams);
-            
-            // Send email using EmailJS - use your correct service and template IDs
+            // Send email using EmailJS
             emailjs.send('service_908yx9n', 'template_962sd7d', templateParams)
                 .then(function(response) {
                     console.log('SUCCESS!', response.status, response.text);
