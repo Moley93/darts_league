@@ -1038,10 +1038,7 @@ textarea {
     </div>
 
     <script>
-// Here's how to fix the findateam.html script to make the mobile navigation work
-// Replace the existing EmailJS and mobile navigation script with the following:
-
-// Replace the existing mobile navigation code in findateam.html with this:
+// Complete replacement for the script section in findateam.html
 
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS with your public key
@@ -1246,16 +1243,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('team-error').scrollIntoView({ behavior: 'smooth' });
             });
     });
-    
-    // MOBILE NAVIGATION CODE - Fixed version from index.html
+
+    // MOBILE NAVIGATION CODE - Exactly matching index.html
     const mobileToggle = document.querySelector('.mobile-toggle');
     const navMenu = document.querySelector('.nav-menu');
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
     // Toggle mobile menu
     mobileToggle.addEventListener('click', function() {
         navMenu.classList.toggle('active');
         
-        // Toggle hamburger menu animation
+        // Animate hamburger to X
         this.classList.toggle('active');
         const bars = this.querySelectorAll('.bar');
         if (this.classList.contains('active')) {
@@ -1270,10 +1268,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Handle dropdown menus on mobile
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     dropdownToggles.forEach(toggle => {
         toggle.addEventListener('click', function(e) {
-            // Only prevent default and apply this behavior on mobile
+            // Only apply this behavior on mobile
             if (window.innerWidth <= 768) {
                 e.preventDefault();
                 const parentLi = this.parentElement;
@@ -1304,7 +1301,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Reset mobile menu on window resize
+    // Handle resize events
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {
             navMenu.classList.remove('active');
