@@ -599,20 +599,17 @@ textarea {
         max-height: 1000px;
     }
     
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
+.dropdown-menu {
+    /* Other properties */
+    max-height: 0;        /* This is crucial - starts with zero height */
+    overflow: hidden;     /* Hide overflow content */
+    opacity: 0;
+    visibility: hidden;
+}
+
+.dropdown.active .dropdown-menu {
+    max-height: 500px;    /* Only expands when dropdown has 'active' class */
+}
     
     .dropdown-toggle:after {
         float: right;
