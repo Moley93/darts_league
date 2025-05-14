@@ -170,7 +170,7 @@ body {
     background-color: var(--light-gray);
 }
 
-/* Mobile Toggle Button - Keeping original style */
+/* Mobile Toggle Button */
 .mobile-toggle {
     display: none;
     background: transparent;
@@ -192,6 +192,94 @@ body {
     background-color: white;
     transition: all 0.3s ease;
 }
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 992px) {
+    .nav-menu {
+        justify-content: flex-start;
+    }
+    
+    .nav-menu > li > a {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        z-index: 100;
+    }
+    
+    .nav-menu.active {
+        max-height: 1000px;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+    }
+    
+    .dropdown-toggle:after {
+        float: right;
+    }
+    
+    .dropdown.active .dropdown-toggle:after {
+        content: "▲";
+    }
+    
+    .nav-menu > li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .dropdown-menu li {
+        background-color: var(--light-gray);
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 48px;
+    }
+}
+
+
+
+
+
 
 /* Form styles */
 .player-registration-section {
@@ -538,180 +626,7 @@ textarea {
     100% { transform: rotate(360deg); }
 }
 
-/* Media queries for responsive design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-    
-    .card {
-        padding: 20px;
-    }
-    
-    .player-registration-section h1 {
-        font-size: 1.6rem;
-    }
-    
-    .player-registration-section h2 {
-        font-size: 1.3rem;
-    }
-}
 
-@media screen and (max-width: 768px) {
-    .container {
-        padding: 15px;
-    }
-    
-    .card {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .header h1 {
-        font-size: 1.3rem;
-        margin-left: 40px; /* Make room for mobile menu button */
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-.dropdown-menu {
-    /* Other properties */
-    max-height: 0;        /* This is crucial - starts with zero height */
-    overflow: hidden;     /* Hide overflow content */
-    opacity: 0;
-    visibility: hidden;
-}
-
-.dropdown.active .dropdown-menu {
-    max-height: 500px;    /* Only expands when dropdown has 'active' class */
-}
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-    
-    .form-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .registration-form {
-        padding: 15px;
-    }
-    
-    .radio-option {
-        margin-right: 0;
-        width: 100%;
-    }
-    
-    .btn {
-        width: 100%;
-        padding: 15px;
-    }
-    
-    .tabs {
-        border-bottom: none;
-    }
-    
-    .tab {
-        flex: 1 0 45%;
-        text-align: center;
-        margin-bottom: 10px;
-    }
-    
-    .radio-group {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .player-row {
-        padding: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 45px;
-        height: 43px;
-        right: 10px;
-    }
-    
-    .tab {
-        flex-basis: 100%;
-        border-radius: 4px;
-        margin-bottom: 8px;
-    }
-    
-    .player-registration-section h1 {
-        font-size: 1.4rem;
-    }
-    
-    .player-registration-section h2 {
-        font-size: 1.2rem;
-    }
-    
-    .info-alert {
-        padding: 12px;
-    }
-    
-    .info-alert h3 {
-        font-size: 1.1rem;
-    }
-    
-    .card {
-        padding: 12px;
-    }
-    
-    .registration-form {
-        padding: 12px;
-    }
-    
-    .btn {
-        padding: 12px 20px;
-    }
-}
     </style>
 </head>
 <body>
