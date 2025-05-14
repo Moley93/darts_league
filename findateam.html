@@ -1041,6 +1041,8 @@ textarea {
 // Here's how to fix the findateam.html script to make the mobile navigation work
 // Replace the existing EmailJS and mobile navigation script with the following:
 
+// Replace the existing mobile navigation code in findateam.html with this:
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize EmailJS with your public key
     emailjs.init({
@@ -1245,8 +1247,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
     });
     
-    // FIXED MOBILE NAVIGATION CODE
-    // This is the key part that needs to be fixed
+    // MOBILE NAVIGATION CODE - Fixed version from index.html
     const mobileToggle = document.querySelector('.mobile-toggle');
     const navMenu = document.querySelector('.nav-menu');
     
