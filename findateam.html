@@ -17,6 +17,75 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     
     <style>
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
+
+
 /* Core styles */
 :root {
     --primary: #1a237e;
