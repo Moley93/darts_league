@@ -1375,51 +1375,31 @@ document.addEventListener('DOMContentLoaded', function() {
 async function submitMatchForm(e) {
     e.preventDefault();
     
-    // ... [existing code remains] ...
-    
-    if (result.success) {
-        // Special handling for cup matches
-        if (matchData.matchType === 'cup') {
-            let advanceMessage = '';
-            
-            // Add message about advancing to next round if result contains that information
-            if (result.advancedTeam) {
-                const nextRound = getNextCupRound(matchData.cupRound);
-                advanceMessage = `\n\n${result.advancedTeam} has advanced to the ${nextRound}!`;
-            }
-            
-            alert(`Cup match score submitted successfully!${advanceMessage}`);
-        } else {
-            alert('Match score submitted successfully!');
-        }
-        
-        // Reset form fields but keep the home team (captain's team)
-        const homeTeam = document.getElementById('home-team').value;
-        const division = document.getElementById('division').value;
-        
-        document.getElementById('match-form').reset();
-        
-        // Restore values
-        document.getElementById('division').value = division;
-        document.getElementById('home-team').value = homeTeam;
-        document.getElementById('home-team').disabled = true;
-        
-        // Reset cup round selection
-        document.getElementById('cup-round').value = '';
-        document.getElementById('cup-round').disabled = true;
-        document.getElementById('cup-round-container').classList.add('disabled-field');
-        
-        // Reload form elements
-        loadAwayTeamOptions();
-        generateDoublesMatches();
-        generateSinglesMatches();
-        generateOneEightiesInputs();
-        generateHighFinishesInputs();
-    } else {
-        alert('Error submitting match: ' + (result.error || 'Unknown error'));
-        console.error('Error details:', result);
+    if (!currentCaptain || !currentCaptain.team_name) {
+        alert('You need to be logged in to submit scores.');
+        return;
     }
-}
+    
+    const matchData = {
+        division: document.getElementById('division').value,
+        matchType: document.getElementById('match-type').value,
+        homeTeam: currentCaptain.team_name, // Always use captain's team
+        awayTeam: document.getElementById('away-team').value,
+        doubles: [],
+        singles: [],
+        oneEighties: [],
+        highFinishes: []
+    };
+    
+    // Add cup round if it's a cup match
+    if (matchData.matchType === 'cup') {
+        const cupRound = document.getElementById('cup-round').value;
+        if (!cupRound) {
+            alert('Please select a Cup Round for cup matches.');
+            return;
+        }
+        matchData.cupRound = cupRound;
+    }
     
     // Validate required fields
     if (!matchData.division || !matchData.matchType || !matchData.homeTeam || !matchData.awayTeam) {
@@ -1552,7 +1532,7 @@ async function submitMatchForm(e) {
         alert('Error submitting match: ' + (result.error || 'Unknown error'));
         console.error('Error details:', result);
     }
-
+}
 
 // Helper function to determine the next cup round
 function getNextCupRound(currentRound) {

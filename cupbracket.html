@@ -904,15 +904,14 @@ async function loadcupbracket(division) {
             roundedFixtures[round].push(fixture);
         });
         
-        console.log('Fixtures organized by round:', roundedFixtures);
-        
         // Generate HTML for each bracket
-        const bracketContainer = division === 'premier' ? 
-            document.getElementById('premier-cup-fixtures') : 
-            document.getElementById('a-cup-fixtures');
-            
-        if (bracketContainer) {
-            updateBracketHTML(bracketContainer, roundedFixtures);
+        const premierBracket = document.getElementById('premier-cup-fixtures');
+        const aDivisionBracket = document.getElementById('a-cup-fixtures');
+        
+        if (division === 'premier' && premierBracket) {
+            updateBracketHTML(premierBracket, roundedFixtures);
+        } else if (division === 'a' && aDivisionBracket) {
+            updateBracketHTML(aDivisionBracket, roundedFixtures);
         }
         
     } catch (error) {
@@ -924,101 +923,155 @@ async function loadcupbracket(division) {
     }
 }
 
+// Function to update bracket HTML based on fixtures data
 function updateBracketHTML(bracketContainer, roundedFixtures) {
     // Find the tournament-bracket div inside the container
     const bracket = bracketContainer.querySelector('.tournament-bracket');
     if (!bracket) return;
     
-    // Get existing rounds structure
-    const existingRounds = bracket.querySelectorAll('.round');
+    // Clear current content
+    bracket.innerHTML = '';
     
-    // Map the API cup_round values to the HTML structure
-    const roundMapping = {
-        'Preliminary': 0,
-        'Last 16': 0,
-        'Quarter Final': 0,
-        'Semi Final': 1,
-        'Final': 2
-    };
+    // Define the rounds we want to display in order
+    const orderedRounds = [
+        { id: 'Preliminary', title: 'Preliminary Round', className: 'round-last16' },
+        { id: 'Last 16', title: 'Last 16', className: 'round-last16' },
+        { id: 'Quarter Final', title: 'Quarter Finals', className: 'round-quarters' },
+        { id: 'Semi Final', title: 'Semi Finals', className: 'round-semis' },
+        { id: 'Final', title: 'Final', className: '' }
+    ];
     
-    // Loop through each existing round structure
-    existingRounds.forEach((roundElement, roundIndex) => {
-        const matches = roundElement.querySelectorAll('.match');
-        
-        // Determine which cup round this corresponds to
-        let cupRound;
-        if (roundIndex === 0) cupRound = 'Quarter Final';
-        else if (roundIndex === 1) cupRound = 'Semi Final';
-        else if (roundIndex === 2) cupRound = 'Final';
-        
-        // If we have fixtures for this round
-        if (roundedFixtures[cupRound] && roundedFixtures[cupRound].length > 0) {
-            const fixturesForRound = roundedFixtures[cupRound];
-            
-            // Update each match in this round
-            matches.forEach((matchElement, matchIndex) => {
-                if (matchIndex < fixturesForRound.length) {
-                    const fixture = fixturesForRound[matchIndex];
-                    
-                    // Update date
-                    const dateDiv = matchElement.querySelector('.match-date');
-                    if (dateDiv && fixture.match_date) {
-                        // Format date nicely
-                        const date = new Date(fixture.match_date);
-                        dateDiv.textContent = date.toLocaleDateString('en-GB', {
-                            month: 'long', day: 'numeric', year: 'numeric'
-                        });
-                    }
-                    
-                    // Update teams and score
-                    const teams = matchElement.querySelectorAll('.team');
-                    if (teams.length >= 2) {
-                        // Home team
-                        teams[0].textContent = fixture.home_team || 'TBD';
-                        if (fixture.status === 'completed' && fixture.home_score !== undefined) {
-                            const scoreSpan = document.createElement('span');
-                            scoreSpan.className = 'match-score';
-                            scoreSpan.textContent = fixture.home_score;
-                            teams[0].appendChild(scoreSpan);
-                            
-                            // Add winner class if home team won
-                            if (parseInt(fixture.home_score) > parseInt(fixture.away_score)) {
-                                teams[0].classList.add('winner');
-                            } else {
-                                teams[0].classList.remove('winner');
-                            }
-                        }
-                        
-                        // Away team
-                        teams[1].textContent = fixture.away_team || 'TBD';
-                        if (fixture.status === 'completed' && fixture.away_score !== undefined) {
-                            const scoreSpan = document.createElement('span');
-                            scoreSpan.className = 'match-score';
-                            scoreSpan.textContent = fixture.away_score;
-                            teams[1].appendChild(scoreSpan);
-                            
-                            // Add winner class if away team won
-                            if (parseInt(fixture.away_score) > parseInt(fixture.home_score)) {
-                                teams[1].classList.add('winner');
-                            } else {
-                                teams[1].classList.remove('winner');
-                            }
-                        }
-                    }
-                    
-                    // Update venue (if present)
-                    const venueDiv = matchElement.querySelector('.match-venue');
-                    if (venueDiv) {
-                        venueDiv.textContent = fixture.venue || 'TBD';
-                    }
-                    
-                    // Store the match_id as a data attribute for future updates
-                    matchElement.dataset.matchId = fixture.match_id;
-                }
-            });
+    // Create each round in the bracket
+    orderedRounds.forEach(roundInfo => {
+        // Skip rounds that don't have any fixtures
+        if (!roundedFixtures[roundInfo.id] || roundedFixtures[roundInfo.id].length === 0) {
+            return;
         }
+        
+        // Create round div
+        const roundDiv = document.createElement('div');
+        roundDiv.className = `round ${roundInfo.className}`;
+        
+        // Add round title
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'round-title';
+        titleDiv.textContent = roundInfo.title;
+        roundDiv.appendChild(titleDiv);
+        
+        // Special case for the final match to position it correctly
+        if (roundInfo.id === 'Final') {
+            const finalContainer = document.createElement('div');
+            finalContainer.className = 'final-match-container';
+            createMatchElements(finalContainer, roundedFixtures[roundInfo.id]);
+            roundDiv.appendChild(finalContainer);
+        } else {
+            // Regular match elements for other rounds
+            createMatchElements(roundDiv, roundedFixtures[roundInfo.id]);
+        }
+        
+        // Add round to bracket
+        bracket.appendChild(roundDiv);
+    });
+    
+    // If no rounds were created, show a message
+    if (bracket.children.length === 0) {
+        bracket.innerHTML = '<div style="text-align: center; padding: 20px;">No cup fixtures found. Use the Cup Draw page to create fixtures.</div>';
+    }
+}
+
+// Create match elements for a round
+function createMatchElements(container, fixtures) {
+    fixtures.forEach(fixture => {
+        const matchDiv = document.createElement('div');
+        matchDiv.className = 'match';
+        matchDiv.dataset.matchId = fixture.match_id;
+        
+        // Match date
+        const dateDiv = document.createElement('div');
+        dateDiv.className = 'match-date';
+        
+        // Format date if available
+        if (fixture.match_date) {
+            const date = new Date(fixture.match_date);
+            dateDiv.textContent = date.toLocaleDateString('en-GB', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        } else {
+            dateDiv.textContent = 'TBD';
+        }
+        matchDiv.appendChild(dateDiv);
+        
+        // Home team
+        const homeTeamDiv = document.createElement('div');
+        homeTeamDiv.className = 'team';
+        
+        // Add winner class if match is completed and home team won
+        if (fixture.status === 'completed' && 
+            parseInt(fixture.home_score) > parseInt(fixture.away_score)) {
+            homeTeamDiv.classList.add('winner');
+        }
+        
+        // If home team is TBD, show placeholder
+        homeTeamDiv.textContent = fixture.home_team || 'TBD';
+        
+        // Add score if match is completed
+        if (fixture.status === 'completed' && typeof fixture.home_score !== 'undefined') {
+            const scoreSpan = document.createElement('span');
+            scoreSpan.className = 'match-score';
+            scoreSpan.textContent = fixture.home_score;
+            homeTeamDiv.appendChild(scoreSpan);
+        }
+        
+        matchDiv.appendChild(homeTeamDiv);
+        
+        // Away team
+        const awayTeamDiv = document.createElement('div');
+        awayTeamDiv.className = 'team';
+        
+        // Add winner class if match is completed and away team won
+        if (fixture.status === 'completed' && 
+            parseInt(fixture.away_score) > parseInt(fixture.home_score)) {
+            awayTeamDiv.classList.add('winner');
+        }
+        
+        // If away team is TBD, show placeholder
+        awayTeamDiv.textContent = fixture.away_team || 'TBD';
+        
+        // Add score if match is completed
+        if (fixture.status === 'completed' && typeof fixture.away_score !== 'undefined') {
+            const scoreSpan = document.createElement('span');
+            scoreSpan.className = 'match-score';
+            scoreSpan.textContent = fixture.away_score;
+            awayTeamDiv.appendChild(scoreSpan);
+        }
+        
+        matchDiv.appendChild(awayTeamDiv);
+        
+        // Match venue
+        const venueDiv = document.createElement('div');
+        venueDiv.className = 'match-venue';
+        venueDiv.textContent = fixture.venue || 'TBD';
+        matchDiv.appendChild(venueDiv);
+        
+        container.appendChild(matchDiv);
     });
 }
+
+// Add division toggle handler to load fixtures
+document.addEventListener('DOMContentLoaded', () => {
+    // Load premier division fixtures by default
+    loadcupbracket('premier');
+    
+    // Handle division toggle clicks
+    document.querySelectorAll('.division-toggle button').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const division = e.target.dataset.division;
+            loadcupbracket(division);
+        });
+    });
+});
     </script>
 </body>
 </html>
