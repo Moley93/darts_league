@@ -1459,6 +1459,206 @@ function createDraw(shuffledTeams) {                const rounds = {
             function displayDrawResults(rounds) {
                 // Show results container
                 drawResults.classList.remove('hidden');
+
+                async function saveDrawToDatabase(rounds) {
+    // Check if there's at least one match to save
+    if ((!rounds.preliminary || rounds.preliminary.length === 0) && 
+        (!rounds.last16 || rounds.last16.length === 0) && 
+        (!rounds.quarterFinals || rounds.quarterFinals.length === 0)) {
+        alert('No matches to save. Please generate a draw first.');
+        return false;
+    }
+
+    const division = document.getElementById('division').value || 'premier';
+    const allMatches = [];
+    
+    // Helper function to add matches to array
+    function addMatchesToArray(matchesArray, roundName, roundLabel) {
+        if (!matchesArray || matchesArray.length === 0) return;
+        
+        matchesArray.forEach((match, index) => {
+            // Skip matches where both teams are "Bye"
+            if (match.homeTeam === "Bye" && match.awayTeam === "Bye") return;
+            
+            // If one team is "Bye", the other team automatically advances
+            const status = (match.homeTeam === "Bye" || match.awayTeam === "Bye") 
+                ? 'completed' 
+                : 'scheduled';
+            
+            // Calculate scores for bye matches
+            let homeScore = 0;
+            let awayScore = 0;
+            
+            if (match.homeTeam === "Bye") {
+                awayScore = 1;
+            } else if (match.awayTeam === "Bye") {
+                homeScore = 1;
+            }
+            
+            allMatches.push({
+                division: division,
+                match_type: 'cup',
+                cup_round: roundLabel,
+                home_team: match.homeTeam === "Bye" ? null : match.homeTeam,
+                away_team: match.awayTeam === "Bye" ? null : match.awayTeam,
+                status: status,
+                home_score: homeScore,
+                away_score: awayScore,
+                match_date: getCupRoundDate(roundName)
+            });
+        });
+    }
+    
+    // Add all rounds to the matches array
+    if (rounds.preliminary) addMatchesToArray(rounds.preliminary, 'preliminary', 'Preliminary');
+    if (rounds.last16) addMatchesToArray(rounds.last16, 'last16', 'Last 16');
+    if (rounds.quarterFinals) addMatchesToArray(rounds.quarterFinals, 'quarters', 'Quarter Final');
+    if (rounds.semiFinals) addMatchesToArray(rounds.semiFinals, 'semis', 'Semi Final');
+    if (rounds.final) addMatchesToArray(rounds.final, 'final', 'Final');
+    
+    // No matches to save (maybe all were byes)
+    if (allMatches.length === 0) {
+        alert('No valid matches to save.');
+        return false;
+    }
+    
+    try {
+        // First check if we should clear existing fixtures
+        const confirmClear = confirm('Do you want to clear existing cup fixtures before saving the new draw?');
+        
+        // Show loading message
+        const drawHighlight = document.querySelector('.draw-highlight');
+        if (drawHighlight) {
+            drawHighlight.textContent = 'Saving cup draw to database...';
+        }
+        
+        // Prepare the data to send to the API
+        const saveData = {
+            division: division,
+            clearExisting: confirmClear,
+            matches: allMatches
+        };
+        
+        // Send to a new endpoint that will handle cup draw saving
+        const response = await fetch('api.php?endpoint=save-cup-draw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(saveData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Cup draw saved successfully. ${result.matchesAdded} matches added.`);
+            return true;
+        } else {
+            alert('Error saving cup draw: ' + (result.error || 'Unknown error'));
+            return false;
+        }
+    } catch (error) {
+        console.error('Error saving cup draw:', error);
+        alert('Error saving cup draw: ' + error.message);
+        return false;
+    }
+}
+
+// Helper function to get a date for each cup round
+function getCupRoundDate(round) {
+    const now = new Date();
+    const year = now.getFullYear();
+    
+    // Set default dates based on round
+    switch(round) {
+        case 'preliminary':
+            return `${year}-05-02`; // May 2nd
+        case 'last16':
+            return `${year}-05-09`; // May 9th
+        case 'quarters':
+            return `${year}-05-16`; // May 16th
+        case 'semis':
+            return `${year}-05-27`; // May 27th
+        case 'final':
+            return `${year}-06-13`; // June 13th
+        default:
+            return `${year}-05-16`; // Default date (May 16th)
+    }
+}
+
+// Add a division selector
+function addDivisionSelector() {
+    const drawOptionsSection = document.querySelector('.draw-options-section .options-grid');
+    
+    if (!drawOptionsSection) return;
+    
+    // Create division selection dropdown
+    const divisionGroup = document.createElement('div');
+    divisionGroup.className = 'draw-option-group';
+    divisionGroup.innerHTML = `
+        <label for="division">Division</label>
+        <select id="division" class="form-input">
+            <option value="premier">Premier Division</option>
+            <option value="a">A Division</option>
+        </select>
+    `;
+    
+    // Add to options grid
+    drawOptionsSection.appendChild(divisionGroup);
+}
+
+// Add Save to Database button
+function addSaveButton() {
+    const drawControls = document.querySelector('.draw-options-section .draw-controls');
+    
+    if (!drawControls) return;
+    
+    // Create save button
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-draw-btn';
+    saveButton.className = 'draw-btn primary-btn';
+    saveButton.innerHTML = '<span class="cup-icon">💾</span> Save Draw to Database';
+    saveButton.disabled = true; // Initially disabled
+    
+    // Add click event
+    saveButton.addEventListener('click', async function() {
+        const drawResults = document.getElementById('draw-results');
+        if (drawResults.classList.contains('hidden')) {
+            alert('Please generate a draw first before saving.');
+            return;
+        }
+        
+        await saveDrawToDatabase(currentDrawRounds);
+    });
+    
+    // Add to draw controls
+    drawControls.appendChild(saveButton);
+}
+
+// Store the current draw rounds globally
+let currentDrawRounds = null;
+
+// Override the original displayDrawResults function to store the rounds
+const originalDisplayDrawResults = displayDrawResults;
+displayDrawResults = function(rounds) {
+    // Call the original function
+    originalDisplayDrawResults(rounds);
+    
+    // Store the rounds for later use
+    currentDrawRounds = rounds;
+    
+    // Enable the save button
+    const saveButton = document.getElementById('save-draw-btn');
+    if (saveButton) {
+        saveButton.disabled = false;
+    }
+};
+
+// Initialize the new UI elements when the document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    addDivisionSelector();
+    addSaveButton();
+});
                 
                 // Preliminary round
                 const prelimRound = document.getElementById('preliminary-round');

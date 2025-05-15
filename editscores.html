@@ -1555,129 +1555,187 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Edit match form submission
-        document.getElementById('edit-match-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const matchId = document.getElementById('match-select').value;
-            if (!matchId) {
-                alert('Please select a match to edit');
-                return;
-            }
-            
-            const matchType = document.getElementById('edit-match-type').value;
-            
-            const matchData = {
-                matchId: matchId,
-                division: captainDivision,
-                matchType: matchType,
-                homeTeam: document.getElementById('edit-home-team').value,
-                awayTeam: document.getElementById('edit-away-team').value,
-                doubles: [],
-                singles: [],
-                oneEighties: [],
-                highFinishes: []
-            };
-            
-            // Add cup round if it's a cup match
-            if (matchType === 'cup') {
-                const cupRound = document.getElementById('edit-cup-round').value;
-                if (!cupRound) {
-                    alert('Please select a Cup Round for cup matches.');
-                    return;
-                }
-                matchData.cupRound = cupRound;
-            }
-            
-            // Collect doubles match data
-            document.querySelectorAll('#edit-doubles-matches .doubles-match').forEach((match, index) => {
-                const homePlayer1 = match.querySelector('.home-player1').value;
-                const homePlayer2 = match.querySelector('.home-player2').value;
-                const awayPlayer1 = match.querySelector('.away-player1').value;
-                const awayPlayer2 = match.querySelector('.away-player2').value;
-                const score = match.querySelector('.score-select').value;
-                
-                if (homePlayer1 && homePlayer2 && awayPlayer1 && awayPlayer2 && score) {
-                    matchData.doubles.push({
-                        homePlayer1,
-                        homePlayer2,
-                        awayPlayer1,
-                        awayPlayer2,
-                        score
-                    });
-                }
+document.getElementById('edit-match-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const matchId = document.getElementById('match-select').value;
+    if (!matchId) {
+        alert('Please select a match to edit');
+        return;
+    }
+    
+    const matchType = document.getElementById('edit-match-type').value;
+    
+    const matchData = {
+        matchId: matchId,
+        division: captainDivision,
+        matchType: matchType,
+        homeTeam: document.getElementById('edit-home-team').value,
+        awayTeam: document.getElementById('edit-away-team').value,
+        doubles: [],
+        singles: [],
+        oneEighties: [],
+        highFinishes: []
+    };
+    
+    // Add cup round if it's a cup match
+    if (matchType === 'cup') {
+        const cupRound = document.getElementById('edit-cup-round').value;
+        if (!cupRound) {
+            alert('Please select a Cup Round for cup matches.');
+            return;
+        }
+        matchData.cupRound = cupRound;
+    }
+    
+    // Collect doubles match data
+    document.querySelectorAll('#edit-doubles-matches .doubles-match').forEach((match, index) => {
+        const homePlayer1 = match.querySelector('.home-player1').value;
+        const homePlayer2 = match.querySelector('.home-player2').value;
+        const awayPlayer1 = match.querySelector('.away-player1').value;
+        const awayPlayer2 = match.querySelector('.away-player2').value;
+        const score = match.querySelector('.score-select').value;
+        
+        if (homePlayer1 && homePlayer2 && awayPlayer1 && awayPlayer2 && score) {
+            matchData.doubles.push({
+                homePlayer1,
+                homePlayer2,
+                awayPlayer1,
+                awayPlayer2,
+                score
             });
+        }
+    });
 
-            // Collect singles match data
-            document.querySelectorAll('#edit-singles-matches .singles-match').forEach((match, index) => {
-                const homePlayer = match.querySelector('.home-player').value;
-                const awayPlayer = match.querySelector('.away-player').value;
-                const score = match.querySelector('.score-select').value;
-                
-                if (homePlayer && awayPlayer && score) {
-                    matchData.singles.push({
-                        homePlayer,
-                        awayPlayer,
-                        score
-                    });
-                }
+    // Collect singles match data
+    document.querySelectorAll('#edit-singles-matches .singles-match').forEach((match, index) => {
+        const homePlayer = match.querySelector('.home-player').value;
+        const awayPlayer = match.querySelector('.away-player').value;
+        const score = match.querySelector('.score-select').value;
+        
+        if (homePlayer && awayPlayer && score) {
+            matchData.singles.push({
+                homePlayer,
+                awayPlayer,
+                score
             });
-            
-            // Collect 180s data
-            document.querySelectorAll('#edit-one-eighties-section .stats-row').forEach(row => {
-                const player = row.querySelector('.one-eighty-player').value;
-                const count = row.querySelector('.one-eighty-count').value;
-                
-                if (player && count) {
-                    matchData.oneEighties.push({
-                        player,
-                        count: parseInt(count)
-                    });
-                }
+        }
+    });
+    
+    // Collect 180s data
+    document.querySelectorAll('#edit-one-eighties-section .stats-row').forEach(row => {
+        const player = row.querySelector('.one-eighty-player').value;
+        const count = row.querySelector('.one-eighty-count').value;
+        
+        if (player && count) {
+            matchData.oneEighties.push({
+                player,
+                count: parseInt(count)
             });
-            
-            // Collect high finishes data
-            document.querySelectorAll('#edit-high-finishes-section .stats-row').forEach(row => {
-                const player = row.querySelector('.high-finish-player').value;
-                const value = row.querySelector('.high-finish-value').value;
-                
-                if (player && value) {
-                    matchData.highFinishes.push({
-                        player,
-                        value: parseInt(value)
-                    });
-                }
+        }
+    });
+    
+    // Collect high finishes data
+    document.querySelectorAll('#edit-high-finishes-section .stats-row').forEach(row => {
+        const player = row.querySelector('.high-finish-player').value;
+        const value = row.querySelector('.high-finish-value').value;
+        
+        if (player && value) {
+            matchData.highFinishes.push({
+                player,
+                value: parseInt(value)
             });
+        }
+    });
+    
+    // Validate that at least one game is complete
+    if (matchData.doubles.length === 0 && matchData.singles.length === 0) {
+        alert('Please enter scores for at least one game.');
+        return;
+    }
+    
+    console.log('Updating match data:', matchData); // Debug output
+
+    // Show loading indicator while submitting
+    const loadingIndicator = document.getElementById('loading-indicator');
+    loadingIndicator.textContent = 'Updating match...';
+    loadingIndicator.classList.remove('hidden');
+    
+    const result = await postApi('update-match', matchData);
+    
+    // Hide loading indicator
+    loadingIndicator.classList.add('hidden');
+    
+    if (result.success) {
+        // Special handling for cup matches
+        if (matchData.matchType === 'cup') {
+            let advanceMessage = '';
             
-            // Validate that at least one game is complete
-            if (matchData.doubles.length === 0 && matchData.singles.length === 0) {
-                alert('Please enter scores for at least one game.');
-                return;
+            // Add message about advancing to next round if result contains that information
+            if (result.advancedTeam) {
+                const nextRound = getNextCupRound(matchData.cupRound);
+                advanceMessage = `\n\n${result.advancedTeam} has advanced to the ${nextRound}!`;
             }
             
-            console.log('Updating match data:', matchData); // Debug output
+            alert(`Cup match updated successfully!${advanceMessage}`);
+        } else {
+            alert('Match score updated successfully!');
+        }
+        
+        document.getElementById('match-select').value = '';
+        document.getElementById('edit-match-form-container').classList.add('hidden');
+        // Reload the matches list
+        loadEditMatchesSelect();
+    } else {
+        alert('Error updating match: ' + (result.error || 'Unknown error'));
+        console.error('Error details:', result);
+    }
+});
 
-            // Show loading indicator while submitting
-            const loadingIndicator = document.getElementById('loading-indicator');
-            loadingIndicator.textContent = 'Updating match...';
-            loadingIndicator.classList.remove('hidden');
-            
-            const result = await postApi('update-match', matchData);
-            
-            // Hide loading indicator
-            loadingIndicator.classList.add('hidden');
-            
-            if (result.success) {
-                alert('Match score updated successfully!');
-                document.getElementById('match-select').value = '';
-                document.getElementById('edit-match-form-container').classList.add('hidden');
-                // Reload the matches list
-                loadEditMatchesSelect();
-            } else {
-                alert('Error updating match: ' + (result.error || 'Unknown error'));
-                console.error('Error details:', result);
+function getNextCupRound(currentRound) {
+    // Function code here
+}
+
+function refreshMatchList() {
+    // Function code here
+}
+
+// 2. Add the helper function for determining the next cup round
+// Add this function somewhere in your JavaScript, before it's used
+
+function getNextCupRound(currentRound) {
+    switch(currentRound) {
+        case 'Preliminary':
+            return 'Last 16';
+        case 'Last 16':
+            return 'Quarter Finals';
+        case 'Quarter Final':
+            return 'Semi Finals';
+        case 'Semi Final':
+            return 'Final';
+        default:
+            return 'next round';
+    }
+}
+
+// 3. Also add a function to update match-select when scores are updated
+// This will refresh the match list to show updated scores
+
+function refreshMatchList() {
+    // Clear existing options
+    const matchSelect = document.getElementById('match-select');
+    if (matchSelect) {
+        const selectedValue = matchSelect.value;
+        
+        // Reload match options
+        loadEditMatchesSelect().then(() => {
+            // Try to restore the previously selected match if it still exists
+            if (selectedValue && matchSelect.querySelector(`option[value="${selectedValue}"]`)) {
+                matchSelect.value = selectedValue;
             }
         });
+    }
+}
     </script>
 </body>
 </html>
