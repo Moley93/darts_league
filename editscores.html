@@ -1556,28 +1556,34 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
 document.getElementById('edit-match-form').addEventListener('submit', async (e) => {
-    e.preventDefault();
+    // ... [existing code remains] ...
     
-    const matchId = document.getElementById('match-select').value;
-    if (!matchId) {
-        alert('Please select a match to edit');
-        return;
+    if (result.success) {
+        // Special handling for cup matches
+        if (matchData.matchType === 'cup') {
+            let advanceMessage = '';
+            
+            // Add message about advancing to next round if result contains that information
+            if (result.advancedTeam) {
+                const nextRound = getNextCupRound(matchData.cupRound);
+                advanceMessage = `\n\n${result.advancedTeam} has advanced to the ${nextRound}!`;
+            }
+            
+            alert(`Cup match updated successfully!${advanceMessage}`);
+        } else {
+            alert('Match score updated successfully!');
+        }
+        
+        document.getElementById('match-select').value = '';
+        document.getElementById('edit-match-form-container').classList.add('hidden');
+        // Reload the matches list
+        loadEditMatchesSelect();
+    } else {
+        alert('Error updating match: ' + (result.error || 'Unknown error'));
+        console.error('Error details:', result);
     }
-    
-    const matchType = document.getElementById('edit-match-type').value;
-    
-    const matchData = {
-        matchId: matchId,
-        division: captainDivision,
-        matchType: matchType,
-        homeTeam: document.getElementById('edit-home-team').value,
-        awayTeam: document.getElementById('edit-away-team').value,
-        doubles: [],
-        singles: [],
-        oneEighties: [],
-        highFinishes: []
-    };
-    
+});
+
     // Add cup round if it's a cup match
     if (matchType === 'cup') {
         const cupRound = document.getElementById('edit-cup-round').value;
@@ -1690,7 +1696,7 @@ document.getElementById('edit-match-form').addEventListener('submit', async (e) 
         alert('Error updating match: ' + (result.error || 'Unknown error'));
         console.error('Error details:', result);
     }
-});
+
 
 function getNextCupRound(currentRound) {
     // Function code here

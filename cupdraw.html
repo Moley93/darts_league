@@ -1820,6 +1820,112 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initialize speed display
             speedDisplay.textContent = speedSettings[speedSlider.value].name;
         });
+        
+        async function saveDrawToDatabase(rounds) {
+    // Check if there's at least one match to save
+    if ((!rounds.preliminary || rounds.preliminary.length === 0) && 
+        (!rounds.last16 || rounds.last16.length === 0) && 
+        (!rounds.quarterFinals || rounds.quarterFinals.length === 0)) {
+        alert('No matches to save. Please generate a draw first.');
+        return false;
+    }
+
+    const division = document.getElementById('division') ? 
+                     document.getElementById('division').value : 'premier';
+    const allMatches = [];
+    
+    // Helper function to add matches to array
+    function addMatchesToArray(matchesArray, roundName, roundLabel) {
+        if (!matchesArray || matchesArray.length === 0) return;
+        
+        matchesArray.forEach((match, index) => {
+            // Skip matches where both teams are "Bye"
+            if (match.homeTeam === "Bye" && match.awayTeam === "Bye") return;
+            
+            // If one team is "Bye", the other team automatically advances
+            const status = (match.homeTeam === "Bye" || match.awayTeam === "Bye") 
+                ? 'completed' 
+                : 'scheduled';
+            
+            // Calculate scores for bye matches
+            let homeScore = 0;
+            let awayScore = 0;
+            
+            if (match.homeTeam === "Bye") {
+                awayScore = 1;
+            } else if (match.awayTeam === "Bye") {
+                homeScore = 1;
+            }
+            
+            allMatches.push({
+                division: division,
+                match_type: 'cup',
+                cup_round: roundLabel,
+                home_team: match.homeTeam === "Bye" ? null : match.homeTeam,
+                away_team: match.awayTeam === "Bye" ? null : match.awayTeam,
+                status: status,
+                home_score: homeScore,
+                away_score: awayScore,
+                match_date: getCupRoundDate(roundName)
+            });
+        });
+    }
+    
+    // Add all rounds to the matches array
+    if (rounds.preliminary) addMatchesToArray(rounds.preliminary, 'preliminary', 'Preliminary');
+    if (rounds.last16) addMatchesToArray(rounds.last16, 'last16', 'Last 16');
+    if (rounds.quarterFinals) addMatchesToArray(rounds.quarterFinals, 'quarters', 'Quarter Final');
+    if (rounds.semiFinals) addMatchesToArray(rounds.semiFinals, 'semis', 'Semi Final');
+    if (rounds.final) addMatchesToArray(rounds.final, 'final', 'Final');
+    
+    // No matches to save (maybe all were byes)
+    if (allMatches.length === 0) {
+        alert('No valid matches to save.');
+        return false;
+    }
+    
+    try {
+        // First check if we should clear existing fixtures
+        const confirmClear = confirm('Do you want to clear existing cup fixtures before saving the new draw?');
+        
+        // Show loading message
+        const drawHighlight = document.querySelector('.draw-highlight');
+        if (drawHighlight) {
+            drawHighlight.textContent = 'Saving cup draw to database...';
+        }
+        
+        // Prepare the data to send to the API
+        const saveData = {
+            division: division,
+            clearExisting: confirmClear,
+            matches: allMatches
+        };
+        
+        // Send to the save-cup-draw endpoint
+        const response = await fetch('api.php?endpoint=save-cup-draw', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(saveData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(`Cup draw saved successfully. ${result.matchesAdded} matches added.`);
+            return true;
+        } else {
+            alert('Error saving cup draw: ' + (result.error || 'Unknown error'));
+            return false;
+        }
+    } catch (error) {
+        console.error('Error saving cup draw:', error);
+        alert('Error saving cup draw: ' + error.message);
+        return false;
+    }
+}
+
     </script>
 </body>
 </html>
