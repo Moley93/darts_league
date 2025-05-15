@@ -119,14 +119,6 @@ switch ($endpoint) {
             returnJson(['success' => false, 'error' => 'Method not allowed for submit-match']);
         }
         break;
-
-    case 'save-cup-draw':
-        if ($requestMethod === 'POST') {
-        saveCupDraw();
-     } else {
-         returnJson(['success' => false, 'error' => 'Method not allowed for save-cup-draw']);
-     }
-     break;
     
     case 'update-match':
         if ($requestMethod === 'POST') {
@@ -1084,11 +1076,9 @@ function updateMatch() {
         $matchId = $data['matchId'];
         
         // Verify match exists
-        $checkStmt = $pdo->prepare("SELECT match_type, cup_round FROM matches WHERE match_id = ?");
+        $checkStmt = $pdo->prepare("SELECT COUNT(*) FROM matches WHERE match_id = ?");
         $checkStmt->execute([$matchId]);
-        $matchInfo = $checkStmt->fetch();
-        
-        if (!$matchInfo) {
+        if ($checkStmt->fetchColumn() == 0) {
             throw new Exception('Match not found with ID: ' . $matchId);
         }
         
@@ -1253,7 +1243,7 @@ function updateMatch() {
         // Update match final score
         $stmt = $pdo->prepare("
             UPDATE matches 
-            SET home_score = ?, away_score = ?, status = 'completed'
+            SET home_score = ?, away_score = ? 
             WHERE match_id = ?
         ");
         $stmt->execute([$homeScore, $awayScore, $matchId]);
@@ -1330,20 +1320,12 @@ function updateMatch() {
         }
         
         // If it's a cup match, update cup progression
-        $advancedTeam = null;
         if ($data['matchType'] === 'cup') {
             try {
                 // First check if the stored procedure exists
                 $stmt = $pdo->query("SHOW PROCEDURE STATUS WHERE Db = DATABASE() AND Name = 'advance_cup_winner'");
                 if ($stmt->rowCount() > 0) {
                     $pdo->exec("CALL advance_cup_winner($matchId)");
-                    
-                    // Determine the winning team for the response
-                    if ($homeScore > $awayScore) {
-                        $advancedTeam = $data['homeTeam'];
-                    } else if ($awayScore > $homeScore) {
-                        $advancedTeam = $data['awayTeam'];
-                    }
                 } else {
                     error_log("Stored procedure 'advance_cup_winner' not found");
                 }
@@ -1351,13 +1333,6 @@ function updateMatch() {
                 error_log("Error advancing cup winner: " . $e->getMessage());
                 // Continue anyway - cup progression can be handled manually
             }
-            
-            returnJson([
-                'success' => true,
-                'matchId' => $matchId,
-                'advancedTeam' => $advancedTeam
-            ]);
-            return;
         }
         
         returnJson(['success' => true, 'matchId' => $matchId]);
@@ -1371,5 +1346,4 @@ function updateMatch() {
         returnJson(['success' => false, 'error' => $e->getMessage()]);
     }
 }
-
 ?>
