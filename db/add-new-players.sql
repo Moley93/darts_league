@@ -223,4 +223,3 @@ VALUES
 ('Ivan Garcia', 4),
 ('Cecilia Lopez', 2),
 ('Rowan Cox', 10)
-);
