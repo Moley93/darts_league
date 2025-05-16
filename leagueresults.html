@@ -907,83 +907,102 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        // Render match details content
-        function renderMatchDetails(container, matchDetails) {
-            const match = matchDetails.match;
-            const division = match.division;
-            const matchType = match.match_type;
-            
-            let content = '';
-            
-            // Add doubles section if there are doubles results
-            if (matchDetails.doubles && matchDetails.doubles.length > 0) {
-                content += `
-                    <div class="match-section">
-                        <h4 class="match-header">Doubles Matches</h4>
-                `;
-                
-                matchDetails.doubles.forEach((doubles, index) => {
-                    content += `
-                        <div class="player-match">
-                            <div class="home-player">${singles.home_player_name}</div>
-                            <div class="match-score">${singles.home_score}-${singles.away_score}</div>
-                            <div class="away-player">${singles.away_player_name}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // Add 180s section if there are any
-            if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
-                content += `
-                    <div class="stats-section">
-                        <h4>180s</h4>
-                `;
-                
-                matchDetails.oneEighties.forEach(oneEighty => {
-                    content += `
-                        <div class="stats-item">
-                            <div class="player-name">${oneEighty.player_name}</div>
-                            <div class="stat-value">${oneEighty.count}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // Add high finishes section if there are any
-            if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
-                content += `
-                    <div class="stats-section">
-                        <h4>High Finishes</h4>
-                `;
-                
-                // Sort high finishes by value (highest first)
-                const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
-                
-                sortedFinishes.forEach(finish => {
-                    content += `
-                        <div class="stats-item">
-                            <div class="player-name">${finish.player_name}</div>
-                            <div class="stat-value">${finish.finish_value}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // If no content was generated, show a message
-            if (!content) {
-                content = `<p class="error-message">No detailed results available for this match.</p>`;
-            }
-            
-            container.innerHTML = content;
-        }
-
+// Render match details content
+function renderMatchDetails(container, matchDetails) {
+    const match = matchDetails.match;
+    const division = match.division;
+    const matchType = match.match_type;
+    
+    let content = '';
+    
+    // Add doubles section if there are doubles results
+    if (matchDetails.doubles && matchDetails.doubles.length > 0) {
+        content += `
+            <div class="match-section">
+                <h4 class="match-header">Doubles Matches</h4>
+        `;
+        
+        matchDetails.doubles.forEach((doubles, index) => {
+            content += `
+                <div class="player-match">
+                    <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
+                    <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
+                    <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
+                </div>
+            `;
+        });
+        
+        content += `</div>`;
+    }
+    
+    // Add singles section if there are singles results
+    if (matchDetails.singles && matchDetails.singles.length > 0) {
+        content += `
+            <div class="match-section">
+                <h4 class="match-header">Singles Matches</h4>
+        `;
+        
+        matchDetails.singles.forEach((singles, index) => {
+            content += `
+                <div class="player-match">
+                    <div class="home-player">${singles.home_player_name}</div>
+                    <div class="match-score">${singles.home_score}-${singles.away_score}</div>
+                    <div class="away-player">${singles.away_player_name}</div>
+                </div>
+            `;
+        });
+        
+        content += `</div>`;
+    }
+    
+    // Add 180s section if there are any
+    if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
+        content += `
+            <div class="stats-section">
+                <h4>180s</h4>
+        `;
+        
+        matchDetails.oneEighties.forEach(oneEighty => {
+            content += `
+                <div class="stats-item">
+                    <div class="player-name">${oneEighty.player_name}</div>
+                    <div class="stat-value">${oneEighty.count}</div>
+                </div>
+            `;
+        });
+        
+        content += `</div>`;
+    }
+    
+    // Add high finishes section if there are any
+    if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
+        content += `
+            <div class="stats-section">
+                <h4>High Finishes</h4>
+        `;
+        
+        // Sort high finishes by value (highest first)
+        const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
+        
+        sortedFinishes.forEach(finish => {
+            content += `
+                <div class="stats-item">
+                    <div class="player-name">${finish.player_name}</div>
+                    <div class="stat-value">${finish.finish_value}</div>
+                </div>
+            `;
+        });
+        
+        content += `</div>`;
+    }
+    
+    // If no content was generated, show a message
+    if (!content) {
+        content = `<p class="error-message">No detailed results available for this match.</p>`;
+    }
+    
+    container.innerHTML = content;
+}
         // Initially load the league results
         loadLeagueResults(getCurrentDivision());
 
