@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Automatic Cup Draw Tool for the Crawley Darts League. Generate and manage cup draws for both Premier and A Divisions.">
-    <meta property="og:title" content="CDL | Cup Draw Tool">
-    <meta property="og:description" content="Automatic Cup Draw Tool for the Crawley Darts League. Generate and manage cup draws for both Premier and A Divisions.">
-    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
-    <title>CDL | Cup Draw Tool</title>
+    <meta name="description" content="Knockout Cup tournament bracket for the Crawley Darts League. Create and view cup draws for Premier and A Division teams.">
+<meta property="og:title" content="CDL | Cup Draw">
+<meta property="og:description" content="Knockout Cup tournament bracket for the Crawley Darts League. Create and view cup draws for Premier and A Division teams.">
+<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
+    <title>CDL | Cup Draw</title>
     <link rel="stylesheet" href="styles.css">
-    <style>
-        /* Custom header style */
+    <link rel="icon" href="cdl.png">
+<style>
+        /* Custom header style for the index page to position logo left and title centered */
         .header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
             color: white;
@@ -41,263 +41,879 @@
             text-align: center;
         }
 
-        /* Login form styling */
-        .login-form {
-            max-width: 400px;
-            margin: 40px auto;
-            padding: 30px;
-        }
-
-        .login-form h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: var(--primary);
-        }
-
-        /* Loading indicator */
-        #loading-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-            z-index: 9999;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-        
-        /* Cup draw tool specific styles */
+        /* Cup draw specific styles */
         .cup-draw-container {
-            max-width: 850px;
-            margin: 20px auto;
+            max-width: 900px;
+            margin: 0 auto;
         }
-        
+
+        .teams-input-section,
+        .draw-options-section,
+        .draw-results-section {
+            margin-bottom: 30px;
+        }
+
+        .teams-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .team-chip {
+            background-color: var(--primary);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .team-chip.highlighted {
+            background-color: var(--secondary);
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .team-chip-remove {
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.7);
+            font-weight: bold;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+        }
+
+        .team-chip-remove:hover {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .teams-input {
+            display: flex;
+        }
+
+        .teams-input input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px 0 0 4px;
+            font-size: 16px;
+        }
+
+        .teams-input button {
+            padding: 10px 15px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .teams-input button:hover {
+            background-color: var(--secondary);
+        }
+
         .draw-controls {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: var(--light-gray);
-            border-radius: 5px;
+            margin-top: 20px;
         }
-        
-        .draw-button {
+
+        .draw-btn {
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .primary-btn {
             background-color: var(--primary);
             color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.3s;
         }
-        
-        .draw-button:hover {
+
+        .primary-btn:hover {
             background-color: var(--secondary);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
-        
-        .team-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 10px;
-            margin-bottom: 20px;
+
+        .secondary-btn {
+            background-color: var(--light-gray);
+            color: var(--text);
         }
-        
-        .team-item {
-            padding: 10px;
-            background-color: white;
-            border: 1px solid var(--medium-gray);
-            border-radius: 4px;
+
+        .secondary-btn:hover {
+            background-color: var(--medium-gray);
         }
-        
-        .draw-result {
-            margin-top: 30px;
-        }
-        
-        .match-pairing {
+
+        .draw-animation-container {
+            position: relative;
+            min-height: 150px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            margin-top: 20px;
+            padding: 20px;
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .draw-animation-title {
+            font-size: 24px;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+
+        .draw-highlight {
+            font-size: 30px;
+            font-weight: bold;
+            margin: 15px 0;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--secondary);
+        }
+
+        .draw-round {
+            margin-bottom: 40px;
+        }
+
+        .round-title {
+            background-color: var(--primary);
+            color: white;
+            text-align: center;
             padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .round-matches {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .match-card {
             background-color: white;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .match-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .match-number {
+            font-size: 12px;
+            color: var(--dark-gray);
+            margin-bottom: 10px;
+        }
+
+        .match-team {
+            padding: 10px;
+            margin-bottom: 5px;
+            background-color: var(--light-gray);
+            border-radius: 4px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .versus-text {
+            text-align: center;
+            font-size: 12px;
+            margin: 5px 0;
+            color: var(--dark-gray);
+        }
+
+        .cup-icon {
+            font-size: 24px;
+            margin-right: 5px;
+        }
+
+        .tournament-bracket {
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .bracket-container {
+            display: flex;
+            min-width: 750px;
+        }
+
+        .bracket-round {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 10px;
+        }
+
+        .bracket-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .bracket-match {
             border: 1px solid var(--medium-gray);
-            border-radius: 4px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            background-color: white;
+            position: relative;
         }
-        
-        .success-message {
-            padding: 15px;
-            background-color: #e8f5e9;
-            color: #2e7d32;
-            border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #2e7d32;
+
+        .bracket-match::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: -11px;
+            width: 10px;
+            height: 2px;
+            background-color: var(--medium-gray);
         }
-        
-        .error-message {
-            padding: 15px;
-            background-color: #ffebee;
-            color: #c62828;
+
+        .bracket-round:last-child .bracket-match::after {
+            display: none;
+        }
+
+        .bracket-team {
+            padding: 8px 12px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .bracket-team:last-child {
+            border-bottom: none;
+        }
+
+        .bracket-connector {
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            width: 20px;
+            height: 40px;
+            border-right: 2px solid var(--medium-gray);
+            border-top: 2px solid var(--medium-gray);
+            border-bottom: 2px solid var(--medium-gray);
+        }
+
+        .draw-option-group {
+            margin-bottom: 15px;
+        }
+
+        .draw-option-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-slider {
+            flex-grow: 1;
+        }
+
+        .draw-completed-message {
+            text-align: center;
+            font-size: 18px;
+            color: var(--success);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .options-section {
+            margin-bottom: 30px;
+        }
+
+        .randomizing-ball {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #3949AB, #1A237E);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            position: absolute;
+            animation: bounceAround 3s infinite;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        @keyframes bounceAround {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            25% {
+                transform: translate(100px, -50px);
+            }
+            50% {
+                transform: translate(-70px, 30px);
+            }
+            75% {
+                transform: translate(50px, 80px);
+            }
+        }
+
+        /* Ensure room for brackets */
+        .bracket-container {
+            margin: 30px 0;
+            padding-bottom: 40px;
+        }
+
+        /* Basic dropdown styling */
+        .nav .dropdown {
+            position: relative;
+        }
+
+        .nav .dropdown-toggle {
+            cursor: pointer;
+        }
+
+        .nav .dropdown-menu {
+            display: none;
+            position: absolute;
+            background: white;
+            min-width: 200px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
             border-radius: 4px;
-            margin-bottom: 20px;
-            border-left: 4px solid #c62828;
+            padding: 10px 0;
+        }
+
+        .nav .dropdown:hover .dropdown-menu {
+            display: block;
+        }
+
+        .nav .dropdown-menu li {
+            margin: 0;
+            padding: 0;
+        }
+
+        .nav .dropdown-menu a {
+            display: block;
+            padding: 10px 20px;
+            color: var(--primary);
+            border-radius: 0;
+        }
+
+        .nav .dropdown-menu a:hover {
+            background-color: var(--light-gray);
+        }
+
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            cursor: pointer;
+            padding: 10px;
+            font-size: 1.5rem;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
-            .draw-controls {
-                flex-direction: column;
+            .mobile-nav-toggle {
+                display: block;
             }
             
-            .match-pairing {
-                flex-direction: column;
-                gap: 10px;
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .nav-menu.active {
+                display: block;
+            }
+            
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+            
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+            
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+            
+            .nav .dropdown-menu li:first-child {
+                border-top: 1px solid var(--medium-gray);
+            }
+            
+            .nav .dropdown:hover .dropdown-menu {
+                display: none; /* Don't show on hover on mobile */
+            }
+            
+            /* Add a + icon to dropdowns */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
+            }
+            
+            /* Toggle this class with JavaScript */
+            .nav .dropdown.active .dropdown-menu {
+                display: block;
+            }
+            
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
+            }
+
+            .round-matches {
+                grid-template-columns: 1fr;
             }
         }
-    </style>
+:root {
+    --primary: #1a237e;
+    --secondary: #3949ab;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #757575;
+    --card-bg: #ffffff;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+
+.header h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+/* Navigation Styles */
+.nav {
+    background-color: white;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-menu > li {
+    position: relative;
+    margin: 0;
+}
+
+.nav-menu > li > a {
+    display: block;
+    padding: 15px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-menu > li > a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle:after {
+    content: "▼";
+    font-size: 0.7em;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 200px;
+    padding: 5px 0;
+    margin: 0;
+    list-style: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 4px 4px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.mobile-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 992px) {
+    .nav-menu {
+        justify-content: flex-start;
+    }
+    
+    .nav-menu > li > a {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        z-index: 100;
+    }
+    
+    .nav-menu.active {
+        max-height: 1000px;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+    }
+    
+    .dropdown-toggle:after {
+        float: right;
+    }
+    
+    .dropdown.active .dropdown-toggle:after {
+        content: "▲";
+    }
+    
+    .nav-menu > li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .dropdown-menu li {
+        background-color: var(--light-gray);
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 48px;
+    }
+}
+</style>
 </head>
 <body>
-    <header class="header">
-        <div class="logo-container">
-            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
-        </div>
-        <h1>Crawley Darts League</h1>
-    </header>
+<header class="header">
+    <div class="logo-container">
+        <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+    </div>
+    <h1>Crawley Darts League</h1>
+    <button class="mobile-toggle" aria-label="Toggle menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+</header>
 
-    <nav class="nav">
-        <ul class="nav-menu">
-            <li><a href="index.html">Home</a></li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">League</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
-                    <li><a href="leagueresults.html">Results</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Competitions</a>
-                <ul class="dropdown-menu">
-                    <li><a href="cupbracket.html">KO Cup Bracket</a></li>
-                    <li><a href="cupdraw.html">Auto Draw Tool</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Statistics</a>
-                <ul class="dropdown-menu">
-                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="playerrankings.html">Player Rankings</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Information</a>
-                <ul class="dropdown-menu">
-                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                    <li><a href="rules.html">League Rules</a></li>
-                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Submit Score</a>
-                <ul class="dropdown-menu">
-                    <li><a href="scoreinput.html">Submit Score</a></li>
-                    <li><a href="editscores.html">Edit Score</a></li>
-                </ul>
-            </li>
-            
+<nav class="nav">
+    <ul class="nav-menu">
+        <li><a href="index.html">Home</a></li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">League</a>
+            <ul class="dropdown-menu">
+                <li><a href="leaguetable.html">League Table</a></li>
+                <li><a href="leaguefixtures.html">Fixtures</a></li>
+                <li><a href="leagueresults.html">Results</a></li>
+            </ul>
+        </li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Competitions</a>
+            <ul class="dropdown-menu">
+                <li><a href="cupbracket.html">KO Cup Bracket</a></li>
+                <li><a href="cupdraw.html">Auto Draw Tool</a></li>
+            </ul>
+        </li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Statistics</a>
+            <ul class="dropdown-menu">
+                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                <li><a href="playerrankings.html">Player Rankings</a></li>
+            </ul>
+        </li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Information</a>
+            <ul class="dropdown-menu">
+                <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                <li><a href="rules.html">League Rules</a></li>
+                <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                <li><a href="players.html">Players</a></li>
+            </ul>
+        </li>
+        
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Submit Score</a>
+            <ul class="dropdown-menu">
+                <li><a href="scoreinput.html">Submit Score</a></li>
+                <li><a href="editscores.html">Edit Score</a></li>
+            </ul>
+        </li>
+
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Join</a>
                 <ul class="dropdown-menu">
                     <li><a href="registration.html">Registration Form</a></li>
                     <li><a href="findateam.html">Find a Team</a></li>
                 </ul>
-            </li>
-        </ul>
+        </li>
+    </ul>
     </nav>
 
     <div class="container">
-        <div id="loading-indicator" class="hidden">Processing...</div>
+        <div class="card cup-draw-container">
+            <h2>Cup Draw Generator</h2>
+            <p>Enter team names and run the draw to create a random cup tournament bracket.</p>
 
-        <!-- Admin Login Form -->
-        <div id="admin-login-form" class="card login-form">
-            <h2>Admin Login</h2>
-            <form id="login-form-element">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required>
+            <div class="teams-input-section">
+                <h3>Teams</h3>
+                <div class="teams-input">
+                    <input type="text" id="team-input" placeholder="Enter team name...">
+                    <button id="add-team-btn">Add Team</button>
                 </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
+                <div class="teams-list" id="teams-list">
+                    <!-- Team chips will be added here -->
                 </div>
-                <button type="submit" class="btn">Login</button>
-            </form>
-        </div>
+                <div class="draw-controls">
+                    <button id="add-all-teams-btn" class="draw-btn secondary-btn">Add Premier Division Teams</button>
+                    <button id="add-a-teams-btn" class="draw-btn secondary-btn">Add A Division Teams</button>
+                    <button id="clear-teams-btn" class="draw-btn secondary-btn">Clear All Teams</button>
+                </div>
+            </div>
 
-        <!-- Cup Draw Tool (will be shown after login) -->
-        <div id="cup-draw-tool" class="cup-draw-container hidden">
-            <div class="card">
-                <h2>Cup Draw Tool</h2>
+            <div class="draw-options-section">
+                <h3>Draw Options</h3>
                 
-                <div id="notifications"></div>
-                
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
-                
-                <div id="premier-cup-draw" class="cup-draw-section">
-                    <div class="draw-controls">
-                        <select id="premier-round-select">
-                            <option value="quarter">Quarter Finals</option>
-                            <option value="semi">Semi Finals</option>
+                <div class="options-grid">
+                    <div class="draw-option-group">
+                        <label for="animation-speed">Animation Speed</label>
+                        <div class="speed-control">
+                            <input type="range" id="animation-speed" min="1" max="5" value="3" class="speed-slider">
+                            <span id="speed-display">Normal</span>
+                        </div>
+                    </div>
+                    
+                    <div class="draw-option-group">
+                        <label for="draw-format">Draw Format</label>
+                        <select id="draw-format" class="form-input">
+                            <option value="elimination">Single Elimination</option>
+                            <option value="preliminary">With Preliminary Round</option>
                         </select>
-                        <button id="premier-draw-button" class="draw-button">Generate Draw</button>
-                        <button id="premier-save-button" class="draw-button">Save Draw</button>
                     </div>
                     
-                    <h3>Teams</h3>
-                    <div id="premier-teams" class="team-list">
-                        <!-- Teams will be loaded here -->
-                    </div>
-                    
-                    <div id="premier-draw-result" class="draw-result">
-                        <!-- Draw results will appear here -->
+                    <div class="draw-option-group">
+                        <label for="sound-option">Sound Effects</label>
+                        <select id="sound-option" class="form-input">
+                            <option value="on">On</option>
+                            <option value="off">Off</option>
+                        </select>
                     </div>
                 </div>
                 
-                <div id="a-cup-draw" class="cup-draw-section hidden">
-                    <div class="draw-controls">
-                        <select id="a-round-select">
-                            <option value="quarter">Quarter Finals</option>
-                            <option value="semi">Semi Finals</option>
-                        </select>
-                        <button id="a-draw-button" class="draw-button">Generate Draw</button>
-                        <button id="a-save-button" class="draw-button">Save Draw</button>
+                <div class="draw-controls">
+                    <button id="start-draw-btn" class="draw-btn primary-btn">
+                        <span class="cup-icon">🏆</span> Start Cup Draw
+                    </button>
+                </div>
+            </div><div class="draw-animation-container" id="draw-animation">
+                <div class="draw-animation-title">Cup Draw</div>
+                <p>Add teams and click 'Start Cup Draw' to begin</p>
+            </div>
+
+            <div class="draw-results-section hidden" id="draw-results">
+                <h3>Cup Draw Results</h3>
+                
+                <!-- Preliminary round (if needed) -->
+                <div id="preliminary-round" class="draw-round hidden">
+                    <div class="round-title">Preliminary Round</div>
+                    <div class="round-matches" id="preliminary-matches">
+                        <!-- Preliminary matches will be displayed here -->
                     </div>
-                    
-                    <h3>Teams</h3>
-                    <div id="a-teams" class="team-list">
-                        <!-- Teams will be loaded here -->
+                </div>
+
+                <!-- Last 16 -->
+                <div id="last-16-round" class="draw-round">
+                    <div class="round-title">Last 16</div>
+                    <div class="round-matches" id="last-16-matches">
+                        <!-- Last 16 matches will be displayed here -->
                     </div>
-                    
-                    <div id="a-draw-result" class="draw-result">
-                        <!-- Draw results will appear here -->
+                </div>
+
+                <!-- Quarter finals -->
+                <div id="quarter-finals-round" class="draw-round">
+                    <div class="round-title">Quarter Finals</div>
+                    <div class="round-matches" id="quarter-finals-matches">
+                        <!-- Quarter finals matches will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Semi finals -->
+                <div id="semi-finals-round" class="draw-round">
+                    <div class="round-title">Semi Finals</div>
+                    <div class="round-matches" id="semi-finals-matches">
+                        <!-- Semi finals matches will be displayed here -->
+                    </div>
+                </div>
+
+                <!-- Final -->
+                <div id="final-round" class="draw-round">
+                    <div class="round-title">Final</div>
+                    <div class="round-matches" id="final-matches">
+                        <!-- Final match will be displayed here -->
+                    </div>
+                </div>
+
+                <h3>Tournament Bracket</h3>
+                <div class="tournament-bracket">
+                    <div class="bracket-container" id="bracket-container">
+                        <!-- Tournament bracket will be displayed here -->
                     </div>
                 </div>
             </div>
@@ -305,182 +921,704 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Admin credentials
-            const ADMIN_USERNAME = "Admin";
-            const ADMIN_PASSWORD = "p4ssw0rd";
-            
-            // Login form handling
-            const loginForm = document.getElementById('login-form-element');
-            const loadingIndicator = document.getElementById('loading-indicator');
-            
-            loginForm.addEventListener('submit', function(e) {
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    // Toggle mobile menu
+    mobileToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        
+        // Animate hamburger to X
+        this.classList.toggle('active');
+        const bars = this.querySelectorAll('.bar');
+        if (this.classList.contains('active')) {
+            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+            bars[1].style.opacity = '0';
+            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+        } else {
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle dropdown menus on mobile
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Only apply this behavior on mobile
+            if (window.innerWidth <= 768) {
                 e.preventDefault();
+                const parentLi = this.parentElement;
                 
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                
-                // Show loading indicator
-                loadingIndicator.classList.remove('hidden');
-                
-                // Simulate API call delay
-                setTimeout(() => {
-                    // Check credentials
-                    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-                        // Hide login form and show cup draw tool
-                        document.getElementById('admin-login-form').classList.add('hidden');
-                        document.getElementById('cup-draw-tool').classList.remove('hidden');
-                        
-                        // Load teams
-                        loadTeams('premier');
-                        loadTeams('a');
-                    } else {
-                        alert('Invalid credentials. Please try again.');
-                    }
-                    
-                    // Hide loading indicator
-                    loadingIndicator.classList.add('hidden');
-                }, 500); // Simulate a short delay
-            });
-            
-            // Division toggle handling
-            document.querySelectorAll('.division-toggle button').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const division = e.target.dataset.division;
-                    const parent = e.target.closest('.division-toggle');
-                    parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    
-                    // Toggle draw sections
-                    if (division === 'premier') {
-                        document.getElementById('premier-cup-draw').classList.remove('hidden');
-                        document.getElementById('a-cup-draw').classList.add('hidden');
-                    } else {
-                        document.getElementById('premier-cup-draw').classList.add('hidden');
-                        document.getElementById('a-cup-draw').classList.remove('hidden');
+                // Close all other open dropdowns
+                document.querySelectorAll('.dropdown.active').forEach(item => {
+                    if (item !== parentLi) {
+                        item.classList.remove('active');
                     }
                 });
+                
+                // Toggle this dropdown
+                parentLi.classList.toggle('active');
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
+        if (!isClickInsideNav && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle resize events
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+            
+            // Reset all dropdowns
+            document.querySelectorAll('.dropdown.active').forEach(item => {
+                item.classList.remove('active');
             });
+        }
+    });
+});
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM Elements
+            const teamInput = document.getElementById('team-input');
+            const addTeamBtn = document.getElementById('add-team-btn');
+            const teamsList = document.getElementById('teams-list');
+            const addAllTeamsBtn = document.getElementById('add-all-teams-btn');
+            const addATeamsBtn = document.getElementById('add-a-teams-btn');
+            const clearTeamsBtn = document.getElementById('clear-teams-btn');
+            const startDrawBtn = document.getElementById('start-draw-btn');
+            const drawAnimation = document.getElementById('draw-animation');
+            const drawResults = document.getElementById('draw-results');
+            const speedSlider = document.getElementById('animation-speed');
+            const speedDisplay = document.getElementById('speed-display');
+            const drawFormat = document.getElementById('draw-format');
+            const soundOption = document.getElementById('sound-option');
             
-            // Draw button handlers
-            document.getElementById('premier-draw-button').addEventListener('click', () => generateDraw('premier'));
-            document.getElementById('a-draw-button').addEventListener('click', () => generateDraw('a'));
+            // Premier Division Teams
+            const premierTeams = [
+                'The Unbearables', 'Jubilee Club', 'Rebels', 'Dark Side Of The Moon',
+                'Dartbreakers', 'Rugby Club', 'Grasshopper'
+            ];
             
-            // Save button handlers
-            document.getElementById('premier-save-button').addEventListener('click', () => saveDraw('premier'));
-            document.getElementById('a-save-button').addEventListener('click', () => saveDraw('a'));
+            // A Division Teams
+            const aDivisionTeams = [
+                'Dingles', 'Johnson', 'Disappointers', 'APV',
+                'Ewhurst Woodys', 'Pelham', 'Ewhurst Arrows'
+            ];
             
-            // Sample team data for demo purposes
-            // In a real implementation, this would come from the database
-            const TEAMS = {
-                premier: [
-                    { team_id: 1, team_name: 'Crawley Athletic', venue: 'Crawley Athletic Club' },
-                    { team_id: 2, team_name: 'The Foresters', venue: 'The Foresters Arms' },
-                    { team_id: 3, team_name: 'Hazlewick Hotel', venue: 'Hazlewick Hotel' },
-                    { team_id: 4, team_name: 'Maidenbower', venue: 'The Maidenbower Inn' },
-                    { team_id: 5, team_name: 'Stones Throw', venue: 'The Stones Throw' },
-                    { team_id: 6, team_name: 'The Plough', venue: 'The Plough & Harrow' },
-                    { team_id: 7, team_name: 'Tinkers', venue: 'Tinkers Sports Bar' },
-                    { team_id: 8, team_name: 'Thirsty Llama', venue: 'The Thirsty Llama' },
-                ],
-                a: [
-                    { team_id: 9, team_name: 'Ewhurst Arrows', venue: 'Ewhurst Sports Club' },
-                    { team_id: 10, team_name: 'Dingles', venue: 'The Dingles Bar' },
-                    { team_id: 11, team_name: 'Johnson', venue: 'Johnson Sports Bar' },
-                    { team_id: 12, team_name: 'Disappointers', venue: 'Red Lion Pub' },
-                    { team_id: 13, team_name: 'APV', venue: 'APV Social Club' },
-                    { team_id: 14, team_name: 'Ewhurst Woodys', venue: 'Ewhurst Sports Club' },
-                    { team_id: 15, team_name: 'Pelham', venue: 'Pelham Arms' },
-                    { team_id: 16, team_name: 'Division A Bye', venue: 'No Venue' },
-                ]
+            // Sound effects
+            const drawSound = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFBQUFBQUKioqKioqKioqKkBAQEBAQEBAQEBWVlZWVlZWVlZWbGxsbGxsbGxsbIKCgoKCgoKCgoKYmJiYmJiYmJiYr6+vr6+vr6+vr8XFxcXFxcXFxcXb29vb29vb29vb8fHx8fHx8fHx8f////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAYAAAAAAAAAHjOxOBP/AAAAAAAAAAAAAAAAAAAA//tUZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV'); 
+            const popSound = new Audio('data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAASAAAeMwAUFBQUFBQUFBQUKioqKioqKioqKkBAQEBAQEBAQEBWVlZWVlZWVlZWbGxsbGxsbGxsbIKCgoKCgoKCgoKYmJiYmJiYmJiYr6+vr6+vr6+vr8XFxcXFxcXFxcXb29vb29vb29vb8fHx8fHx8fHx8f////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAZAAAAAAAAAHjP8hZz/AAAAAAAAAAAAAAAAAAAA//tUZAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV'); 
+    
+            // Teams array
+            let teams = [];
+            
+            // Speed settings
+            const speedSettings = {
+                1: { name: 'Very Slow', delay: 2000 },
+                2: { name: 'Slow', delay: 1500 },
+                3: { name: 'Normal', delay: 1000 },
+                4: { name: 'Fast', delay: 500 },
+                5: { name: 'Very Fast', delay: 250 }
             };
             
-            // Functions
-            function loadTeams(division) {
-                const teamContainer = document.getElementById(`${division}-teams`);
-                teamContainer.innerHTML = '';
-                
-                TEAMS[division].forEach(team => {
-                    const teamElement = document.createElement('div');
-                    teamElement.className = 'team-item';
-                    teamElement.textContent = team.team_name;
-                    teamElement.dataset.teamId = team.team_id;
-                    teamContainer.appendChild(teamElement);
-                });
-            }
+            // Update speed display
+            speedSlider.addEventListener('input', function() {
+                const speedValue = speedSlider.value;
+                speedDisplay.textContent = speedSettings[speedValue].name;
+            });
             
-            function generateDraw(division) {
-                const round = document.getElementById(`${division}-round-select`).value;
-                const teams = [...TEAMS[division]]; // Create a copy of the teams array
-                const drawResult = document.getElementById(`${division}-draw-result`);
+            // Add a team
+            function addTeam(teamName) {
+                if (!teamName.trim()) return;
                 
-                // Clear previous results
-                drawResult.innerHTML = '';
-                
-                // Shuffle the teams (Fisher-Yates algorithm)
-                for (let i = teams.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [teams[i], teams[j]] = [teams[j], teams[i]];
-                }
-                
-                // Create match pairings
-                const numTeams = round === 'quarter' ? 8 : 4;
-                const title = round === 'quarter' ? 'Quarter Finals' : 'Semi Finals';
-                
-                // Add heading
-                const heading = document.createElement('h3');
-                heading.textContent = title + ' Draw';
-                drawResult.appendChild(heading);
-                
-                // Create match pairings
-                for (let i = 0; i < numTeams; i += 2) {
-                    if (i + 1 < teams.length) {
-                        const matchDiv = document.createElement('div');
-                        matchDiv.className = 'match-pairing';
-                        matchDiv.innerHTML = `
-                            <div class="home-team">${teams[i].team_name} (Home)</div>
-                            <div class="vs">vs</div>
-                            <div class="away-team">${teams[i+1].team_name} (Away)</div>
-                        `;
-                        drawResult.appendChild(matchDiv);
-                    }
-                }
-                
-                // Add success message
-                const successMsg = document.createElement('div');
-                successMsg.className = 'success-message';
-                successMsg.textContent = `Draw for ${title} generated successfully. Click "Save Draw" to save these fixtures.`;
-                drawResult.appendChild(successMsg);
-            }
-            
-            function saveDraw(division) {
-                const drawResult = document.getElementById(`${division}-draw-result`);
-                const matchPairings = drawResult.querySelectorAll('.match-pairing');
-                
-                if (matchPairings.length === 0) {
-                    alert('Please generate a draw first before saving.');
+                // Check if team already exists
+                if (teams.includes(teamName.trim())) {
+                    alert('This team has already been added!');
                     return;
                 }
                 
-                // Show loading indicator
-                loadingIndicator.classList.remove('hidden');
+                // Add to teams array
+                teams.push(teamName.trim());
                 
-                // Simulate API call to save the draw
-                setTimeout(() => {
-                    // In a real implementation, this would send the data to the server
-                    
-                    // Clear the draw result and show success message
-                    drawResult.innerHTML = '';
-                    
-                    const successMsg = document.createElement('div');
-                    successMsg.className = 'success-message';
-                    successMsg.textContent = 'Draw has been successfully saved and fixtures have been created!';
-                    drawResult.appendChild(successMsg);
-                    
-                    // Hide loading indicator
-                    loadingIndicator.classList.add('hidden');
-                }, 1000);
+                // Create team chip
+                const teamChip = document.createElement('div');
+                teamChip.className = 'team-chip';
+                teamChip.dataset.team = teamName.trim();
+                teamChip.innerHTML = `
+                    <span>${teamName.trim()}</span>
+                    <span class="team-chip-remove">&times;</span>
+                `;
+                
+                // Add click event to remove button
+                teamChip.querySelector('.team-chip-remove').addEventListener('click', function() {
+                    teamChip.remove();
+                    teams = teams.filter(team => team !== teamName.trim());
+                });
+                
+                // Add to teams list
+                teamsList.appendChild(teamChip);
+                
+                // Clear input
+                teamInput.value = '';
+                teamInput.focus();
             }
+            
+            // Add team button click
+            addTeamBtn.addEventListener('click', function() {
+                addTeam(teamInput.value);
+            });
+            
+            // Add team on Enter key
+            teamInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addTeam(teamInput.value);
+                }
+            });
+            
+            // Add all Premier Division teams
+            addAllTeamsBtn.addEventListener('click', function() {
+                premierTeams.forEach(team => addTeam(team));
+            });
+            
+            // Add all A Division teams
+            addATeamsBtn.addEventListener('click', function() {
+                aDivisionTeams.forEach(team => addTeam(team));
+            });
+            
+            // Clear all teams
+            clearTeamsBtn.addEventListener('click', function() {
+                teams = [];
+                teamsList.innerHTML = '';
+            });
+            
+            // Create a delay function for animations
+            function delay(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+            
+            // Shuffle function that prevents "bye" teams from being drawn against each other
+            function shuffleTeamsPreventingByeMatches(teams, byeCount) {
+                // Create a copy of the array
+                const shuffledTeams = [...teams];
+                
+                // First, let's shuffle all teams using Fisher-Yates algorithm
+                for (let i = shuffledTeams.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
+                }
+                
+                // If we have bye teams, we need to ensure they're not paired together
+                if (byeCount > 0) {
+                    // Create the final array with proper distribution
+                    const finalOrder = [];
+                    const actualTeams = shuffledTeams.slice(0, shuffledTeams.length - byeCount);
+                    const byeTeams = shuffledTeams.slice(shuffledTeams.length - byeCount);
+                    
+                    // Place bye teams in positions that ensure they don't play each other
+                    // This works by placing them at alternate positions
+                    const matchCount = Math.ceil(shuffledTeams.length / 2);
+                    
+                    let byeIndex = 0;
+                    let actualIndex = 0;
+                    
+                    for (let i = 0; i < shuffledTeams.length; i++) {
+                        // Determine if this position should get a bye
+                        // We want to distribute byes evenly, never in consecutive positions
+                        if (byeIndex < byeCount && i % 2 === 0 && i / 2 < byeCount) {
+                            finalOrder.push(byeTeams[byeIndex]);
+                            byeIndex++;
+                        } else {
+                            // Place a real team
+                            finalOrder.push(actualTeams[actualIndex]);
+                            actualIndex++;
+                        }
+                    }
+                    
+                    return finalOrder;
+                }
+                
+                // If no bye teams, just return the shuffled array
+                return shuffledTeams;
+            }
+            
+            // Start the draw
+            startDrawBtn.addEventListener('click', function() {
+                if (teams.length < 2) {
+                    alert('Please add at least 2 teams for the draw!');
+                    return;
+                }
+                
+                // Disable controls
+                startDrawBtn.disabled = true;
+                teamInput.disabled = true;
+                addTeamBtn.disabled = true;
+                addAllTeamsBtn.disabled = true;
+                addATeamsBtn.disabled = true;
+                clearTeamsBtn.disabled = true;
+                drawFormat.disabled = true;
+                
+                // Start animation
+                startDrawAnimation();
+            });
+            
+            // Start the draw animation
+            async function startDrawAnimation() {
+                const shuffledTeams = [...teams];
+                const speed = speedSettings[speedSlider.value].delay;
+                const format = drawFormat.value;
+                const soundOn = soundOption.value === 'on';
+                
+                // Clear previous results
+                drawResults.classList.add('hidden');
+                
+                // Clear animation area
+                drawAnimation.innerHTML = `
+                    <div class="draw-animation-title">Cup Draw in Progress</div>
+                    <p>Shuffling teams...</p>
+                    <div class="draw-highlight"></div>
+                `;
+                
+                // Add bouncing balls animation
+                for (let i = 0; i < Math.min(teams.length, 5); i++) {
+                    const ball = document.createElement('div');
+                    ball.className = 'randomizing-ball';
+                    ball.textContent = i + 1;
+                    ball.style.animationDelay = `${i * 0.2}s`;
+                    ball.style.top = `${Math.random() * 50}px`;
+                    ball.style.left = `${Math.random() * 50}px`;
+                    drawAnimation.appendChild(ball);
+                }
+                
+                // Play sound if enabled
+                if (soundOn) drawSound.play();
+                
+                // Wait a moment
+                await delay(speed * 1.5);
+                
+                // Visual shuffle animation - still use regular Fisher-Yates algorithm for the visual effect
+                for (let i = shuffledTeams.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffledTeams[i], shuffledTeams[j]] = [shuffledTeams[j], shuffledTeams[i]];
+                    
+                    // Update animation to show shuffling
+                    const highlight = drawAnimation.querySelector('.draw-highlight');
+                    highlight.textContent = `${shuffledTeams[i]} ↔ ${shuffledTeams[j]}`;
+                    
+                    // Highlight the teams being swapped
+                    const teamChips = teamsList.querySelectorAll('.team-chip');
+                    teamChips.forEach(chip => {
+                        if (chip.dataset.team === shuffledTeams[i] || chip.dataset.team === shuffledTeams[j]) {
+                            chip.classList.add('highlighted');
+                        } else {
+                            chip.classList.remove('highlighted');
+                        }
+                    });
+                    
+                    // Play sound if enabled
+                    if (soundOn) popSound.play();
+                    
+                    // Wait a moment
+                    await delay(speed / 2);
+                }
+                
+                // Remove highlighting
+                const teamChips = teamsList.querySelectorAll('.team-chip');
+                teamChips.forEach(chip => chip.classList.remove('highlighted'));
+                
+                // Determine draw format
+                let drawRounds;
+                if (format === 'preliminary' && teams.length > 8 && teams.length < 16) {
+                    // Creating a draw with preliminary rounds to reach 8 teams
+                    const numPrelimTeams = (teams.length - 8) * 2;
+                    const prelimTeams = shuffledTeams.slice(0, numPrelimTeams);
+                    const qualifiedTeams = shuffledTeams.slice(numPrelimTeams);
+                    
+                    drawRounds = createDrawWithPreliminary(prelimTeams, qualifiedTeams);
+                } else {
+                    // Standard elimination format - we use the original teams array, not the visually shuffled one
+                    // The createDraw function will handle the proper shuffling with bye prevention
+                    drawRounds = createDraw(teams);
+                }
+                
+                // Show the final draw results
+                drawAnimation.innerHTML = `
+                    <div class="draw-animation-title">Cup Draw Complete</div>
+                    <p>The draw has been completed successfully!</p>
+                    <div class="draw-completed-message">See the results below</div>
+                `;
+                
+// Wait a moment
+await delay(speed);
+
+// Show results
+displayDrawResults(drawRounds);
+
+// Re-enable controls
+startDrawBtn.disabled = false;
+teamInput.disabled = false;
+addTeamBtn.disabled = false;
+addAllTeamsBtn.disabled = false;
+addATeamsBtn.disabled = false;
+clearTeamsBtn.disabled = false;
+drawFormat.disabled = false;
+}
+
+// Create a standard elimination draw
+function createDraw(shuffledTeams) {                const rounds = {
+                    preliminary: [],
+                    last16: [],
+                    quarterFinals: [],
+                    semiFinals: [],
+                    final: []
+                };
+                
+                // Determine the starting round based on the number of teams
+                let startingTeams = [...shuffledTeams];
+                
+                // Handle byes if necessary to reach a power of 2
+                const targetCount = nextPowerOfTwo(startingTeams.length);
+                const byesNeeded = targetCount - startingTeams.length;
+                
+                if (byesNeeded > 0) {
+                    for (let i = 0; i < byesNeeded; i++) {
+                        startingTeams.push("Bye");
+                    }
+                    
+                    // Use special shuffling to prevent bye vs bye
+                    startingTeams = shuffleTeamsPreventingByeMatches(startingTeams, byesNeeded);
+                }
+                
+                // Create first round (Round of 16 or less)
+                for (let i = 0; i < startingTeams.length; i += 2) {
+                    const match = {
+                        homeTeam: startingTeams[i],
+                        awayTeam: startingTeams[i + 1]
+                    };
+                    
+                    // Verify we don't have bye vs bye (sanity check)
+                    if (match.homeTeam === "Bye" && match.awayTeam === "Bye") {
+                        console.error("Error: Bye vs Bye match created!");
+                    }
+                    
+                    // Determine which round this belongs to based on team count
+                    if (startingTeams.length <= 16) {
+                        rounds.last16.push(match);
+                    } else {
+                        rounds.preliminary.push(match);
+                    }
+                }
+                
+                // Create quarter finals
+                if (rounds.last16.length > 0) {
+                    for (let i = 0; i < rounds.last16.length; i += 2) {
+                        rounds.quarterFinals.push({
+                            homeTeam: `Winner of Match ${i + 1}`,
+                            awayTeam: `Winner of Match ${i + 2}`
+                        });
+                    }
+                } else if (rounds.preliminary.length > 0) {
+                    // If we started with preliminary round
+                    for (let i = 0; i < rounds.preliminary.length; i += 2) {
+                        rounds.quarterFinals.push({
+                            homeTeam: `Winner of Prelim ${i + 1}`,
+                            awayTeam: `Winner of Prelim ${i + 2}`
+                        });
+                    }
+                }
+                
+                // Create semi finals
+                for (let i = 0; i < rounds.quarterFinals.length; i += 2) {
+                    rounds.semiFinals.push({
+                        homeTeam: `Winner of QF ${i + 1}`,
+                        awayTeam: `Winner of QF ${i + 2}`
+                    });
+                }
+                
+                // Create final
+                rounds.final.push({
+                    homeTeam: `Winner of SF 1`,
+                    awayTeam: `Winner of SF 2`
+                });
+                
+                return rounds;
+            }
+            
+            // Create a draw with preliminary round
+            function createDrawWithPreliminary(prelimTeams, qualifiedTeams) {
+                const rounds = {
+                    preliminary: [],
+                    last16: [],
+                    quarterFinals: [],
+                    semiFinals: [],
+                    final: []
+                };
+                
+                // Check if we need to add byes to the preliminary round
+                const targetPrelimCount = nextPowerOfTwo(prelimTeams.length);
+                const byesNeeded = targetPrelimCount - prelimTeams.length;
+                
+                if (byesNeeded > 0) {
+                    for (let i = 0; i < byesNeeded; i++) {
+                        prelimTeams.push("Bye");
+                    }
+                    
+                    // Use special shuffling to prevent bye vs bye
+                    prelimTeams = shuffleTeamsPreventingByeMatches(prelimTeams, byesNeeded);
+                }
+                
+                // Create preliminary round
+                for (let i = 0; i < prelimTeams.length; i += 2) {
+                    const match = {
+                        homeTeam: prelimTeams[i],
+                        awayTeam: prelimTeams[i + 1]
+                    };
+                    
+                    // Verify we don't have bye vs bye (sanity check)
+                    if (match.homeTeam === "Bye" && match.awayTeam === "Bye") {
+                        console.error("Error: Bye vs Bye match created in preliminary round!");
+                    }
+                    
+                    rounds.preliminary.push(match);
+                }
+                
+                // Prepare last 16 with qualified teams and preliminary winners
+                const last16Teams = [...qualifiedTeams];
+                for (let i = 0; i < rounds.preliminary.length; i++) {
+                    last16Teams.push(`Winner of Prelim ${i + 1}`);
+                }
+                
+                // Shuffle the last 16 teams
+                const shuffledLast16 = [];
+                for (let i = last16Teams.length - 1; i >= 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [last16Teams[i], last16Teams[j]] = [last16Teams[j], last16Teams[i]];
+                }
+                
+                // Create last 16 round
+                for (let i = 0; i < last16Teams.length; i += 2) {
+                    rounds.last16.push({
+                        homeTeam: last16Teams[i],
+                        awayTeam: last16Teams[i + 1]
+                    });
+                }
+                
+                // Create quarter finals
+                for (let i = 0; i < rounds.last16.length; i += 2) {
+                    rounds.quarterFinals.push({
+                        homeTeam: `Winner of Match ${i + 1}`,
+                        awayTeam: `Winner of Match ${i + 2}`
+                    });
+                }
+                
+                // Create semi finals
+                for (let i = 0; i < rounds.quarterFinals.length; i += 2) {
+                    rounds.semiFinals.push({
+                        homeTeam: `Winner of QF ${i + 1}`,
+                        awayTeam: `Winner of QF ${i + 2}`
+                    });
+                }
+                
+                // Create final
+                rounds.final.push({
+                    homeTeam: `Winner of SF 1`,
+                    awayTeam: `Winner of SF 2`
+                });
+                
+                return rounds;
+            }
+            
+            // Get the next power of 2
+            function nextPowerOfTwo(n) {
+                let power = 1;
+                while (power < n) {
+                    power *= 2;
+                }
+                return power;
+            }
+            
+            // Display draw results
+            function displayDrawResults(rounds) {
+                // Show results container
+                drawResults.classList.remove('hidden');
+                
+                // Preliminary round
+                const prelimRound = document.getElementById('preliminary-round');
+                const prelimMatches = document.getElementById('preliminary-matches');
+                
+                if (rounds.preliminary.length > 0) {
+                    prelimRound.classList.remove('hidden');
+                    prelimMatches.innerHTML = '';
+                    
+                    rounds.preliminary.forEach((match, index) => {
+                        const matchCard = document.createElement('div');
+                        matchCard.className = 'match-card';
+                        matchCard.innerHTML = `
+                            <div class="match-number">Preliminary Match ${index + 1}</div>
+                            <div class="match-team">${match.homeTeam}</div>
+                            <div class="versus-text">vs</div>
+                            <div class="match-team">${match.awayTeam}</div>
+                        `;
+                        prelimMatches.appendChild(matchCard);
+                    });
+                } else {
+                    prelimRound.classList.add('hidden');
+                }
+                
+                // Last 16
+                const last16Matches = document.getElementById('last-16-matches');
+                last16Matches.innerHTML = '';
+                
+                rounds.last16.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Match ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    last16Matches.appendChild(matchCard);
+                });
+                
+                // Quarter finals
+                const quarterFinalsMatches = document.getElementById('quarter-finals-matches');
+                quarterFinalsMatches.innerHTML = '';
+                
+                rounds.quarterFinals.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Quarter Final ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    quarterFinalsMatches.appendChild(matchCard);
+                });
+                
+                // Semi finals
+                const semiFinalsMatches = document.getElementById('semi-finals-matches');
+                semiFinalsMatches.innerHTML = '';
+                
+                rounds.semiFinals.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Semi Final ${index + 1}</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    semiFinalsMatches.appendChild(matchCard);
+                });
+                
+                // Final
+                const finalMatches = document.getElementById('final-matches');
+                finalMatches.innerHTML = '';
+                
+                rounds.final.forEach((match, index) => {
+                    const matchCard = document.createElement('div');
+                    matchCard.className = 'match-card';
+                    matchCard.innerHTML = `
+                        <div class="match-number">Final</div>
+                        <div class="match-team">${match.homeTeam}</div>
+                        <div class="versus-text">vs</div>
+                        <div class="match-team">${match.awayTeam}</div>
+                    `;
+                    finalMatches.appendChild(matchCard);
+                });
+                
+                // Create tournament bracket
+                createBracket(rounds);
+            }
+            
+            // Create tournament bracket
+            function createBracket(rounds) {
+                const bracketContainer = document.getElementById('bracket-container');
+                bracketContainer.innerHTML = '';
+                
+                // Determine rounds to display
+                const displayRounds = [];
+                
+                if (rounds.preliminary.length > 0) {
+                    displayRounds.push({
+                        title: 'Preliminary Round',
+                        matches: rounds.preliminary
+                    });
+                }
+                
+                displayRounds.push(
+                    {
+                        title: 'Last 16',
+                        matches: rounds.last16
+                    },
+                    {
+                        title: 'Quarter Finals',
+                        matches: rounds.quarterFinals
+                    },
+                    {
+                        title: 'Semi Finals',
+                        matches: rounds.semiFinals
+                    },
+                    {
+                        title: 'Final',
+                        matches: rounds.final
+                    }
+                );
+                
+                // Create bracket rounds
+                displayRounds.forEach(round => {
+                    const roundDiv = document.createElement('div');
+                    roundDiv.className = 'bracket-round';
+                    
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'bracket-title';
+                    titleDiv.textContent = round.title;
+                    roundDiv.appendChild(titleDiv);
+                    
+                    // Add matches
+                    round.matches.forEach((match, index) => {
+                        const matchDiv = document.createElement('div');
+                        matchDiv.className = 'bracket-match';
+                        
+                        const homeDiv = document.createElement('div');
+                        homeDiv.className = 'bracket-team';
+                        homeDiv.textContent = match.homeTeam;
+                        matchDiv.appendChild(homeDiv);
+                        
+                        const awayDiv = document.createElement('div');
+                        awayDiv.className = 'bracket-team';
+                        awayDiv.textContent = match.awayTeam;
+                        matchDiv.appendChild(awayDiv);
+                        
+                        roundDiv.appendChild(matchDiv);
+                    });
+                    
+                    bracketContainer.appendChild(roundDiv);
+                });
+            }
+            
+            // Initialize speed display
+            speedDisplay.textContent = speedSettings[speedSlider.value].name;
         });
     </script>
 </body>
