@@ -89,7 +89,7 @@ switch ($endpoint) {
         break;
     
     case 'cup-results':
-        getCupResults();
+        getknockoutcup();
         break;
     
     case 'one-eighties':
@@ -435,7 +435,7 @@ function getcupbracket() {
     }
 }
 
-function getCupResults() {
+function getknockoutcup() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
     
@@ -460,7 +460,7 @@ function getCupResults() {
         $stmt->execute([$division]);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
-        error_log("Error in getCupResults: " . $e->getMessage());
+        error_log("Error in getknockoutcup: " . $e->getMessage());
         returnJson(['success' => false, 'error' => 'Error fetching cup results']);
     }
 }

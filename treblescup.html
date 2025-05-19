@@ -631,7 +631,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle">Competitions</a>
             <ul class="dropdown-menu">
-                <li><a href="cupresults.html">Knockout Cup</a></li>
+                <li><a href="knockoutcup.html">Knockout Cup</a></li>
                 <li><a href="singlescup.html">Singles Cup</a></li>
                 <li><a href="pairscup.html">Pairs Cup</a></li>
                 <li><a href="treblescup.html">Trebles Cup</a></li>
@@ -785,7 +785,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadCupResults(division);
+                loadknockoutcup(division);
             });
         });
 
@@ -803,7 +803,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        async function loadCupResults(division) {
+        async function loadknockoutcup(division) {
             const data = await fetchApi('cup-results', { division });
             const resultsList = document.getElementById('cup-results-list');
             resultsList.innerHTML = '';
@@ -1070,7 +1070,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Initially load the cup results
-        loadCupResults(getCurrentDivision());
+        loadknockoutcup(getCurrentDivision());
     </script>
 </body>
 </html>

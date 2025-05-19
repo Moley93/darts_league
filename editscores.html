@@ -443,7 +443,7 @@
         <li class="dropdown">
             <a href="#" class="dropdown-toggle">Competitions</a>
             <ul class="dropdown-menu">
-                <li><a href="cupresults.html">Knockout Cup</a></li>
+                <li><a href="knockoutcup.html">Knockout Cup</a></li>
                 <li><a href="singlescup.html">Singles Cup</a></li>
                 <li><a href="pairscup.html">Pairs Cup</a></li>
                 <li><a href="treblescup.html">Trebles Cup</a></li>
@@ -866,14 +866,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Fetch both league and cup results for the captain's division
             const leagueResults = await fetchApi('league-results', { division: captainDivision });
-            const cupResults = await fetchApi('cup-results', { division: captainDivision });
+            const knockoutcup = await fetchApi('cup-results', { division: captainDivision });
             
             // Filter results to only show matches where this captain's team was the home team
             const filteredLeagueResults = leagueResults.filter(match => 
                 match.home_team === currentCaptain.team_name
             );
             
-            const filteredCupResults = cupResults.filter(match => 
+            const filteredknockoutcup = knockoutcup.filter(match => 
                 match.home_team === currentCaptain.team_name
             );
             
@@ -898,10 +898,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Add cup matches
-            if (filteredCupResults.length > 0) {
+            if (filteredknockoutcup.length > 0) {
                 const cupGroup = document.createElement('optgroup');
                 cupGroup.label = 'Cup Matches';
-                filteredCupResults.forEach(match => {
+                filteredknockoutcup.forEach(match => {
                     const option = document.createElement('option');
                     option.value = match.match_id;
                     option.dataset.matchType = 'cup';
@@ -916,7 +916,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             // Display message if no matches to edit
-            if (filteredLeagueResults.length === 0 && filteredCupResults.length === 0) {
+            if (filteredLeagueResults.length === 0 && filteredknockoutcup.length === 0) {
                 const noMatchesOption = document.createElement('option');
                 noMatchesOption.disabled = true;
                 noMatchesOption.textContent = `No ${captainDivision} division matches to edit for ${currentCaptain.team_name}`;
