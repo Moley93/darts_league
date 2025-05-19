@@ -1,4 +1,3 @@
-<!-- Complete modified code -->
 <!DOCTYPE html>
 <html lang="en">
     <link rel="icon" href="cdl.png">
@@ -514,6 +513,7 @@
                         <label for="match-type">Match Type</label>
                         <select id="match-type">
                             <option value="league">League</option>
+                            <select id="League" disabled></select>
                         </select>
                     </div>
                     <div class="form-group" id="cup-round-container">
@@ -706,10 +706,14 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Add event listener to match type dropdown
             matchTypeSelect.addEventListener('change', function() {
-                // Since we've removed the cup option, this can be simplified
-                cupRoundSelect.disabled = true;
-                cupRoundSelect.value = '';
-                cupRoundContainer.classList.add('disabled-field');
+                if (this.value === 'cup') {
+                    cupRoundSelect.disabled = false;
+                    cupRoundContainer.classList.remove('disabled-field');
+                } else {
+                    cupRoundSelect.disabled = true;
+                    cupRoundSelect.value = '';
+                    cupRoundContainer.classList.add('disabled-field');
+                }
             });
             
             // Login form handling
@@ -1108,6 +1112,402 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             }
         }
-</script>
+
+        // Generate doubles match inputs
+        function generateDoublesMatches() {
+            const doublesMatchesDiv = document.getElementById('doubles-matches');
+            doublesMatchesDiv.innerHTML = '';
+            
+            // Use captain's division for match format
+            const division = captainDivision;
+            
+            for (let i = 1; i <= 3; i++) {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'doubles-match';
+                
+                let scoreOptions = '';
+                if (division === 'premier') {
+                    // Best of 5 for Premier Division (first to 3)
+                    scoreOptions = `
+                        <option value="3-0">3-0 (Home Win)</option>
+                        <option value="3-1">3-1 (Home Win)</option>
+                        <option value="3-2">3-2 (Home Win)</option>
+                        <option value="2-3">2-3 (Away Win)</option>
+                        <option value="1-3">1-3 (Away Win)</option>
+                        <option value="0-3">0-3 (Away Win)</option>
+                    `;
+                } else {
+                    // Best of 3 for A Division (first to 2)
+                    scoreOptions = `
+                        <option value="2-0">2-0 (Home Win)</option>
+                        <option value="2-1">2-1 (Home Win)</option>
+                        <option value="1-2">1-2 (Away Win)</option>
+                        <option value="0-2">0-2 (Away Win)</option>
+                    `;
+                }
+                
+                matchDiv.innerHTML = `
+                    <div class="match-header">Doubles Game ${i}</div>
+                    <div class="doubles-players">
+                        <div class="home-side">
+                            <select class="player-select home-player1" data-match="${i}">
+                                <option value="">Select Home Player 1</option>
+                            </select>
+                            <select class="player-select home-player2" data-match="${i}">
+                                <option value="">Select Home Player 2</option>
+                            </select>
+                        </div>
+                        <select class="score-select" data-match="${i}">
+                            ${scoreOptions}
+                        </select>
+                        <div class="away-side">
+                            <select class="player-select away-player1" data-match="${i}">
+                                <option value="">Select Away Player 1</option>
+                            </select>
+                            <select class="player-select away-player2" data-match="${i}">
+                                <option value="">Select Away Player 2</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                doublesMatchesDiv.appendChild(matchDiv);
+            }
+            
+            // Add change event listeners to all doubles player selects after they're generated
+            document.querySelectorAll('.home-player1, .home-player2, .away-player1, .away-player2').forEach(select => {
+                select.addEventListener('change', updateDoublesPlayerOptions);
+            });
+            
+            // Update player options
+            updateDoublesPlayerOptions();
+        }
+
+        // Generate singles match inputs
+        function generateSinglesMatches() {
+            const singlesMatchesDiv = document.getElementById('singles-matches');
+            singlesMatchesDiv.innerHTML = '';
+            
+            // Use captain's division for match format
+            const division = captainDivision;
+            
+            for (let i = 1; i <= 6; i++) {
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'singles-match';
+                
+                let scoreOptions = '';
+                if (division === 'premier') {
+                    // Best of 5 for Premier Division (first to 3)
+                    scoreOptions = `
+                        <option value="3-0">3-0 (Home Win)</option>
+                        <option value="3-1">3-1 (Home Win)</option>
+                        <option value="3-2">3-2 (Home Win)</option>
+                        <option value="2-3">2-3 (Away Win)</option>
+                        <option value="1-3">1-3 (Away Win)</option>
+                        <option value="0-3">0-3 (Away Win)</option>
+                    `;
+                } else {
+                    // Best of 3 for A Division (first to 2)
+                    scoreOptions = `
+                        <option value="2-0">2-0 (Home Win)</option>
+                        <option value="2-1">2-1 (Home Win)</option>
+                        <option value="1-2">1-2 (Away Win)</option>
+                        <option value="0-2">0-2 (Away Win)</option>
+                    `;
+                }
+                
+                matchDiv.innerHTML = `
+                    <div class="match-header">Singles Game ${i}</div>
+                    <div class="singles-players">
+                        <div class="home-side">
+                            <select class="player-select home-player" data-match="${i}">
+                                <option value="">Select Home Player</option>
+                            </select>
+                        </div>
+                        <select class="score-select" data-match="${i}">
+                            ${scoreOptions}
+                        </select>
+                        <div class="away-side">
+                            <select class="player-select away-player" data-match="${i}">
+                                <option value="">Select Away Player</option>
+                            </select>
+                        </div>
+                    </div>
+                `;
+                singlesMatchesDiv.appendChild(matchDiv);
+            }
+            
+            // Add change event listeners to all singles player selects after they're generated
+            document.querySelectorAll('.home-player, .away-player').forEach(select => {
+                select.addEventListener('change', updateSinglesPlayerOptions);
+            });
+            
+            // Update player options
+            updateSinglesPlayerOptions();
+        }
+
+        // Generate 180s input section
+        function generateOneEightiesInputs() {
+            const container = document.getElementById('one-eighties-section');
+            container.innerHTML = '';
+            
+            // Add initial input row
+            addOneEightyInputRow();
+            
+            // Add button to add more rows
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'add-stat-btn';
+            addButton.textContent = 'Add Another 180';
+            addButton.addEventListener('click', addOneEightyInputRow);
+            container.appendChild(addButton);
+            
+            // Initial population of player options if teams are selected
+            if (currentCaptain && currentCaptain.team_name) {
+                document.querySelectorAll('.one-eighty-player').forEach(select => {
+                    populateStatPlayerOptions(select);
+                });
+            }
+        }
+        
+        function addOneEightyInputRow() {
+            const container = document.getElementById('one-eighties-section');
+            const rowCount = container.querySelectorAll('.stats-row').length;
+            
+            const row = document.createElement('div');
+            row.className = 'stats-row';
+            row.innerHTML = `
+                <select class="player-select one-eighty-player" data-row="${rowCount + 1}">
+                    <option value="">Select Player</option>
+                </select>
+                <input type="number" class="one-eighty-count" value="1" min="1" placeholder="Number of 180s">
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
+            `;
+            
+            // Add before the add button
+            const addButton = container.querySelector('.add-stat-btn');
+            container.insertBefore(row, addButton);
+            
+            // Add remove functionality
+            const removeBtn = row.querySelector('.remove-stat-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => row.remove());
+            }
+            
+            // Populate player options
+            populateStatPlayerOptions(row.querySelector('.one-eighty-player'));
+        }
+        
+        // Generate high finishes input section
+        function generateHighFinishesInputs() {
+            const container = document.getElementById('high-finishes-section');
+            container.innerHTML = '';
+            
+            // Add initial input row
+            addHighFinishInputRow();
+            
+            // Add button to add more rows
+            const addButton = document.createElement('button');
+            addButton.type = 'button';
+            addButton.className = 'add-stat-btn';
+            addButton.textContent = 'Add Another High Finish';
+            addButton.addEventListener('click', addHighFinishInputRow);
+            container.appendChild(addButton);
+            
+            // Initial population of player options if teams are selected
+            if (currentCaptain && currentCaptain.team_name) {
+                document.querySelectorAll('.high-finish-player').forEach(select => {
+                    populateStatPlayerOptions(select);
+                });
+            }
+        }
+        
+        function addHighFinishInputRow() {
+            const container = document.getElementById('high-finishes-section');
+            const rowCount = container.querySelectorAll('.stats-row').length;
+            
+            const row = document.createElement('div');
+            row.className = 'stats-row';
+            row.innerHTML = `
+                <select class="player-select high-finish-player" data-row="${rowCount + 1}">
+                    <option value="">Select Player</option>
+                </select>
+                <input type="number" class="high-finish-value" min="100" placeholder="Finish value">
+                ${rowCount > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}
+            `;
+            
+            // Add before the add button
+            const addButton = container.querySelector('.add-stat-btn');
+            container.insertBefore(row, addButton);
+            
+            // Add remove functionality
+            const removeBtn = row.querySelector('.remove-stat-btn');
+            if (removeBtn) {
+                removeBtn.addEventListener('click', () => row.remove());
+            }
+            
+            // Populate player options
+            populateStatPlayerOptions(row.querySelector('.high-finish-player'));
+        }
+        
+        // Populate player options for stats
+        async function populateStatPlayerOptions(select) {
+            const homeTeam = currentCaptain ? currentCaptain.team_name : '';
+            const awayTeam = document.getElementById('away-team').value;
+            
+            // Clear existing options except the first one
+            select.innerHTML = '<option value="">Select Player</option>';
+            
+            if (homeTeam) {
+                const homePlayers = await fetchApi('players', { team_name: homeTeam });
+                homePlayers.forEach(player => {
+                    select.add(new Option(`${player.player_name} (${homeTeam})`, player.player_name));
+                });
+            }
+            
+            if (awayTeam) {
+                const awayPlayers = await fetchApi('players', { team_name: awayTeam });
+                awayPlayers.forEach(player => {
+                    select.add(new Option(`${player.player_name} (${awayTeam})`, player.player_name));
+                });
+            }
+        }
+
+        // Match form submission
+        async function submitMatchForm(e) {
+            e.preventDefault();
+            
+            if (!currentCaptain || !currentCaptain.team_name) {
+                alert('You need to be logged in to submit scores.');
+                return;
+            }
+            
+            const matchData = {
+                division: document.getElementById('division').value,
+                matchType: document.getElementById('match-type').value,
+                homeTeam: currentCaptain.team_name, // Always use captain's team
+                awayTeam: document.getElementById('away-team').value,
+                doubles: [],
+                singles: [],
+                oneEighties: [],
+                highFinishes: []
+            };
+            
+            // Add cup round if it's a cup match
+            if (matchData.matchType === 'cup') {
+                const cupRound = document.getElementById('cup-round').value;
+                if (!cupRound) {
+                    alert('Please select a Cup Round for cup matches.');
+                    return;
+                }
+                matchData.cupRound = cupRound;
+            }
+            
+            // Validate required fields
+            if (!matchData.division || !matchData.matchType || !matchData.homeTeam || !matchData.awayTeam) {
+                alert('Please select division, match type, and away team.');
+                return;
+            }
+
+            // Collect doubles match data
+            document.querySelectorAll('.doubles-match').forEach((match, index) => {
+                const homePlayer1 = match.querySelector('.home-player1').value;
+                const homePlayer2 = match.querySelector('.home-player2').value;
+                const awayPlayer1 = match.querySelector('.away-player1').value;
+                const awayPlayer2 = match.querySelector('.away-player2').value;
+                const score = match.querySelector('.score-select').value;
+                
+                if (homePlayer1 && homePlayer2 && awayPlayer1 && awayPlayer2 && score) {
+                    matchData.doubles.push({
+                        homePlayer1,
+                        homePlayer2,
+                        awayPlayer1,
+                        awayPlayer2,
+                        score
+                    });
+                }
+            });
+
+            // Collect singles match data
+            document.querySelectorAll('.singles-match').forEach((match, index) => {
+                const homePlayer = match.querySelector('.home-player').value;
+                const awayPlayer = match.querySelector('.away-player').value;
+                const score = match.querySelector('.score-select').value;
+                
+                if (homePlayer && awayPlayer && score) {
+                    matchData.singles.push({
+                        homePlayer,
+                        awayPlayer,
+                        score
+                    });
+                }
+            });
+            
+            // Collect 180s data
+            document.querySelectorAll('#one-eighties-section .stats-row').forEach(row => {
+                const player = row.querySelector('.one-eighty-player').value;
+                const count = row.querySelector('.one-eighty-count').value;
+                
+                if (player && count) {
+                    matchData.oneEighties.push({
+                        player,
+                        count: parseInt(count)
+                    });
+                }
+            });
+            
+            // Collect high finishes data
+            document.querySelectorAll('#high-finishes-section .stats-row').forEach(row => {
+                const player = row.querySelector('.high-finish-player').value;
+                const value = row.querySelector('.high-finish-value').value;
+                
+                if (player && value) {
+                    matchData.highFinishes.push({
+                        player,
+                        value: parseInt(value)
+                    });
+                }
+            });
+            
+            // Validate that at least one game is complete
+            if (matchData.doubles.length === 0 && matchData.singles.length === 0) {
+                alert('Please enter scores for at least one game.');
+                return;
+            }
+            
+            console.log('Submitting match data:', matchData); // Debug output
+
+            const result = await postApi('submit-match', matchData);
+            
+            if (result.success) {
+                alert('Match score submitted successfully!');
+                
+                // Reset form fields but keep the home team (captain's team)
+                const homeTeam = document.getElementById('home-team').value;
+                const division = document.getElementById('division').value;
+                
+                document.getElementById('match-form').reset();
+                
+                // Restore values
+                document.getElementById('division').value = division;
+                document.getElementById('home-team').value = homeTeam;
+                document.getElementById('home-team').disabled = true;
+                
+                // Reset cup round selection
+                document.getElementById('cup-round').value = '';
+                document.getElementById('cup-round').disabled = true;
+                document.getElementById('cup-round-container').classList.add('disabled-field');
+                
+                // Reload form elements
+                loadAwayTeamOptions();
+                generateDoublesMatches();
+                generateSinglesMatches();
+                generateOneEightiesInputs();
+                generateHighFinishesInputs();
+            } else {
+                alert('Error submitting match: ' + (result.error || 'Unknown error'));
+                console.error('Error details:', result);
+            }
+        }
+    </script>
 </body>
 </html>
