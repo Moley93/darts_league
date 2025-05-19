@@ -685,8 +685,9 @@
                     <button data-division="a">A Division</button>
                 </div>
 
-                <iframe width="100%" height="700px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQW8xgsYOkZGz0RChWCg6C1S3LCRfb5_wpF3LkbiUJ6ihqqX_mlpwlPSVnXFtngtKi4wit3Bp-uauqC/pubhtml?widget=true&amp;headers=false"></iframe>
-
+                <div id="iframe-container">
+                    <iframe id="cup-iframe" width="100%" height="700px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQW8xgsYOkZGz0RChWCg6C1S3LCRfb5_wpF3LkbiUJ6ihqqX_mlpwlPSVnXFtngtKi4wit3Bp-uauqC/pubhtml?widget=true&amp;headers=false"></iframe>
+                </div>
             </div>
         </div>
     </div>
@@ -697,6 +698,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const navMenu = document.querySelector('.nav-menu');
     const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
     
+    // Set up division buttons to change iframe source
+const premierIframeUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQW8xgsYOkZGz0RChWCg6C1S3LCRfb5_wpF3LkbiUJ6ihqqX_mlpwlPSVnXFtngtKi4wit3Bp-uauqC/pubhtml?widget=true&amp;headers=false";
+const aDivisionIframeUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSK5mgAoe6ZCwfrB34qvP6l6OPgurCBjnCGwL_8cBlxsgmrlsq-v5D-joS652C8ufLrpPCFqPgY7DVT/pubhtml?widget=true&amp;headers=false";
+
+const cupIframe = document.getElementById('cup-iframe');
+const divisionButtons = document.querySelectorAll('.division-toggle button');
+
+divisionButtons.forEach(button => {
+    button.addEventListener('click', function() {
+        // Update active button styling
+        divisionButtons.forEach(btn => btn.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Change iframe source based on division
+        const division = this.getAttribute('data-division');
+        if (division === 'premier') {
+            cupIframe.src = premierIframeUrl;
+        } else if (division === 'a') {
+            cupIframe.src = aDivisionIframeUrl;
+        }
+    });
+});
+
     // Toggle mobile menu
     mobileToggle.addEventListener('click', function() {
         navMenu.classList.toggle('active');
