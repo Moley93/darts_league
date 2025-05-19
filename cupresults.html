@@ -4,215 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
-<meta property="og:title" content="CDL | League Results">
-<meta property="og:description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
+    <meta name="description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
+<meta property="og:title" content="Cup Results - Crawley Darts League">
+<meta property="og:description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
 <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
-    <title>CDL | League Results</title>
+    <title>Cup Results - Crawley Darts League</title>
     <link rel="stylesheet" href="styles.css">
 <style>
-        /* Enhanced fixture card styles */
-        .fixture-card {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 15px !important;
-            border-bottom: 1px solid #eee !important;
-            transition: background 0.3s ease !important;
-            cursor: pointer !important;
-            position: relative !important;
-        }
-        
-        .fixture-card:hover {
-            background: var(--light-gray) !important;
-        }
-        
-        .fixture-card:last-child {
-            border-bottom: none !important;
-        }
-        
-        .team-name.home {
-            text-align: left !important;
-            width: 40% !important;
-            padding-right: 10px !important;
-        }
-        
-.team-name.away {
-    text-align: right !important;
-    width: 40% !important;
-    padding-left: 10px !important;
-    padding-right: 30px !important; /* Add this line to create space for the expand icon */
-}
-        
-        .score {
-            font-weight: bold !important;
-            font-size: 1.2em !important;
-            padding: 5px 15px !important;
-            color: var(--primary) !important;
-            text-align: center !important;
-            width: 20% !important;
-            background-color: rgba(245, 245, 245, 0.5) !important;
-            border-radius: 4px !important;
-        }
-        
-        /* Expandable section styles */
-        .fixture-card .expand-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 1.2em;
-            transition: transform 0.3s ease;
-        }
-        
-        .fixture-card.expanded .expand-icon {
-            transform: translateY(-50%) rotate(180deg);
-        }
-        
-        .match-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-            background-color: #f9f9f9;
-            border-left: 3px solid var(--primary);
-            margin: 0 5px 0 20px;
-        }
-        
-        .match-details.expanded {
-            max-height: 2000px;
-            margin-bottom: 15px;
-        }
-        
-        .match-details-content {
-            padding: 15px;
-        }
-        
-        .match-header {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-        
-        .player-match {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dotted #eee;
-        }
-        
-        .player-match:last-child {
-            border-bottom: none;
-        }
-        
-        .player-match .home-player {
-            flex: 2;
-            text-align: left;
-            padding-right: 5px;
-        }
-        
-        .player-match .away-player {
-            flex: 2;
-            text-align: right;
-            padding-left: 5px;
-        }
-        
-        .player-match .match-score {
-            flex: 1;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .stats-section {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
-        
-        .stats-section h4 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        
-        .stats-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
-        
-        .player-name {
-            flex: 3;
-        }
-        
-        .stat-value {
-            flex: 1;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .loading-indicator {
-            text-align: center;
-            padding: 20px;
-            color: var(--primary);
-            font-style: italic;
-        }
-        
-        .error-message {
-            color: #d32f2f;
-            text-align: center;
-            padding: 10px;
-            font-style: italic;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .fixture-card {
-                flex-direction: column !important;
-                text-align: center !important;
-                gap: 10px !important;
-                padding-right: 30px !important;
-            }
-            
-    .team-name.home, .team-name.away {
-        text-align: center !important;
-        padding: 0 0 10px 0 !important; /* Add bottom padding on mobile */
-        width: 100% !important;
-    }
 
-            
-            .score {
-                width: 80% !important;
-            }
-            
-            .fixture-card .expand-icon {
-                top: 15px;
-                right: 15px;
-                transform: none;
-            }
-            
-            .fixture-card.expanded .expand-icon {
-                transform: rotate(180deg);
-            }
-            
-            .player-match {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
-            }
-            
-            .player-match .home-player,
-            .player-match .away-player {
-                text-align: center;
-                width: 100%;
-                padding: 3px 0;
-            }
-            
-            .match-details {
-                margin: 0;
-            }
-        }
                 /* Custom header style for the index page to position logo left and title centered */
                 .header {
             background: linear-gradient(135deg, var(--primary), var(--secondary));
@@ -242,7 +41,88 @@
             margin: 0;
             text-align: center;
         }
-
+        /* Enhanced fixture card styles */
+        .fixture-card {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px !important;
+            border-bottom: 1px solid #eee !important;
+            transition: background 0.3s ease !important;
+        }
+        
+        .fixture-card:hover {
+            background: var(--light-gray) !important;
+        }
+        
+        .fixture-card:last-child {
+            border-bottom: none !important;
+        }
+        
+        .team-name.home {
+            text-align: left !important;
+            width: 40% !important;
+            padding-right: 10px !important;
+        }
+        
+        .team-name.away {
+            text-align: right !important;
+            width: 40% !important;
+            padding-left: 10px !important;
+        }
+        
+        .score {
+            font-weight: bold !important;
+            font-size: 1.2em !important;
+            padding: 5px 15px !important;
+            color: var(--primary) !important;
+            text-align: center !important;
+            width: 20% !important;
+            background-color: rgba(245, 245, 245, 0.5) !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Cup round styles */
+        .cup-round-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            margin: 25px 0 15px;
+            text-align: center;
+            font-size: 1.3em;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Date header styles */
+        .results-date-header {
+            background: var(--light-gray);
+            padding: 10px 15px;
+            margin: 15px 0 10px;
+            border-radius: 5px;
+            font-size: 1.1em;
+            color: var(--primary);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .fixture-card {
+                flex-direction: column !important;
+                text-align: center !important;
+                gap: 10px !important;
+            }
+            
+            .team-name.home, .team-name.away {
+                text-align: center !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+            
+            .score {
+                width: 80% !important;
+            }
+        }
         /* Basic dropdown styling */
 .nav .dropdown {
     position: relative;
@@ -607,10 +487,11 @@
         </li>
         
         <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Competitions</a>
+            <a href="#" class="dropdown-toggle">Cup</a>
             <ul class="dropdown-menu">
-                <li><a href="cupresults.html">KO Cup Results</a></li>
-                <li><a href="cupdraw.html">Auto Draw Tool</a></li>
+                <li><a href="cupfixtures.html">Fixtures</a></li>
+                <li><a href="cupresults.html">Results</a></li>
+                <li><a href="cupdraw.html">Cup Draw</a></li>
             </ul>
         </li>
         
@@ -648,16 +529,18 @@
                 </ul>
         </li>
     </ul>
-    </nav>    <div class="container">
-        <!-- League Results Page -->
-        <div id="league-results" class="page">
+    </nav>
+
+    <div class="container">
+        <!-- Cup Results Page -->
+        <div id="cup-results" class="page">
             <div class="card">
                 <div class="division-toggle">
                     <button class="active" data-division="premier">Premier Division</button>
                     <button data-division="a">A Division</button>
                 </div>
-                <div id="league-results-list">
-                    <!-- Dynamic results will be loaded here -->
+                <div id="cup-results-list">
+                    <!-- Dynamic cup results will be loaded here -->
                 </div>
             </div>
         </div>
@@ -741,9 +624,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
 
-        // Keep track of loaded match details to avoid redundant API calls
-        const loadedMatchDetails = {};
-
         function getCurrentDivision() {
             const divisionToggle = document.querySelector('.division-toggle button.active');
             return divisionToggle ? divisionToggle.dataset.division : 'premier';
@@ -757,7 +637,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                loadLeagueResults(division);
+                loadCupResults(division);
             });
         });
 
@@ -775,9 +655,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        async function loadLeagueResults(division) {
-            const data = await fetchApi('league-results', { division });
-            const resultsList = document.getElementById('league-results-list');
+        async function loadCupResults(division) {
+            const data = await fetchApi('cup-results', { division });
+            const resultsList = document.getElementById('cup-results-list');
             resultsList.innerHTML = '';
             
             // Filter out matches involving "Bye" teams
@@ -788,10 +668,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 result.away_team !== 'Division A Bye'
             );
             
-            // Group results by date
-            const resultsByDate = {};
+            // Group results by round and date
+            const resultsByRoundAndDate = {};
+            
             filteredData.forEach(result => {
-                // Format the date for display
+                const round = result.cup_round || 'Last 16';
+                
+                if (!resultsByRoundAndDate[round]) {
+                    resultsByRoundAndDate[round] = {};
+                }
+                
+                // Format the date for display and grouping
                 const matchDate = result.match_date ? new Date(result.match_date) : null;
                 const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
                     weekday: 'long',
@@ -800,214 +687,70 @@ document.addEventListener('DOMContentLoaded', function() {
                     day: 'numeric'
                 }) : 'Date not available';
                 
-                if (!resultsByDate[formattedDate]) {
-                    resultsByDate[formattedDate] = [];
+                if (!resultsByRoundAndDate[round][formattedDate]) {
+                    resultsByRoundAndDate[round][formattedDate] = [];
                 }
                 
-                resultsByDate[formattedDate].push(result);
+                resultsByRoundAndDate[round][formattedDate].push(result);
             });
             
-            // Render results grouped by date
-            Object.keys(resultsByDate).sort((a, b) => {
-                // Sort dates in descending order (newest first)
-                const dateA = new Date(resultsByDate[a][0].match_date);
-                const dateB = new Date(resultsByDate[b][0].match_date);
-                return dateB - dateA;
-            }).forEach(date => {
-                // Create date header
-                const dateHeader = document.createElement('h3');
-                dateHeader.className = 'results-date-header';
-                dateHeader.textContent = date;
-                resultsList.appendChild(dateHeader);
-                
-                // Add results for this date
-                resultsByDate[date].forEach(result => {
-                    const resultCard = document.createElement('div');
-                    resultCard.className = 'fixture-card';
-                    resultCard.dataset.matchId = result.match_id;
-                    resultCard.innerHTML = `
-                        <div class="team-name home">${result.home_team}</div>
-                        <div class="score">${result.home_score} - ${result.away_score}</div>
-                        <div class="team-name away">${result.away_team}</div>
-                        <div class="expand-icon">&#9660;</div>
-                    `;
-                    resultsList.appendChild(resultCard);
+            // Define the order of cup rounds for sorting
+            const roundOrder = ['Last 16', 'Quarter Final', 'Semi Final', 'Final'];
+            
+            // If no results, display a message
+            if (Object.keys(resultsByRoundAndDate).length === 0) {
+                const noResultsMsg = document.createElement('p');
+                noResultsMsg.style.textAlign = 'center';
+                noResultsMsg.style.padding = '20px';
+                noResultsMsg.textContent = 'No cup results available yet.';
+                resultsList.appendChild(noResultsMsg);
+                return;
+            }
+            
+            // Render results grouped by round and date in the proper order
+            roundOrder.forEach(round => {
+                if (resultsByRoundAndDate[round]) {
+                    // Create round header
+                    const roundHeader = document.createElement('h3');
+                    roundHeader.className = 'cup-round-header';
+                    roundHeader.textContent = round;
+                    resultsList.appendChild(roundHeader);
                     
-                    // Create expandable details section
-                    const detailsSection = document.createElement('div');
-                    detailsSection.className = 'match-details';
-                    detailsSection.dataset.matchId = result.match_id;
-                    detailsSection.innerHTML = `
-                        <div class="match-details-content">
-                            <div class="loading-indicator">Loading match details...</div>
-                        </div>
-                    `;
-                    resultsList.appendChild(detailsSection);
-                    
-                    // Add click event to toggle details
-                    resultCard.addEventListener('click', async () => {
-                        toggleMatchDetails(result.match_id);
+                    // Get dates for this round and sort them (newest first)
+                    const dates = Object.keys(resultsByRoundAndDate[round]).sort((a, b) => {
+                        // Get the first match from each date to compare their actual dates
+                        const dateA = new Date(resultsByRoundAndDate[round][a][0].match_date);
+                        const dateB = new Date(resultsByRoundAndDate[round][b][0].match_date);
+                        return dateB - dateA;
                     });
-                });
+                    
+                    // For each date in this round
+                    dates.forEach(formattedDate => {
+                        // Create date subheader
+                        const dateHeader = document.createElement('h4');
+                        dateHeader.className = 'results-date-header';
+                        dateHeader.textContent = formattedDate;
+                        resultsList.appendChild(dateHeader);
+                        
+                        // Add matches for this date
+                        resultsByRoundAndDate[round][formattedDate].forEach(result => {
+                            // Create result card
+                            const resultCard = document.createElement('div');
+                            resultCard.className = 'fixture-card';
+                            resultCard.innerHTML = `
+                                <div class="team-name home">${result.home_team}</div>
+                                <div class="score">${result.home_score} - ${result.away_score}</div>
+                                <div class="team-name away">${result.away_team}</div>
+                            `;
+                            resultsList.appendChild(resultCard);
+                        });
+                    });
+                }
             });
         }
 
-        // Toggle match details visibility
-        async function toggleMatchDetails(matchId) {
-            const resultCard = document.querySelector(`.fixture-card[data-match-id="${matchId}"]`);
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            
-            if (!resultCard || !detailsSection) return;
-            
-            // Toggle expanded state
-            resultCard.classList.toggle('expanded');
-            
-            if (detailsSection.classList.contains('expanded')) {
-                // Collapse
-                detailsSection.classList.remove('expanded');
-            } else {
-                // Expand and load details if not already loaded
-                detailsSection.classList.add('expanded');
-                
-                if (!loadedMatchDetails[matchId]) {
-                    await loadMatchDetails(matchId);
-                }
-            }
-        }
-
-        // Load match details from API
-        async function loadMatchDetails(matchId) {
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            const contentDiv = detailsSection.querySelector('.match-details-content');
-            
-            try {
-                // Fetch match details
-                const matchDetails = await fetchApi('match-details', { match_id: matchId });
-                
-                if (!matchDetails || !matchDetails.success) {
-                    contentDiv.innerHTML = `
-                        <div class="error-message">
-                            Failed to load match details. Please try again later.
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Store in cache to avoid redundant API calls
-                loadedMatchDetails[matchId] = matchDetails;
-                
-                // Render match details
-                renderMatchDetails(contentDiv, matchDetails);
-                
-            } catch (error) {
-                console.error('Error loading match details:', error);
-                contentDiv.innerHTML = `
-                    <div class="error-message">
-                        An error occurred while loading match details. Please try again later.
-                    </div>
-                `;
-            }
-        }
-
-// Render match details content
-function renderMatchDetails(container, matchDetails) {
-    const match = matchDetails.match;
-    const division = match.division;
-    const matchType = match.match_type;
-    
-    let content = '';
-    
-    // Add doubles section if there are doubles results
-    if (matchDetails.doubles && matchDetails.doubles.length > 0) {
-        content += `
-            <div class="match-section">
-                <h4 class="match-header">Doubles Matches</h4>
-        `;
-        
-        matchDetails.doubles.forEach((doubles, index) => {
-            content += `
-                <div class="player-match">
-                    <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
-                    <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
-                    <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add singles section if there are singles results
-    if (matchDetails.singles && matchDetails.singles.length > 0) {
-        content += `
-            <div class="match-section">
-                <h4 class="match-header">Singles Matches</h4>
-        `;
-        
-        matchDetails.singles.forEach((singles, index) => {
-            content += `
-                <div class="player-match">
-                    <div class="home-player">${singles.home_player_name}</div>
-                    <div class="match-score">${singles.home_score}-${singles.away_score}</div>
-                    <div class="away-player">${singles.away_player_name}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add 180s section if there are any
-    if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
-        content += `
-            <div class="stats-section">
-                <h4>180s</h4>
-        `;
-        
-        matchDetails.oneEighties.forEach(oneEighty => {
-            content += `
-                <div class="stats-item">
-                    <div class="player-name">${oneEighty.player_name}</div>
-                    <div class="stat-value">${oneEighty.count}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add high finishes section if there are any
-    if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
-        content += `
-            <div class="stats-section">
-                <h4>High Finishes</h4>
-        `;
-        
-        // Sort high finishes by value (highest first)
-        const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
-        
-        sortedFinishes.forEach(finish => {
-            content += `
-                <div class="stats-item">
-                    <div class="player-name">${finish.player_name}</div>
-                    <div class="stat-value">${finish.finish_value}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // If no content was generated, show a message
-    if (!content) {
-        content = `<p class="error-message">No detailed results available for this match.</p>`;
-    }
-    
-    container.innerHTML = content;
-}
-        // Initially load the league results
-        loadLeagueResults(getCurrentDivision());
-
+        // Initially load the cup results
+        loadCupResults(getCurrentDivision());
     </script>
 </body>
 </html>
