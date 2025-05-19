@@ -49,6 +49,8 @@
             padding: 15px !important;
             border-bottom: 1px solid #eee !important;
             transition: background 0.3s ease !important;
+            cursor: pointer !important;
+            position: relative !important;
         }
         
         .fixture-card:hover {
@@ -69,6 +71,7 @@
             text-align: right !important;
             width: 40% !important;
             padding-left: 10px !important;
+            padding-right: 30px !important; /* Add space for the expand icon */
         }
         
         .score {
@@ -105,22 +108,161 @@
             border-left: 4px solid var(--secondary);
         }
         
+        /* Expandable section styles */
+        .fixture-card .expand-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        
+        .fixture-card.expanded .expand-icon {
+            transform: translateY(-50%) rotate(180deg);
+        }
+        
+        .match-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            background-color: #f9f9f9;
+            border-left: 3px solid var(--primary);
+            margin: 0 5px 0 20px;
+        }
+        
+        .match-details.expanded {
+            max-height: 2000px;
+            margin-bottom: 15px;
+        }
+        
+        .match-details-content {
+            padding: 15px;
+        }
+        
+        .match-header {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .player-match {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        
+        .player-match:last-child {
+            border-bottom: none;
+        }
+        
+        .player-match .home-player {
+            flex: 2;
+            text-align: left;
+            padding-right: 5px;
+        }
+        
+        .player-match .away-player {
+            flex: 2;
+            text-align: right;
+            padding-left: 5px;
+        }
+        
+        .player-match .match-score {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .stats-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stats-section h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        
+        .player-name {
+            flex: 3;
+        }
+        
+        .stat-value {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: var(--primary);
+            font-style: italic;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            text-align: center;
+            padding: 10px;
+            font-style: italic;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 600px) {
             .fixture-card {
                 flex-direction: column !important;
                 text-align: center !important;
                 gap: 10px !important;
+                padding-right: 30px !important;
             }
             
             .team-name.home, .team-name.away {
                 text-align: center !important;
-                padding: 0 !important;
+                padding: 0 0 10px 0 !important; /* Add bottom padding on mobile */
                 width: 100% !important;
             }
             
             .score {
                 width: 80% !important;
+            }
+            
+            .fixture-card .expand-icon {
+                top: 15px;
+                right: 15px;
+                transform: none;
+            }
+            
+            .fixture-card.expanded .expand-icon {
+                transform: rotate(180deg);
+            }
+            
+            .player-match {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            
+            .player-match .home-player,
+            .player-match .away-player {
+                text-align: center;
+                width: 100%;
+                padding: 3px 0;
+            }
+            
+            .match-details {
+                margin: 0;
             }
         }
         /* Basic dropdown styling */
@@ -623,6 +765,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
 
+        // Keep track of loaded match details to avoid redundant API calls
+        const loadedMatchDetails = {};
+
         function getCurrentDivision() {
             const divisionToggle = document.querySelector('.division-toggle button.active');
             return divisionToggle ? divisionToggle.dataset.division : 'premier';
@@ -736,18 +881,190 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Create result card
                             const resultCard = document.createElement('div');
                             resultCard.className = 'fixture-card';
+                            resultCard.dataset.matchId = result.match_id;
                             resultCard.innerHTML = `
                                 <div class="team-name home">${result.home_team}</div>
                                 <div class="score">${result.home_score} - ${result.away_score}</div>
                                 <div class="team-name away">${result.away_team}</div>
+                                <div class="expand-icon">&#9660;</div>
                             `;
                             resultsList.appendChild(resultCard);
+                            
+                            // Create expandable details section
+                            const detailsSection = document.createElement('div');
+                            detailsSection.className = 'match-details';
+                            detailsSection.dataset.matchId = result.match_id;
+                            detailsSection.innerHTML = `
+                                <div class="match-details-content">
+                                    <div class="loading-indicator">Loading match details...</div>
+                                </div>
+                            `;
+                            resultsList.appendChild(detailsSection);
+                            
+                            // Add click event to toggle details
+                            resultCard.addEventListener('click', async () => {
+                                toggleMatchDetails(result.match_id);
+                            });
                         });
                     });
                 }
             });
         }
 
+        // Toggle match details visibility
+        async function toggleMatchDetails(matchId) {
+            const resultCard = document.querySelector(`.fixture-card[data-match-id="${matchId}"]`);
+            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
+            
+            if (!resultCard || !detailsSection) return;
+            
+            // Toggle expanded state
+            resultCard.classList.toggle('expanded');
+            
+            if (detailsSection.classList.contains('expanded')) {
+                // Collapse
+                detailsSection.classList.remove('expanded');
+            } else {
+                // Expand and load details if not already loaded
+                detailsSection.classList.add('expanded');
+                
+                if (!loadedMatchDetails[matchId]) {
+                    await loadMatchDetails(matchId);
+                }
+            }
+        }
+
+        // Load match details from API
+        async function loadMatchDetails(matchId) {
+            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
+            const contentDiv = detailsSection.querySelector('.match-details-content');
+            
+            try {
+                // Fetch match details
+                const matchDetails = await fetchApi('match-details', { match_id: matchId });
+                
+                if (!matchDetails || !matchDetails.success) {
+                    contentDiv.innerHTML = `
+                        <div class="error-message">
+                            Failed to load match details. Please try again later.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Store in cache to avoid redundant API calls
+                loadedMatchDetails[matchId] = matchDetails;
+                
+                // Render match details
+                renderMatchDetails(contentDiv, matchDetails);
+                
+            } catch (error) {
+                console.error('Error loading match details:', error);
+                contentDiv.innerHTML = `
+                    <div class="error-message">
+                        An error occurred while loading match details. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        // Render match details content
+        function renderMatchDetails(container, matchDetails) {
+            const match = matchDetails.match;
+            const division = match.division;
+            const matchType = match.match_type;
+            
+            let content = '';
+            
+            // Add doubles section if there are doubles results
+            if (matchDetails.doubles && matchDetails.doubles.length > 0) {
+                content += `
+                    <div class="match-section">
+                        <h4 class="match-header">Doubles Matches</h4>
+                `;
+                
+                matchDetails.doubles.forEach((doubles, index) => {
+                    content += `
+                        <div class="player-match">
+                            <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
+                            <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
+                            <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add singles section if there are singles results
+            if (matchDetails.singles && matchDetails.singles.length > 0) {
+                content += `
+                    <div class="match-section">
+                        <h4 class="match-header">Singles Matches</h4>
+                `;
+                
+                matchDetails.singles.forEach((singles, index) => {
+                    content += `
+                        <div class="player-match">
+                            <div class="home-player">${singles.home_player_name}</div>
+                            <div class="match-score">${singles.home_score}-${singles.away_score}</div>
+                            <div class="away-player">${singles.away_player_name}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add 180s section if there are any
+            if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
+                content += `
+                    <div class="stats-section">
+                        <h4>180s</h4>
+                `;
+                
+                matchDetails.oneEighties.forEach(oneEighty => {
+                    content += `
+                        <div class="stats-item">
+                            <div class="player-name">${oneEighty.player_name}</div>
+                            <div class="stat-value">${oneEighty.count}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add high finishes section if there are any
+            if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
+                content += `
+                    <div class="stats-section">
+                        <h4>High Finishes</h4>
+                `;
+                
+                // Sort high finishes by value (highest first)
+                const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
+                
+                sortedFinishes.forEach(finish => {
+                    content += `
+                        <div class="stats-item">
+                            <div class="player-name">${finish.player_name}</div>
+                            <div class="stat-value">${finish.finish_value}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // If no content was generated, show a message
+            if (!content) {
+                content = `<p class="error-message">No detailed results available for this match.</p>`;
+            }
+            
+            container.innerHTML = content;
+        }
+        
         // Initially load the cup results
         loadCupResults(getCurrentDivision());
     </script>
