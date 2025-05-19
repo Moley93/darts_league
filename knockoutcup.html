@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
+<meta property="og:title" content="Cup Results - Crawley Darts League">
+<meta property="og:description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
+<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
+    <title>Cup Results - Crawley Darts League</title>
+    <link rel="stylesheet" href="styles.css">
+<style>
+
+                /* Custom header style for the index page to position logo left and title centered */
+                .header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .logo-container {
+            position: absolute;
+            right: 20px;
+            top: 55%;
+            transform: translateY(-50%);
+        }
+        
+        .logo {
+            width: 60px;
+            height: 58px;
+            object-fit: contain;
+        }
+        
+        .header h1 {
+            margin: 0;
+            text-align: center;
+        }
+        /* Enhanced fixture card styles */
+        .fixture-card {
+            display: flex !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            padding: 15px !important;
+            border-bottom: 1px solid #eee !important;
+            transition: background 0.3s ease !important;
+            cursor: pointer !important;
+            position: relative !important;
+        }
+        
+        .fixture-card:hover {
+            background: var(--light-gray) !important;
+        }
+        
+        .fixture-card:last-child {
+            border-bottom: none !important;
+        }
+        
+        .team-name.home {
+            text-align: left !important;
+            width: 40% !important;
+            padding-right: 10px !important;
+        }
+        
+        .team-name.away {
+            text-align: right !important;
+            width: 40% !important;
+            padding-left: 10px !important;
+            padding-right: 30px !important; /* Add space for the expand icon */
+        }
+        
+        .score {
+            font-weight: bold !important;
+            font-size: 1.2em !important;
+            padding: 5px 15px !important;
+            color: var(--primary) !important;
+            text-align: center !important;
+            width: 20% !important;
+            background-color: rgba(245, 245, 245, 0.5) !important;
+            border-radius: 4px !important;
+        }
+        
+        /* Cup round styles */
+        .cup-round-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 20px;
+            margin: 25px 0 15px;
+            text-align: center;
+            font-size: 1.3em;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        /* Date header styles */
+        .results-date-header {
+            background: var(--light-gray);
+            padding: 10px 15px;
+            margin: 15px 0 10px;
+            border-radius: 5px;
+            font-size: 1.1em;
+            color: var(--primary);
+            border-left: 4px solid var(--secondary);
+        }
+        
+        /* Expandable section styles */
+        .fixture-card .expand-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary);
+            font-size: 1.2em;
+            transition: transform 0.3s ease;
+        }
+        
+        .fixture-card.expanded .expand-icon {
+            transform: translateY(-50%) rotate(180deg);
+        }
+        
+        .match-details {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+            background-color: #f9f9f9;
+            border-left: 3px solid var(--primary);
+            margin: 0 5px 0 20px;
+        }
+        
+        .match-details.expanded {
+            max-height: 2000px;
+            margin-bottom: 15px;
+        }
+        
+        .match-details-content {
+            padding: 15px;
+        }
+        
+        .match-header {
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 10px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        
+        .player-match {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #eee;
+        }
+        
+        .player-match:last-child {
+            border-bottom: none;
+        }
+        
+        .player-match .home-player {
+            flex: 2;
+            text-align: left;
+            padding-right: 5px;
+        }
+        
+        .player-match .away-player {
+            flex: 2;
+            text-align: right;
+            padding-left: 5px;
+        }
+        
+        .player-match .match-score {
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        .stats-section {
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+        
+        .stats-section h4 {
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .stats-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+        }
+        
+        .player-name {
+            flex: 3;
+        }
+        
+        .stat-value {
+            flex: 1;
+            text-align: right;
+            font-weight: bold;
+        }
+        
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            color: var(--primary);
+            font-style: italic;
+        }
+        
+        .error-message {
+            color: #d32f2f;
+            text-align: center;
+            padding: 10px;
+            font-style: italic;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .fixture-card {
+                flex-direction: column !important;
+                text-align: center !important;
+                gap: 10px !important;
+                padding-right: 30px !important;
+            }
+            
+            .team-name.home, .team-name.away {
+                text-align: center !important;
+                padding: 0 0 10px 0 !important; /* Add bottom padding on mobile */
+                width: 100% !important;
+            }
+            
+            .score {
+                width: 80% !important;
+            }
+            
+            .fixture-card .expand-icon {
+                top: 15px;
+                right: 15px;
+                transform: none;
+            }
+            
+            .fixture-card.expanded .expand-icon {
+                transform: rotate(180deg);
+            }
+            
+            .player-match {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px 0;
+            }
+            
+            .player-match .home-player,
+            .player-match .away-player {
+                text-align: center;
+                width: 100%;
+                padding: 3px 0;
+            }
+            
+            .match-details {
+                margin: 0;
+            }
+        }
+        /* Basic dropdown styling */
+.nav .dropdown {
+    position: relative;
+}
+
+.nav .dropdown-toggle {
+    cursor: pointer;
+}
+
+.nav .dropdown-menu {
+    display: none;
+    position: absolute;
+    background: white;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+    z-index: 1000;
+    border-radius: 4px;
+    padding: 10px 0;
+}
+
+.nav .dropdown:hover .dropdown-menu {
+    display: block;
+}
+
+.nav .dropdown-menu li {
+    margin: 0;
+    padding: 0;
+}
+
+.nav .dropdown-menu a {
+    display: block;
+    padding: 10px 20px;
+    color: var(--primary);
+    border-radius: 0;
+}
+
+.nav .dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile navigation */
+.mobile-nav-toggle {
+    display: none;
+    cursor: pointer;
+    padding: 10px;
+    font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .mobile-nav-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background: white;
+        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .nav-menu.active {
+        display: block;
+    }
+    
+    .nav-menu li {
+        margin: 0;
+        padding: 0;
+        display: block;
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .nav-menu a {
+        padding: 15px 20px;
+        display: block;
+    }
+    
+    .nav .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        background: var(--light-gray);
+        width: 100%;
+        padding: 0;
+    }
+    
+    .nav .dropdown-menu li:first-child {
+        border-top: 1px solid var(--medium-gray);
+    }
+    
+    .nav .dropdown:hover .dropdown-menu {
+        display: none; /* Don't show on hover on mobile */
+    }
+    
+    /* Add a + icon to dropdowns */
+    .nav .dropdown-toggle::after {
+        content: "+";
+        margin-left: 5px;
+    }
+    
+    /* Toggle this class with JavaScript */
+    .nav .dropdown.active .dropdown-menu {
+        display: block;
+    }
+    
+    .nav .dropdown.active .dropdown-toggle::after {
+        content: "-";
+    }
+}
+:root {
+    --primary: #1a237e;
+    --secondary: #3949ab;
+    --light-gray: #f5f5f5;
+    --medium-gray: #e0e0e0;
+    --dark-gray: #757575;
+    --card-bg: #ffffff;
+}
+
+/* Header Styles */
+.header {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+
+.header h1 {
+    margin: 0;
+    text-align: center;
+    font-size: 1.5rem;
+}
+
+/* Navigation Styles */
+.nav {
+    background-color: white;
+    position: relative;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.nav-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+}
+
+.nav-menu > li {
+    position: relative;
+    margin: 0;
+}
+
+.nav-menu > li > a {
+    display: block;
+    padding: 15px;
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.nav-menu > li > a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Dropdown Menu */
+.dropdown {
+    position: relative;
+}
+
+.dropdown-toggle:after {
+    content: "▼";
+    font-size: 0.7em;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 200px;
+    padding: 5px 0;
+    margin: 0;
+    list-style: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border-radius: 0 0 4px 4px;
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: all 0.3s ease;
+}
+
+.dropdown:hover .dropdown-menu,
+.dropdown:focus-within .dropdown-menu,
+.dropdown-menu:hover {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu li {
+    margin: 0;
+}
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px 15px;
+    color: var(--primary);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.dropdown-menu a:hover {
+    background-color: var(--light-gray);
+}
+
+/* Mobile Toggle Button */
+.mobile-toggle {
+    display: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 10;
+}
+
+.mobile-toggle .bar {
+    display: block;
+    width: 25px;
+    height: 3px;
+    margin: 5px auto;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+/* Media Queries for Responsive Design */
+@media screen and (max-width: 992px) {
+    .nav-menu {
+        justify-content: flex-start;
+    }
+    
+    .nav-menu > li > a {
+        padding: 15px 10px;
+        font-size: 0.9rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .header h1 {
+        font-size: 1.3rem;
+    }
+    
+    .mobile-toggle {
+        display: block;
+    }
+    
+    .nav-menu {
+        flex-direction: column;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: white;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+        z-index: 100;
+    }
+    
+    .nav-menu.active {
+        max-height: 1000px;
+    }
+    
+    .dropdown-menu {
+        position: static;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        transform: none;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease;
+    }
+    
+    .dropdown.active .dropdown-menu {
+        max-height: 500px;
+    }
+    
+    .dropdown-toggle:after {
+        float: right;
+    }
+    
+    .dropdown.active .dropdown-toggle:after {
+        content: "▲";
+    }
+    
+    .nav-menu > li {
+        border-bottom: 1px solid var(--light-gray);
+    }
+    
+    .dropdown-menu li {
+        background-color: var(--light-gray);
+        padding-left: 15px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .header h1 {
+        font-size: 1.1rem;
+    }
+    
+    .logo {
+        width: 50px;
+        height: 48px;
+    }
+}
+</style>
+</head>
+<body>
+<header class="header">
+    <div class="logo-container">
+        <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+    </div>
+    <h1>Crawley Darts League</h1>
+    <button class="mobile-toggle" aria-label="Toggle menu">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+    </button>
+</header>
+
+    <nav class="nav">
+        <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Competitions</a>
+            <ul class="dropdown-menu">
+                <li><a href="cupresults.html">Knockout Cup</a></li>
+                <li><a href="singlescup.html">Singles Cup</a></li>
+                <li><a href="pairscup.html">Pairs Cup</a></li>
+                <li><a href="treblescup.html">Trebles Cup</a></li>
+                <li><a href="captainscup.html">Captains Cup</a></li>
+                <li><a href="cupdraw.html">Auto Draw Tool</a></li>
+            </ul>
+        </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                    <li><a href="players.html">Players</a></li>
+                </ul>
+            </li>
+            
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+    
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Join</a>
+                <ul class="dropdown-menu">
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="findateam.html">Find a Team</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+        <!-- Cup Results Page -->
+        <div id="cup-results" class="page">
+            <div class="card">
+                <div class="division-toggle">
+                    <button class="active" data-division="premier">Premier Division</button>
+                    <button data-division="a">A Division</button>
+                </div>
+
+                <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vQW8xgsYOkZGz0RChWCg6C1S3LCRfb5_wpF3LkbiUJ6ihqqX_mlpwlPSVnXFtngtKi4wit3Bp-uauqC/pubhtml?widget=true&amp;headers=false"></iframe>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+    
+    // Toggle mobile menu
+    mobileToggle.addEventListener('click', function() {
+        navMenu.classList.toggle('active');
+        
+        // Animate hamburger to X
+        this.classList.toggle('active');
+        const bars = this.querySelectorAll('.bar');
+        if (this.classList.contains('active')) {
+            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+            bars[1].style.opacity = '0';
+            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+        } else {
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle dropdown menus on mobile
+    dropdownToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Only apply this behavior on mobile
+            if (window.innerWidth <= 768) {
+                e.preventDefault();
+                const parentLi = this.parentElement;
+                
+                // Close all other open dropdowns
+                document.querySelectorAll('.dropdown.active').forEach(item => {
+                    if (item !== parentLi) {
+                        item.classList.remove('active');
+                    }
+                });
+                
+                // Toggle this dropdown
+                parentLi.classList.toggle('active');
+            }
+        });
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
+        if (!isClickInsideNav && navMenu.classList.contains('active')) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+        }
+    });
+    
+    // Handle resize events
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            navMenu.classList.remove('active');
+            mobileToggle.classList.remove('active');
+            const bars = mobileToggle.querySelectorAll('.bar');
+            bars[0].style.transform = 'none';
+            bars[1].style.opacity = '1';
+            bars[2].style.transform = 'none';
+            
+            // Reset all dropdowns
+            document.querySelectorAll('.dropdown.active').forEach(item => {
+                item.classList.remove('active');
+            });
+        }
+    });
+});
+        // API configuration
+        const API_URL = 'api.php'; // Change this to your actual API endpoint
+
+        // Keep track of loaded match details to avoid redundant API calls
+        const loadedMatchDetails = {};
+
+        function getCurrentDivision() {
+            const divisionToggle = document.querySelector('.division-toggle button.active');
+            return divisionToggle ? divisionToggle.dataset.division : 'premier';
+        }
+
+        // Division toggle handling
+        document.querySelectorAll('.division-toggle button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const division = e.target.dataset.division;
+                const parent = e.target.closest('.division-toggle');
+                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                loadCupResults(division);
+            });
+        });
+
+        // API functions
+        async function fetchApi(endpoint, params = {}) {
+            const queryString = new URLSearchParams(params).toString();
+            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
+            
+            try {
+                const response = await fetch(url);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return [];
+            }
+        }
+
+        async function loadCupResults(division) {
+            const data = await fetchApi('cup-results', { division });
+            const resultsList = document.getElementById('cup-results-list');
+            resultsList.innerHTML = '';
+            
+            // Filter out matches involving "Bye" teams
+            const filteredData = data.filter(result => 
+                result.home_team !== 'Bye' && 
+                result.home_team !== 'Division A Bye' && 
+                result.away_team !== 'Bye' && 
+                result.away_team !== 'Division A Bye'
+            );
+            
+            // Group results by round and date
+            const resultsByRoundAndDate = {};
+            
+            filteredData.forEach(result => {
+                const round = result.cup_round || 'Last 16';
+                
+                if (!resultsByRoundAndDate[round]) {
+                    resultsByRoundAndDate[round] = {};
+                }
+                
+                // Format the date for display and grouping
+                const matchDate = result.match_date ? new Date(result.match_date) : null;
+                const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                }) : 'Date not available';
+                
+                if (!resultsByRoundAndDate[round][formattedDate]) {
+                    resultsByRoundAndDate[round][formattedDate] = [];
+                }
+                
+                resultsByRoundAndDate[round][formattedDate].push(result);
+            });
+            
+            // Define the order of cup rounds for sorting
+            const roundOrder = ['Last 16', 'Quarter Final', 'Semi Final', 'Final'];
+            
+            // If no results, display a message
+            if (Object.keys(resultsByRoundAndDate).length === 0) {
+                const noResultsMsg = document.createElement('p');
+                noResultsMsg.style.textAlign = 'center';
+                noResultsMsg.style.padding = '20px';
+                noResultsMsg.textContent = 'No cup results available yet.';
+                resultsList.appendChild(noResultsMsg);
+                return;
+            }
+            
+            // Render results grouped by round and date in the proper order
+            roundOrder.forEach(round => {
+                if (resultsByRoundAndDate[round]) {
+                    // Create round header
+                    const roundHeader = document.createElement('h3');
+                    roundHeader.className = 'cup-round-header';
+                    roundHeader.textContent = round;
+                    resultsList.appendChild(roundHeader);
+                    
+                    // Get dates for this round and sort them (newest first)
+                    const dates = Object.keys(resultsByRoundAndDate[round]).sort((a, b) => {
+                        // Get the first match from each date to compare their actual dates
+                        const dateA = new Date(resultsByRoundAndDate[round][a][0].match_date);
+                        const dateB = new Date(resultsByRoundAndDate[round][b][0].match_date);
+                        return dateB - dateA;
+                    });
+                    
+                    // For each date in this round
+                    dates.forEach(formattedDate => {
+                        // Create date subheader
+                        const dateHeader = document.createElement('h4');
+                        dateHeader.className = 'results-date-header';
+                        dateHeader.textContent = formattedDate;
+                        resultsList.appendChild(dateHeader);
+                        
+                        // Add matches for this date
+                        resultsByRoundAndDate[round][formattedDate].forEach(result => {
+                            // Create result card
+                            const resultCard = document.createElement('div');
+                            resultCard.className = 'fixture-card';
+                            resultCard.dataset.matchId = result.match_id;
+                            resultCard.innerHTML = `
+                                <div class="team-name home">${result.home_team}</div>
+                                <div class="score">${result.home_score} - ${result.away_score}</div>
+                                <div class="team-name away">${result.away_team}</div>
+                                <div class="expand-icon">&#9660;</div>
+                            `;
+                            resultsList.appendChild(resultCard);
+                            
+                            // Create expandable details section
+                            const detailsSection = document.createElement('div');
+                            detailsSection.className = 'match-details';
+                            detailsSection.dataset.matchId = result.match_id;
+                            detailsSection.innerHTML = `
+                                <div class="match-details-content">
+                                    <div class="loading-indicator">Loading match details...</div>
+                                </div>
+                            `;
+                            resultsList.appendChild(detailsSection);
+                            
+                            // Add click event to toggle details
+                            resultCard.addEventListener('click', async () => {
+                                toggleMatchDetails(result.match_id);
+                            });
+                        });
+                    });
+                }
+            });
+        }
+
+        // Toggle match details visibility
+        async function toggleMatchDetails(matchId) {
+            const resultCard = document.querySelector(`.fixture-card[data-match-id="${matchId}"]`);
+            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
+            
+            if (!resultCard || !detailsSection) return;
+            
+            // Toggle expanded state
+            resultCard.classList.toggle('expanded');
+            
+            if (detailsSection.classList.contains('expanded')) {
+                // Collapse
+                detailsSection.classList.remove('expanded');
+            } else {
+                // Expand and load details if not already loaded
+                detailsSection.classList.add('expanded');
+                
+                if (!loadedMatchDetails[matchId]) {
+                    await loadMatchDetails(matchId);
+                }
+            }
+        }
+
+        // Load match details from API
+        async function loadMatchDetails(matchId) {
+            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
+            const contentDiv = detailsSection.querySelector('.match-details-content');
+            
+            try {
+                // Fetch match details
+                const matchDetails = await fetchApi('match-details', { match_id: matchId });
+                
+                if (!matchDetails || !matchDetails.success) {
+                    contentDiv.innerHTML = `
+                        <div class="error-message">
+                            Failed to load match details. Please try again later.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // Store in cache to avoid redundant API calls
+                loadedMatchDetails[matchId] = matchDetails;
+                
+                // Render match details
+                renderMatchDetails(contentDiv, matchDetails);
+                
+            } catch (error) {
+                console.error('Error loading match details:', error);
+                contentDiv.innerHTML = `
+                    <div class="error-message">
+                        An error occurred while loading match details. Please try again later.
+                    </div>
+                `;
+            }
+        }
+
+        // Render match details content
+        function renderMatchDetails(container, matchDetails) {
+            const match = matchDetails.match;
+            const division = match.division;
+            const matchType = match.match_type;
+            
+            let content = '';
+            
+            // Add doubles section if there are doubles results
+            if (matchDetails.doubles && matchDetails.doubles.length > 0) {
+                content += `
+                    <div class="match-section">
+                        <h4 class="match-header">Doubles Matches</h4>
+                `;
+                
+                matchDetails.doubles.forEach((doubles, index) => {
+                    content += `
+                        <div class="player-match">
+                            <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
+                            <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
+                            <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add singles section if there are singles results
+            if (matchDetails.singles && matchDetails.singles.length > 0) {
+                content += `
+                    <div class="match-section">
+                        <h4 class="match-header">Singles Matches</h4>
+                `;
+                
+                matchDetails.singles.forEach((singles, index) => {
+                    content += `
+                        <div class="player-match">
+                            <div class="home-player">${singles.home_player_name}</div>
+                            <div class="match-score">${singles.home_score}-${singles.away_score}</div>
+                            <div class="away-player">${singles.away_player_name}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add 180s section if there are any
+            if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
+                content += `
+                    <div class="stats-section">
+                        <h4>180s</h4>
+                `;
+                
+                matchDetails.oneEighties.forEach(oneEighty => {
+                    content += `
+                        <div class="stats-item">
+                            <div class="player-name">${oneEighty.player_name}</div>
+                            <div class="stat-value">${oneEighty.count}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // Add high finishes section if there are any
+            if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
+                content += `
+                    <div class="stats-section">
+                        <h4>High Finishes</h4>
+                `;
+                
+                // Sort high finishes by value (highest first)
+                const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
+                
+                sortedFinishes.forEach(finish => {
+                    content += `
+                        <div class="stats-item">
+                            <div class="player-name">${finish.player_name}</div>
+                            <div class="stat-value">${finish.finish_value}</div>
+                        </div>
+                    `;
+                });
+                
+                content += `</div>`;
+            }
+            
+            // If no content was generated, show a message
+            if (!content) {
+                content = `<p class="error-message">No detailed results available for this match.</p>`;
+            }
+            
+            container.innerHTML = content;
+        }
+        
+        // Initially load the cup results
+        loadCupResults(getCurrentDivision());
+    </script>
+</body>
+</html>
