@@ -624,7 +624,7 @@ document.addEventListener('DOMContentLoaded', function() {
             tbody.innerHTML = '';
             
             // Filter out the "Bye" teams
-            const filteredData = data.filter(team => team.team_name !== 'Bye' && team.team_name !== 'Division A Bye');
+            const filteredData = data.filter(team => team.team_name !== 'Bye');
             
             filteredData.forEach((team, index) => {
                 const row = document.createElement('tr');
