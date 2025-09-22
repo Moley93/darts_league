@@ -229,30 +229,30 @@ function getSinglesRanking() {
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 0 THEN 1
                              ELSE 0 END) as win_3_0,
-                             
+
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 1 THEN 1
                              ELSE 0 END) as win_3_1,
-                             
+
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 2 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 2 THEN 1
                              ELSE 0 END) as win_3_2,
-                    
+
                     -- Premier Division - Detailed score breakdown - Losses
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 3 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 3 THEN 1
                              ELSE 0 END) as loss_2_3,
-                             
+
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 3 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 1 AND sr.home_score = 3 THEN 1
                              ELSE 0 END) as loss_1_3,
-                             
+
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 0 AND sr.away_score = 3 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 3 THEN 1
                              ELSE 0 END) as loss_0_3,
-                    
+
                     -- Points calculation - Premier Division scoring (best of 5 for singles)
-                    SUM(CASE 
+                    SUM(CASE
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 5
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 3
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 2 THEN 1
@@ -295,13 +295,15 @@ function getSinglesRanking() {
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 2 AND sr.home_score = 1 THEN 1
                              ELSE 0 END) as win_2_1,
                     
-                    -- A Division - Zero values for Premier Division fields 
+                    -- A Division - Zero values for Premier Division fields
                     -- to maintain compatible structure with frontend
                     0 as win_3_0,
-                    0 as win_3_1, 
+                    0 as win_3_1,
                     0 as win_3_2,
                     0 as loss_2_3,
-                             
+                    0 as loss_1_3,
+                    0 as loss_0_3,
+
                     -- A Division - Detailed score breakdown - Losses (1-2, 0-2)
                     SUM(CASE WHEN sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 2 THEN 1
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 1 AND sr.home_score = 2 THEN 1
