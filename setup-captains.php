@@ -16,22 +16,22 @@ try {
 
 // List of team captains to create
 $captains = [
-    ['team_id' => 1, 'username' => 'unbear', 'password' => 'unbear'],
-    ['team_id' => 2, 'username' => 'jubile', 'password' => 'jubile'],
-    ['team_id' => 3, 'username' => 'rebel', 'password' => 'rebel'],
-    ['team_id' => 4, 'username' => 'dsotm', 'password' => 'dsotm'],
-    ['team_id' => 5, 'username' => 'dartb', 'password' => 'dartb'],
-    ['team_id' => 6, 'username' => 'rugby', 'password' => 'rugby'],
-    ['team_id' => 7, 'username' => 'grass', 'password' => 'grass'],
-    ['team_id' => 8, 'username' => 'premier_bye', 'password' => 'premierbye123'],  // Premier division bye
-    ['team_id' => 9, 'username' => 'arrow', 'password' => 'arrows'],
-    ['team_id' => 10, 'username' => 'dingl', 'password' => 'dingl'],
-    ['team_id' => 11, 'username' => 'johns', 'password' => 'johns'],
-    ['team_id' => 12, 'username' => 'disap', 'password' => 'disap'],
-    ['team_id' => 13, 'username' => 'apv', 'password' => 'apv'],
-    ['team_id' => 14, 'username' => 'woody', 'password' => 'woody'],
-    ['team_id' => 15, 'username' => 'pelha', 'password' => 'pelha'],
-    ['team_id' => 16, 'username' => 'division_a_bye', 'password' => 'abye123']  // Division A bye
+    ['team_id' => 1, 'username' => 'jclub', 'password' => 'tokyo1'],
+    ['team_id' => 2, 'username' => 'darks', 'password' => 'paris2'],
+    ['team_id' => 3, 'username' => 'rebel', 'password' => 'sydney3'],
+    ['team_id' => 4, 'username' => 'grass', 'password' => 'toronto4'],
+    ['team_id' => 5, 'username' => 'dartb', 'password' => 'dubai5'],
+    ['team_id' => 6, 'username' => 'unbea', 'password' => 'rome6'],
+    ['team_id' => 7, 'username' => 'rugby', 'password' => 'berlin7'],
+    ['team_id' => 8, 'username' => 'premier_bye', 'password' => 'premierbye8'],  // Premier division bye
+    ['team_id' => 9, 'username' => 'disap', 'password' => 'madrid9'],
+    ['team_id' => 10, 'username' => 'ewarr', 'password' => 'chicago10'],
+    ['team_id' => 11, 'username' => 'ewwoo', 'password' => 'moscow11'],
+    ['team_id' => 12, 'username' => 'wonky', 'password' => 'istanbul12'],
+    ['team_id' => 13, 'username' => 'dingl', 'password' => 'lisbon13'],
+    ['team_id' => 14, 'username' => 'apv', 'password' => 'athens14'],
+    ['team_id' => 15, 'username' => 'pelha', 'password' => 'nairobi15'],
+    ['team_id' => 16, 'username' => 'drsam', 'password' => 'jakarta16']  // Division A bye
 ];
 
 // Clear existing captains
