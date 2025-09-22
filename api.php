@@ -251,7 +251,7 @@ function getSinglesRanking() {
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 3 THEN 1
                              ELSE 0 END) as loss_0_3,
                     
-                    -- Points calculation - Premier Division scoring (best of 5)
+                    -- Points calculation - Premier Division scoring (best of 5 for singles)
                     SUM(CASE 
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 5
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 3
@@ -311,7 +311,7 @@ function getSinglesRanking() {
                              WHEN sr.away_player_id = p.player_id AND sr.away_score = 0 AND sr.home_score = 2 THEN 1
                              ELSE 0 END) as loss_0_2,
                     
-                    -- Points calculation - A Division scoring (best of 3)
+                    -- Points calculation - A Division scoring (best of 3 for singles)
                     SUM(CASE 
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 0 THEN 3
                         WHEN sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 1 THEN 2

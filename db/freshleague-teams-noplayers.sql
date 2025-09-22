@@ -97,14 +97,14 @@ CREATE DEFINER=`darts_league`@`%` PROCEDURE `calculate_player_rankings` (IN `div
             THEN 1 ELSE 0 
         END) as lost,
         SUM(CASE 
-            -- Premier Division scoring (best of 5)
+            -- Premier Division scoring (best of 5 for singles)
             WHEN t.division = 'premier' AND sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 0 THEN 5
             WHEN t.division = 'premier' AND sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 1 THEN 3
             WHEN t.division = 'premier' AND sr.home_player_id = p.player_id AND sr.home_score = 3 AND sr.away_score = 2 THEN 1
             WHEN t.division = 'premier' AND sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 0 THEN 5
             WHEN t.division = 'premier' AND sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 1 THEN 3
             WHEN t.division = 'premier' AND sr.away_player_id = p.player_id AND sr.away_score = 3 AND sr.home_score = 2 THEN 1
-            -- A Division scoring (best of 3)
+            -- A Division scoring (best of 3 for singles)
             WHEN t.division = 'a' AND sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 0 THEN 3
             WHEN t.division = 'a' AND sr.home_player_id = p.player_id AND sr.home_score = 2 AND sr.away_score = 1 THEN 2
             WHEN t.division = 'a' AND sr.home_player_id = p.player_id AND sr.home_score = 1 AND sr.away_score = 2 THEN 1
