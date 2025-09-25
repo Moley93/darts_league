@@ -36,9 +36,19 @@
         }
         
         /* Other columns get equal space */
-        #league-table th:not(:first-child):not(:nth-child(2)), 
+        #league-table th:not(:first-child):not(:nth-child(2)),
         #league-table td:not(:first-child):not(:nth-child(2)) {
             width: 10%;
+        }
+
+        /* Promotion zone styling (green tint for A Division top 2) */
+        #league-table tr.promotion-zone {
+            background-color: rgba(76, 175, 80, 0.1);
+        }
+
+        /* Relegation zone styling (red tint for Premier Division bottom 1) */
+        #league-table tr.relegation-zone {
+            background-color: rgba(244, 67, 54, 0.1);
         }
                 /* Custom header style for the index page to position logo left and title centered */
                 .header {
@@ -628,8 +638,17 @@ document.addEventListener('DOMContentLoaded', function() {
             
             filteredData.forEach((team, index) => {
                 const row = document.createElement('tr');
+                const position = index + 1;
+
+                // Add promotion/relegation zone classes
+                if (division === 'a' && position <= 2) {
+                    row.classList.add('promotion-zone');
+                } else if (division === 'premier' && position === filteredData.length) {
+                    row.classList.add('relegation-zone');
+                }
+
                 row.innerHTML = `
-                    <td>${index + 1}</td>
+                    <td>${position}</td>
                     <td>${team.team_name}</td>
                     <td>${team.played}</td>
                     <td>${team.won}</td>
