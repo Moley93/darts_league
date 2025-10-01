@@ -211,12 +211,125 @@
             color: var(--primary);
             font-style: italic;
         }
-        
+
         .error-message {
             color: #d32f2f;
             text-align: center;
             padding: 10px;
             font-style: italic;
+        }
+
+        /* Singles Cup Info Styles */
+        .singles-cup-info {
+            padding: 20px;
+        }
+
+        .event-info-section {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .event-header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .event-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .event-date {
+            font-size: 1.3em;
+            font-weight: 500;
+            opacity: 0.95;
+        }
+
+        .divisions-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+        }
+
+        .division-card {
+            padding: 30px;
+            border-bottom: 1px solid var(--light-gray);
+        }
+
+        .division-card:first-child {
+            border-right: 1px solid var(--light-gray);
+        }
+
+        .division-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        .venue-info {
+            text-align: center;
+        }
+
+        .venue-name {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--secondary);
+            margin-bottom: 15px;
+        }
+
+        .venue-address {
+            color: var(--dark-gray);
+            line-height: 1.6;
+            font-size: 1em;
+        }
+
+        .event-details {
+            background: var(--light-gray);
+            padding: 20px;
+            text-align: center;
+            font-style: italic;
+            color: var(--dark-gray);
+        }
+
+        .event-details p {
+            margin: 0;
+        }
+
+        /* Responsive adjustments for Singles Cup */
+        @media (max-width: 768px) {
+            .divisions-info {
+                grid-template-columns: 1fr;
+            }
+
+            .division-card:first-child {
+                border-right: none;
+                border-bottom: 1px solid var(--light-gray);
+            }
+
+            .event-header h2 {
+                font-size: 1.6em;
+            }
+
+            .event-date {
+                font-size: 1.1em;
+            }
+
+            .division-title {
+                font-size: 1.2em;
+            }
+
+            .venue-name {
+                font-size: 1.1em;
+            }
         }
         
         /* Responsive adjustments */
@@ -636,7 +749,9 @@
                 <li><a href="pairscup.html">Pairs Cup</a></li>
                 <li><a href="treblescup.html">Trebles Cup</a></li>
                 <li><a href="captainscup.html">Captains Cup</a></li>
-                <li><a href="cupdraw.html">Auto Draw Tool</a></li>
+                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
+                <li><a href="charitycup.html">Charity Cup</a></li>
+                <li><a href="cupdraw.html">Bracket Generator</a></li>
             </ul>
         </li>
             
@@ -680,13 +795,46 @@
         <!-- Cup Results Page -->
         <div id="cup-results" class="page">
             <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
+                <div class="singles-cup-info">
+                    <div class="event-info-section">
+                        <div class="event-header">
+                            <h2>Singles Cup 2025</h2>
+                            <div class="event-date">Friday 2nd May 2025</div>
+                        </div>
 
-                <div id="iframe-container"></div>
-                <iframe width="100%" height="1000px" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSK5mgAoe6ZCwfrB34qvP6l6OPgurCBjnCGwL_8cBlxsgmrlsq-v5D-joS652C8ufLrpPCFqPgY7DVT/pubhtml?widget=true&amp;headers=false"></iframe>
+                        <div class="divisions-info">
+                            <div class="division-card">
+                                <div class="division-title">Premier Division</div>
+                                <div class="venue-info">
+                                    <div class="venue-name">Ewhurst Wood Sports & Social Club</div>
+                                    <div class="venue-address">
+                                        West Green Park<br>
+                                        Ifield Ave<br>
+                                        Crawley<br>
+                                        RH11 7AJ
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="division-card">
+                                <div class="division-title">A Division</div>
+                                <div class="venue-info">
+                                    <div class="venue-name">Jubilee Club</div>
+                                    <div class="venue-address">
+                                        Jubilee Road<br>
+                                        Ifield<br>
+                                        Crawley<br>
+                                        West Sussex RH11 0BJ
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="event-details">
+                            <p>More details about entry, format, and prizes will be announced closer to the event date.</p>
+                        </div>
+                    </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -767,311 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-
-        // Keep track of loaded match details to avoid redundant API calls
-        const loadedMatchDetails = {};
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
-        }
-
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                loadknockoutcup(division);
-            });
-        });
-
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
-            try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
-            }
-        }
-
-        async function loadknockoutcup(division) {
-            const data = await fetchApi('cup-results', { division });
-            const resultsList = document.getElementById('cup-results-list');
-            resultsList.innerHTML = '';
-            
-            // Filter out matches involving "Bye" teams
-            const filteredData = data.filter(result => 
-                result.home_team !== 'Bye' && 
-                result.home_team !== 'Division A Bye' && 
-                result.away_team !== 'Bye' && 
-                result.away_team !== 'Division A Bye'
-            );
-            
-            // Group results by round and date
-            const resultsByRoundAndDate = {};
-            
-            filteredData.forEach(result => {
-                const round = result.cup_round || 'Last 16';
-                
-                if (!resultsByRoundAndDate[round]) {
-                    resultsByRoundAndDate[round] = {};
-                }
-                
-                // Format the date for display and grouping
-                const matchDate = result.match_date ? new Date(result.match_date) : null;
-                const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                }) : 'Date not available';
-                
-                if (!resultsByRoundAndDate[round][formattedDate]) {
-                    resultsByRoundAndDate[round][formattedDate] = [];
-                }
-                
-                resultsByRoundAndDate[round][formattedDate].push(result);
-            });
-            
-            // Define the order of cup rounds for sorting
-            const roundOrder = ['Last 16', 'Quarter Final', 'Semi Final', 'Final'];
-            
-            // If no results, display a message
-            if (Object.keys(resultsByRoundAndDate).length === 0) {
-                const noResultsMsg = document.createElement('p');
-                noResultsMsg.style.textAlign = 'center';
-                noResultsMsg.style.padding = '20px';
-                noResultsMsg.textContent = 'No cup results available yet.';
-                resultsList.appendChild(noResultsMsg);
-                return;
-            }
-            
-            // Render results grouped by round and date in the proper order
-            roundOrder.forEach(round => {
-                if (resultsByRoundAndDate[round]) {
-                    // Create round header
-                    const roundHeader = document.createElement('h3');
-                    roundHeader.className = 'cup-round-header';
-                    roundHeader.textContent = round;
-                    resultsList.appendChild(roundHeader);
-                    
-                    // Get dates for this round and sort them (newest first)
-                    const dates = Object.keys(resultsByRoundAndDate[round]).sort((a, b) => {
-                        // Get the first match from each date to compare their actual dates
-                        const dateA = new Date(resultsByRoundAndDate[round][a][0].match_date);
-                        const dateB = new Date(resultsByRoundAndDate[round][b][0].match_date);
-                        return dateB - dateA;
-                    });
-                    
-                    // For each date in this round
-                    dates.forEach(formattedDate => {
-                        // Create date subheader
-                        const dateHeader = document.createElement('h4');
-                        dateHeader.className = 'results-date-header';
-                        dateHeader.textContent = formattedDate;
-                        resultsList.appendChild(dateHeader);
-                        
-                        // Add matches for this date
-                        resultsByRoundAndDate[round][formattedDate].forEach(result => {
-                            // Create result card
-                            const resultCard = document.createElement('div');
-                            resultCard.className = 'fixture-card';
-                            resultCard.dataset.matchId = result.match_id;
-                            resultCard.innerHTML = `
-                                <div class="team-name home">${result.home_team}</div>
-                                <div class="score">${result.home_score} - ${result.away_score}</div>
-                                <div class="team-name away">${result.away_team}</div>
-                                <div class="expand-icon">&#9660;</div>
-                            `;
-                            resultsList.appendChild(resultCard);
-                            
-                            // Create expandable details section
-                            const detailsSection = document.createElement('div');
-                            detailsSection.className = 'match-details';
-                            detailsSection.dataset.matchId = result.match_id;
-                            detailsSection.innerHTML = `
-                                <div class="match-details-content">
-                                    <div class="loading-indicator">Loading match details...</div>
-                                </div>
-                            `;
-                            resultsList.appendChild(detailsSection);
-                            
-                            // Add click event to toggle details
-                            resultCard.addEventListener('click', async () => {
-                                toggleMatchDetails(result.match_id);
-                            });
-                        });
-                    });
-                }
-            });
-        }
-
-        // Toggle match details visibility
-        async function toggleMatchDetails(matchId) {
-            const resultCard = document.querySelector(`.fixture-card[data-match-id="${matchId}"]`);
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            
-            if (!resultCard || !detailsSection) return;
-            
-            // Toggle expanded state
-            resultCard.classList.toggle('expanded');
-            
-            if (detailsSection.classList.contains('expanded')) {
-                // Collapse
-                detailsSection.classList.remove('expanded');
-            } else {
-                // Expand and load details if not already loaded
-                detailsSection.classList.add('expanded');
-                
-                if (!loadedMatchDetails[matchId]) {
-                    await loadMatchDetails(matchId);
-                }
-            }
-        }
-
-        // Load match details from API
-        async function loadMatchDetails(matchId) {
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            const contentDiv = detailsSection.querySelector('.match-details-content');
-            
-            try {
-                // Fetch match details
-                const matchDetails = await fetchApi('match-details', { match_id: matchId });
-                
-                if (!matchDetails || !matchDetails.success) {
-                    contentDiv.innerHTML = `
-                        <div class="error-message">
-                            Failed to load match details. Please try again later.
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Store in cache to avoid redundant API calls
-                loadedMatchDetails[matchId] = matchDetails;
-                
-                // Render match details
-                renderMatchDetails(contentDiv, matchDetails);
-                
-            } catch (error) {
-                console.error('Error loading match details:', error);
-                contentDiv.innerHTML = `
-                    <div class="error-message">
-                        An error occurred while loading match details. Please try again later.
-                    </div>
-                `;
-            }
-        }
-
-        // Render match details content
-        function renderMatchDetails(container, matchDetails) {
-            const match = matchDetails.match;
-            const division = match.division;
-            const matchType = match.match_type;
-            
-            let content = '';
-            
-            // Add doubles section if there are doubles results
-            if (matchDetails.doubles && matchDetails.doubles.length > 0) {
-                content += `
-                    <div class="match-section">
-                        <h4 class="match-header">Doubles Matches</h4>
-                `;
-                
-                matchDetails.doubles.forEach((doubles, index) => {
-                    content += `
-                        <div class="player-match">
-                            <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
-                            <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
-                            <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // Add singles section if there are singles results
-            if (matchDetails.singles && matchDetails.singles.length > 0) {
-                content += `
-                    <div class="match-section">
-                        <h4 class="match-header">Singles Matches</h4>
-                `;
-                
-                matchDetails.singles.forEach((singles, index) => {
-                    content += `
-                        <div class="player-match">
-                            <div class="home-player">${singles.home_player_name}</div>
-                            <div class="match-score">${singles.home_score}-${singles.away_score}</div>
-                            <div class="away-player">${singles.away_player_name}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // Add 180s section if there are any
-            if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
-                content += `
-                    <div class="stats-section">
-                        <h4>180s</h4>
-                `;
-                
-                matchDetails.oneEighties.forEach(oneEighty => {
-                    content += `
-                        <div class="stats-item">
-                            <div class="player-name">${oneEighty.player_name}</div>
-                            <div class="stat-value">${oneEighty.count}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // Add high finishes section if there are any
-            if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
-                content += `
-                    <div class="stats-section">
-                        <h4>High Finishes</h4>
-                `;
-                
-                // Sort high finishes by value (highest first)
-                const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
-                
-                sortedFinishes.forEach(finish => {
-                    content += `
-                        <div class="stats-item">
-                            <div class="player-name">${finish.player_name}</div>
-                            <div class="stat-value">${finish.finish_value}</div>
-                        </div>
-                    `;
-                });
-                
-                content += `</div>`;
-            }
-            
-            // If no content was generated, show a message
-            if (!content) {
-                content = `<p class="error-message">No detailed results available for this match.</p>`;
-            }
-            
-            container.innerHTML = content;
-        }
-        
-        // Initially load the cup results
-        loadknockoutcup(getCurrentDivision());
+        // No dynamic functionality needed for static event info page
     </script>
 </body>
 </html>

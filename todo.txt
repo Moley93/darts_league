@@ -429,7 +429,7 @@
                 <li><a href="pairscup.html">Pairs Cup</a></li>
                 <li><a href="treblescup.html">Trebles Cup</a></li>
                 <li><a href="captainscup.html">Captains Cup</a></li>
-                <li><a href="cupdraw.html">Auto Draw Tool</a></li>
+                <li><a href="cupdraw.html">Bracket Generator</a></li>
             </ul>
         </li>
         
