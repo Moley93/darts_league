@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Admin area for the Crawley Darts League. Manage teams, players, score submissions and player requests.">
+    <meta name="robots" content="noindex,nofollow">
+    <title>CDL | Admin</title>
+    <link rel="stylesheet" href="styles.css">
+<style>
+        /* Login card */
+        .auth-card { max-width: 420px; margin: 30px auto; padding: 25px; }
+        .auth-card h2 { color: var(--primary); margin-bottom: 15px; }
+        .auth-msg { padding: 10px 15px; border-radius: 4px; margin: 10px 0; display: none; }
+        .auth-msg.error { background: #ffebee; color: #c62828; border-left: 4px solid #c62828; display: block; }
+        .auth-msg.success { background: #e8f5e9; color: #2e7d32; border-left: 4px solid #2e7d32; display: block; }
+        .auth-msg.info { background: #e3f2fd; color: #1565c0; border-left: 4px solid #1565c0; display: block; }
+
+        /* Dashboard */
+        .admin-header-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 15px; }
+        .admin-header-bar h2 { color: var(--primary); margin: 0; }
+        .admin-tabs { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; border-bottom: 1px solid var(--medium-gray); }
+        .admin-tab { padding: 10px 16px; background: var(--light-gray); color: var(--primary); border: none; border-radius: 6px 6px 0 0; cursor: pointer; font-weight: 500; }
+        .admin-tab.active { background: var(--primary); color: white; }
+        .admin-pane { display: none; }
+        .admin-pane.active { display: block; }
+
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .form-row.full { grid-template-columns: 1fr; }
+        .small-note { font-size: 0.85rem; color: var(--dark-gray); margin-top: 4px; }
+
+        .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .data-table th { background: var(--primary); color: white; padding: 10px; text-align: left; }
+        .data-table td { padding: 10px; border-bottom: 1px solid var(--medium-gray); }
+        .data-table tr:nth-child(even) td { background: #f9f9f9; }
+
+        .btn-sm { padding: 6px 12px; font-size: 0.9rem; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-approve { background: #2e7d32; }
+        .btn-deny    { background: #c62828; }
+        .btn-delete  { background: #c62828; }
+        .btn-delete:hover, .btn-deny:hover { background: #a31515; }
+        .btn-approve:hover { background: #1b5e20; }
+
+        .status-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
+        .status-pending  { background: #fff3e0; color: #e65100; }
+        .status-approved { background: #e8f5e9; color: #2e7d32; }
+        .status-denied   { background: #ffebee; color: #c62828; }
+
+        /* Basic dropdown styling (shared with other pages) */
+        .nav .dropdown { position: relative; }
+        .nav .dropdown-toggle { cursor: pointer; }
+        .nav .dropdown-menu { display: none; position: absolute; background: white; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 1000; border-radius: 4px; padding: 10px 0; }
+        .nav .dropdown:hover .dropdown-menu { display: block; }
+        .nav .dropdown-menu li { margin: 0; padding: 0; }
+        .nav .dropdown-menu a { display: block; padding: 10px 20px; color: var(--primary); border-radius: 0; }
+        .nav .dropdown-menu a:hover { background-color: var(--light-gray); }
+
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+            .nav-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
+            .nav-menu.active { display: block; }
+            .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
+            .nav-menu a { padding: 15px 20px; display: block; }
+            .nav .dropdown-menu { position: static; box-shadow: none; background: var(--light-gray); width: 100%; padding: 0; }
+            .nav .dropdown:hover .dropdown-menu { display: none; }
+            .nav .dropdown-toggle::after { content: "+"; margin-left: 5px; }
+            .nav .dropdown.active .dropdown-menu { display: block; }
+            .nav .dropdown.active .dropdown-toggle::after { content: "-"; }
+        }
+</style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container"><img src="cdl-logo.png" alt="CDL Logo" class="logo"></div>
+        <h1>Crawley Darts League</h1>
+        <button class="mobile-toggle" aria-label="Toggle menu"><span class="bar"></span><span class="bar"></span><span class="bar"></span></button>
+    </header>
+
+    <nav class="nav">
+        <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">Competitions</a>
+                <ul class="dropdown-menu">
+                    <li><a href="knockoutcup.html">Knockout Cup</a></li>
+                    <li><a href="singlescup.html">Singles Cup</a></li>
+                    <li><a href="pairscup.html">Pairs Cup</a></li>
+                    <li><a href="treblescup.html">Trebles Cup</a></li>
+                    <li><a href="captainscup.html">Captains Cup</a></li>
+                    <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
+                    <li><a href="charitycup.html">Charity Cup</a></li>
+                    <li><a href="cupdraw.html">Bracket Generator</a></li>
+                </ul>
+            </li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts &amp; Venues</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                    <li><a href="players.html">Players</a></li>
+                    <li><a href="winnershistory.html">Winners History</a></li>
+                </ul>
+            </li>
+            <li><a href="admin-login.html">Admin Login</a></li>
+            <li><a href="team-login.html">Team Login</a></li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">Join</a>
+                <ul class="dropdown-menu">
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="findateam.html">Find a Team</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+
+        <!-- LOGIN VIEW -->
+        <section id="loginView" class="card auth-card" style="display:none;">
+            <h2>Admin Login</h2>
+            <div id="loginMsg" class="auth-msg"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input id="username" name="username" type="text" autocomplete="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input id="password" name="password" type="password" autocomplete="current-password" required>
+                </div>
+                <button type="submit" class="btn">Log In</button>
+            </form>
+        </section>
+
+        <!-- DASHBOARD VIEW -->
+        <section id="dashboardView" class="card" style="display:none;">
+            <div class="admin-header-bar">
+                <h2>Admin Dashboard</h2>
+                <div>
+                    <span id="loggedAdmin" style="margin-right:10px;color:var(--dark-gray);"></span>
+                    <button id="logoutBtn" class="btn-sm btn-delete">Log Out</button>
+                </div>
+            </div>
+
+            <div class="admin-tabs" role="tablist">
+                <button class="admin-tab active" data-pane="paneTeams">Teams</button>
+                <button class="admin-tab" data-pane="panePlayers">Players</button>
+                <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
+                <button class="admin-tab" data-pane="paneMatches">Match Results</button>
+                <button class="admin-tab" data-pane="panePassword">Change Password</button>
+            </div>
+
+            <div id="dashMsg" class="auth-msg"></div>
+
+            <!-- Teams pane -->
+            <div id="paneTeams" class="admin-pane active">
+                <h3>Add Team</h3>
+                <form id="addTeamForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team Name</label>
+                            <input name="team_name" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Division</label>
+                            <select name="division" required>
+                                <option value="premier">Premier</option>
+                                <option value="a">A</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Captain Username</label>
+                            <input name="captain_username" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Captain Password</label>
+                            <input name="captain_password" type="text" required minlength="4">
+                            <div class="small-note">Give the captain this password; they can change it later.</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Add Team</button>
+                </form>
+
+                <h3 style="margin-top:25px;">Existing Teams</h3>
+                <table class="data-table" id="teamsTable">
+                    <thead><tr><th>ID</th><th>Name</th><th>Division</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Players pane -->
+            <div id="panePlayers" class="admin-pane">
+                <h3>Add Player</h3>
+                <form id="addPlayerForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select name="team_id" id="addPlayerTeam" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Player Name</label>
+                            <input name="player_name" type="text" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Add Player</button>
+                </form>
+
+                <h3 style="margin-top:25px;">All Players</h3>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Filter by team</label>
+                    <select id="playersFilter"><option value="">All teams</option></select>
+                </div>
+                <table class="data-table" id="playersTable">
+                    <thead><tr><th>ID</th><th>Name</th><th>Team</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Player Requests pane -->
+            <div id="paneRequests" class="admin-pane">
+                <h3>Player Addition Requests</h3>
+                <div class="form-group" style="max-width:300px;">
+                    <label>Status</label>
+                    <select id="reqFilter">
+                        <option value="pending" selected>Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="denied">Denied</option>
+                        <option value="all">All</option>
+                    </select>
+                </div>
+                <table class="data-table" id="requestsTable">
+                    <thead><tr><th>Requested</th><th>Team</th><th>Player</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Matches pane -->
+            <div id="paneMatches" class="admin-pane">
+                <h3>Submitted Matches</h3>
+                <p class="small-note">Delete removes the match and all its results, 180s, and high finishes (cascade).</p>
+                <table class="data-table" id="matchesTable">
+                    <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Password pane -->
+            <div id="panePassword" class="admin-pane">
+                <h3>Change Admin Password</h3>
+                <form id="changePasswordForm" style="max-width:480px;">
+                    <div class="form-group">
+                        <label>Current Password</label>
+                        <input name="currentPassword" type="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>New Password (min 8 chars)</label>
+                        <input name="newPassword" type="password" required minlength="8">
+                    </div>
+                    <button type="submit" class="btn">Change Password</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+<script>
+const API = 'api.php';
+
+async function apiCall(endpoint, opts = {}) {
+    const url = `${API}?endpoint=${encodeURIComponent(endpoint)}`;
+    const res = await fetch(url, Object.assign({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }, opts));
+    let json;
+    try { json = await res.json(); } catch (e) { return { success: false, error: 'Invalid server response' }; }
+    return json;
+}
+
+function showMsg(elId, text, type = 'info') {
+    const el = document.getElementById(elId);
+    el.textContent = text;
+    el.className = 'auth-msg ' + type;
+}
+function clearMsg(elId) { const el = document.getElementById(elId); el.textContent=''; el.className='auth-msg'; }
+
+// ----- session bootstrap -----
+async function init() {
+    const me = await apiCall('admin-me');
+    if (me.success && me.admin) {
+        document.getElementById('loggedAdmin').textContent = 'Logged in as ' + me.admin.username;
+        document.getElementById('loginView').style.display = 'none';
+        document.getElementById('dashboardView').style.display = '';
+        loadAllDashboardData();
+    } else {
+        document.getElementById('loginView').style.display = '';
+        document.getElementById('dashboardView').style.display = 'none';
+    }
+}
+
+// ----- login -----
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('loginMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({ username: fd.get('username'), password: fd.get('password') });
+    const res = await apiCall('admin-login', { method: 'POST', body });
+    if (res.success) { init(); } else { showMsg('loginMsg', res.error || 'Login failed', 'error'); }
+});
+
+// ----- logout -----
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await apiCall('admin-logout', { method: 'POST' });
+    init();
+});
+
+// ----- tab switching -----
+document.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.admin-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.pane).classList.add('active');
+    });
+});
+
+// ----- shared state -----
+let _teamsCache = [];
+
+async function loadAllDashboardData() {
+    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches()]);
+}
+
+// ----- teams -----
+async function loadTeams() {
+    // Public endpoint returns array by division; combine premier + a.
+    const [premier, a] = await Promise.all([
+        fetch(`${API}?endpoint=teams&division=premier`).then(r => r.json()).catch(() => []),
+        fetch(`${API}?endpoint=teams&division=a`).then(r => r.json()).catch(() => []),
+    ]);
+    const teams = []
+        .concat(Array.isArray(premier) ? premier.map(t => Object.assign({ division: 'premier' }, t)) : [])
+        .concat(Array.isArray(a) ? a.map(t => Object.assign({ division: 'a' }, t)) : []);
+    _teamsCache = teams;
+
+    // Populate teams table
+    const tbody = document.querySelector('#teamsTable tbody');
+    tbody.innerHTML = '';
+    teams.forEach(t => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${t.team_id}</td><td>${escapeHtml(t.team_name)}</td><td>${t.division === 'premier' ? 'Premier' : 'A'}</td>
+            <td><button class="btn-sm btn-delete" data-id="${t.team_id}">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteTeam(b.dataset.id)));
+
+    // Populate selectors that depend on teams
+    const sel = document.getElementById('addPlayerTeam');
+    const filt = document.getElementById('playersFilter');
+    sel.innerHTML = ''; filt.innerHTML = '<option value="">All teams</option>';
+    teams.forEach(t => {
+        sel.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${escapeHtml(t.team_name)} (${t.division === 'premier' ? 'P' : 'A'})</option>`);
+        filt.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${escapeHtml(t.team_name)}</option>`);
+    });
+}
+
+document.getElementById('addTeamForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({
+        team_name: fd.get('team_name'), division: fd.get('division'),
+        captain_username: fd.get('captain_username'), captain_password: fd.get('captain_password'),
+    });
+    const res = await apiCall('add-team', { method: 'POST', body });
+    if (res.success) { showMsg('dashMsg', 'Team added.', 'success'); e.target.reset(); loadTeams(); loadPlayers(); }
+    else showMsg('dashMsg', res.error || 'Failed to add team', 'error');
+});
+
+async function deleteTeam(id) {
+    if (!confirm('Delete this team? Captain login is removed, players are detached.')) return;
+    const res = await apiCall('delete-team', { method: 'POST', body: JSON.stringify({ team_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Team deleted.', 'success'); loadTeams(); loadPlayers(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+// ----- players -----
+async function loadPlayers() {
+    // /api.php?endpoint=players returns all players with their team_id
+    const players = await fetch(`${API}?endpoint=players`).then(r => r.json()).catch(() => []);
+    const tbody = document.querySelector('#playersTable tbody');
+    const filter = document.getElementById('playersFilter').value;
+    tbody.innerHTML = '';
+    const teamById = Object.fromEntries(_teamsCache.map(t => [String(t.team_id), t]));
+    (Array.isArray(players) ? players : []).forEach(p => {
+        if (filter && String(p.team_id) !== String(filter)) return;
+        const t = teamById[String(p.team_id)];
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${p.player_id}</td><td>${escapeHtml(p.player_name)}</td><td>${t ? escapeHtml(t.team_name) : '<em>unattached</em>'}</td>
+            <td><button class="btn-sm btn-delete" data-id="${p.player_id}">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deletePlayer(b.dataset.id)));
+}
+
+document.getElementById('playersFilter').addEventListener('change', loadPlayers);
+
+document.getElementById('addPlayerForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({ team_id: Number(fd.get('team_id')), player_name: fd.get('player_name') });
+    const res = await apiCall('add-player', { method: 'POST', body });
+    if (res.success) { showMsg('dashMsg', 'Player added.', 'success'); e.target.reset(); loadPlayers(); }
+    else showMsg('dashMsg', res.error || 'Failed to add player', 'error');
+});
+
+async function deletePlayer(id) {
+    if (!confirm('Delete this player?')) return;
+    const res = await apiCall('delete-player', { method: 'POST', body: JSON.stringify({ player_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Player deleted.', 'success'); loadPlayers(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+// ----- requests -----
+document.getElementById('reqFilter').addEventListener('change', loadRequests);
+
+async function loadRequests() {
+    const status = document.getElementById('reqFilter').value;
+    const res = await apiCall(`pending-requests&status=${encodeURIComponent(status)}`);
+    const tbody = document.querySelector('#requestsTable tbody');
+    tbody.innerHTML = '';
+    let pending = 0;
+    (res.requests || []).forEach(r => {
+        if (r.status === 'pending') pending++;
+        const actions = r.status === 'pending'
+            ? `<button class="btn-sm btn-approve" data-id="${r.request_id}" data-act="approve">Approve</button>
+               <button class="btn-sm btn-deny"    data-id="${r.request_id}" data-act="deny">Deny</button>`
+            : '<em>—</em>';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(r.requested_at)}</td>
+                        <td>${escapeHtml(r.team_name)} (${r.division === 'premier' ? 'P' : 'A'})</td>
+                        <td>${escapeHtml(r.player_name)}</td>
+                        <td><span class="status-pill status-${r.status}">${r.status}</span></td>
+                        <td>${actions}</td>`;
+        tbody.appendChild(tr);
+    });
+    document.getElementById('pendingCount').textContent = pending ? ` (${pending})` : '';
+    tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => actOnRequest(b.dataset.id, b.dataset.act)));
+}
+
+async function actOnRequest(id, act) {
+    const endpoint = act === 'approve' ? 'approve-request' : 'deny-request';
+    const res = await apiCall(endpoint, { method: 'POST', body: JSON.stringify({ request_id: Number(id) }) });
+    if (res.success) { loadRequests(); loadPlayers(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+// ----- matches -----
+async function loadMatches() {
+    const res = await apiCall('admin-list-matches');
+    const tbody = document.querySelector('#matchesTable tbody');
+    tbody.innerHTML = '';
+    (res.matches || []).forEach(m => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
+                        <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
+                        <td>${escapeHtml(m.home_team_name || '—')}</td>
+                        <td>${m.home_score} - ${m.away_score}</td>
+                        <td>${escapeHtml(m.away_team_name || '—')}</td>
+                        <td><button class="btn-sm btn-delete" data-id="${m.match_id}">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteMatch(b.dataset.id)));
+}
+
+async function deleteMatch(id) {
+    if (!confirm('Delete this match and all its results?')) return;
+    const res = await apiCall('admin-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMatches(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+// ----- change password -----
+document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({ currentPassword: fd.get('currentPassword'), newPassword: fd.get('newPassword') });
+    const res = await apiCall('admin-change-password', { method: 'POST', body });
+    if (res.success) { showMsg('dashMsg', 'Password changed.', 'success'); e.target.reset(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+});
+
+// ----- utilities -----
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// ----- mobile nav (shared pattern) -----
+document.addEventListener('DOMContentLoaded', function() {
+    const mobileToggle = document.querySelector('.mobile-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    if (mobileToggle && navMenu) mobileToggle.addEventListener('click', () => navMenu.classList.toggle('active'));
+    document.querySelectorAll('.dropdown-toggle').forEach(t => t.addEventListener('click', function(e) {
+        if (window.innerWidth <= 768) { e.preventDefault(); this.parentElement.classList.toggle('active'); }
+    }));
+    init();
+});
+</script>
+</body>
+</html>

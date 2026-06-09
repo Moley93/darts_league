@@ -4,6 +4,11 @@
 // Ensure no output before JSON
 ob_start();
 
+// Start session for admin / team login state
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Turn on error logging but disable displaying errors
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
@@ -127,7 +132,30 @@ switch ($endpoint) {
             returnJson(['success' => false, 'error' => 'Method not allowed for update-match']);
         }
         break;
-    
+
+    // -------- new endpoints (admin + team session-aware) --------
+
+    case 'admin-login':       requirePost(); adminLogin(); break;
+    case 'admin-logout':      requirePost(); adminLogout(); break;
+    case 'admin-me':          adminMe(); break;
+    case 'admin-change-password': requirePost(); adminChangePassword(); break;
+    case 'add-team':          requirePost(); adminAddTeam(); break;
+    case 'delete-team':       requirePost(); adminDeleteTeam(); break;
+    case 'add-player':        requirePost(); adminAddPlayer(); break;
+    case 'delete-player':     requirePost(); adminDeletePlayer(); break;
+    case 'pending-requests':  adminListPendingRequests(); break;
+    case 'approve-request':   requirePost(); adminApproveRequest(); break;
+    case 'deny-request':      requirePost(); adminDenyRequest(); break;
+    case 'admin-list-matches': adminListMatches(); break;
+    case 'admin-delete-match': requirePost(); adminDeleteMatch(); break;
+
+    case 'team-me':           teamMe(); break;
+    case 'team-logout':       requirePost(); teamLogout(); break;
+    case 'team-request-player': requirePost(); teamRequestPlayer(); break;
+    case 'team-my-requests':  teamMyRequests(); break;
+    case 'team-list-my-matches': teamListMyMatches(); break;
+    case 'team-delete-match': requirePost(); teamDeleteMatch(); break;
+
     default:
         returnJson(['success' => false, 'error' => 'Invalid endpoint']);
         break;
@@ -732,6 +760,13 @@ function handleLogin() {
         if (password_verify($password, $captain['password_hash'])) {
             error_log("Password verified successfully");
             unset($captain['password_hash']);
+            // Set session so admin/team-aware endpoints know who is acting.
+            $_SESSION['captain_id'] = (int)$captain['captain_id'];
+            $_SESSION['team_id']    = (int)$captain['team_id'];
+            $_SESSION['team_name']  = $captain['team_name'];
+            $_SESSION['division']   = $captain['division'];
+            // Clear any admin session — a captain is logging in.
+            unset($_SESSION['admin_id'], $_SESSION['admin_username']);
             returnJson(['success' => true, 'captain' => $captain]);
         } else {
             error_log("Password verification failed");
@@ -820,16 +855,16 @@ function submitMatch() {
         } else {
             if ($data['matchType'] === 'cup' && $cupRound) {
                 $stmt = $pdo->prepare("
-                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date, cup_round) 
-                    VALUES (?, ?, ?, ?, 'completed', NOW(), ?)
+                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date, cup_round, submitted_by_captain_id)
+                    VALUES (?, ?, ?, ?, 'completed', NOW(), ?, ?)
                 ");
-                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division'], $cupRound]);
+                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division'], $cupRound, $_SESSION['captain_id'] ?? null]);
             } else {
                 $stmt = $pdo->prepare("
-                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date) 
-                    VALUES (?, ?, ?, ?, 'completed', NOW())
+                    INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date, submitted_by_captain_id)
+                    VALUES (?, ?, ?, ?, 'completed', NOW(), ?)
                 ");
-                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division']]);
+                $stmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division'], $_SESSION['captain_id'] ?? null]);
             }
             $matchId = $pdo->lastInsertId();
         }
@@ -1346,6 +1381,379 @@ function updateMatch() {
         error_log("Error in updateMatch: " . $e->getMessage());
         error_log("Error trace: " . $e->getTraceAsString());
         returnJson(['success' => false, 'error' => $e->getMessage()]);
+    }
+}
+
+// =====================================================================
+// New admin + team-session helpers and endpoints
+// =====================================================================
+
+function requirePost() {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        returnJson(['success' => false, 'error' => 'Method not allowed']);
+    }
+}
+
+function readJsonBody() {
+    $raw = file_get_contents('php://input');
+    $data = json_decode($raw, true);
+    if (json_last_error() !== JSON_ERROR_NONE) {
+        returnJson(['success' => false, 'error' => 'Invalid JSON: ' . json_last_error_msg()]);
+    }
+    return $data ?: [];
+}
+
+function requireAdmin() {
+    if (empty($_SESSION['admin_id'])) {
+        returnJson(['success' => false, 'error' => 'Admin login required']);
+    }
+    return (int)$_SESSION['admin_id'];
+}
+
+function requireCaptain() {
+    if (empty($_SESSION['captain_id'])) {
+        returnJson(['success' => false, 'error' => 'Team login required']);
+    }
+    return (int)$_SESSION['captain_id'];
+}
+
+// ---------------------- Admin auth ----------------------
+
+function adminLogin() {
+    global $pdo;
+    $d = readJsonBody();
+    $username = isset($d['username']) ? trim($d['username']) : '';
+    $password = isset($d['password']) ? $d['password'] : '';
+    if ($username === '' || $password === '') {
+        returnJson(['success' => false, 'error' => 'Username and password are required']);
+    }
+    $stmt = $pdo->prepare('SELECT * FROM admins WHERE username = ?');
+    $stmt->execute([$username]);
+    $admin = $stmt->fetch();
+    if (!$admin || !password_verify($password, $admin['password_hash'])) {
+        returnJson(['success' => false, 'error' => 'Invalid credentials']);
+    }
+    $_SESSION['admin_id'] = (int)$admin['admin_id'];
+    $_SESSION['admin_username'] = $admin['username'];
+    unset($_SESSION['captain_id'], $_SESSION['team_id'], $_SESSION['team_name'], $_SESSION['division']);
+    returnJson(['success' => true, 'admin' => ['admin_id' => (int)$admin['admin_id'], 'username' => $admin['username']]]);
+}
+
+function adminLogout() {
+    unset($_SESSION['admin_id'], $_SESSION['admin_username']);
+    returnJson(['success' => true]);
+}
+
+function adminMe() {
+    if (empty($_SESSION['admin_id'])) {
+        returnJson(['success' => true, 'admin' => null]);
+    }
+    returnJson(['success' => true, 'admin' => [
+        'admin_id' => (int)$_SESSION['admin_id'],
+        'username' => $_SESSION['admin_username'] ?? null,
+    ]]);
+}
+
+function adminChangePassword() {
+    global $pdo;
+    $adminId = requireAdmin();
+    $d = readJsonBody();
+    $current = isset($d['currentPassword']) ? $d['currentPassword'] : '';
+    $new = isset($d['newPassword']) ? $d['newPassword'] : '';
+    if (strlen($new) < 8) {
+        returnJson(['success' => false, 'error' => 'New password must be at least 8 characters']);
+    }
+    $stmt = $pdo->prepare('SELECT password_hash FROM admins WHERE admin_id = ?');
+    $stmt->execute([$adminId]);
+    $row = $stmt->fetch();
+    if (!$row || !password_verify($current, $row['password_hash'])) {
+        returnJson(['success' => false, 'error' => 'Current password is incorrect']);
+    }
+    $newHash = password_hash($new, PASSWORD_BCRYPT);
+    $upd = $pdo->prepare('UPDATE admins SET password_hash = ? WHERE admin_id = ?');
+    $upd->execute([$newHash, $adminId]);
+    returnJson(['success' => true]);
+}
+
+// ---------------------- Admin: teams ----------------------
+
+function adminAddTeam() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $name = isset($d['team_name']) ? trim($d['team_name']) : '';
+    $division = isset($d['division']) ? $d['division'] : '';
+    $captainUsername = isset($d['captain_username']) ? trim($d['captain_username']) : '';
+    $captainPassword = isset($d['captain_password']) ? $d['captain_password'] : '';
+    if ($name === '' || !in_array($division, ['premier','a'], true)) {
+        returnJson(['success' => false, 'error' => 'team_name and division (premier|a) are required']);
+    }
+    if ($captainUsername === '' || strlen($captainPassword) < 4) {
+        returnJson(['success' => false, 'error' => 'captain_username and captain_password (4+ chars) are required']);
+    }
+    try {
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('INSERT INTO teams (team_name, division) VALUES (?, ?)');
+        $stmt->execute([$name, $division]);
+        $teamId = (int)$pdo->lastInsertId();
+        $hash = password_hash($captainPassword, PASSWORD_BCRYPT);
+        $stmt = $pdo->prepare('INSERT INTO team_captains (team_id, username, password_hash) VALUES (?, ?, ?)');
+        $stmt->execute([$teamId, $captainUsername, $hash]);
+        $pdo->commit();
+        returnJson(['success' => true, 'team_id' => $teamId]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        // Detect duplicate username
+        if (strpos($e->getMessage(), 'Duplicate') !== false) {
+            returnJson(['success' => false, 'error' => 'Username already in use, choose another']);
+        }
+        returnJson(['success' => false, 'error' => 'Failed to add team: ' . $e->getMessage()]);
+    }
+}
+
+function adminDeleteTeam() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $teamId = isset($d['team_id']) ? (int)$d['team_id'] : 0;
+    if ($teamId <= 0) returnJson(['success' => false, 'error' => 'team_id required']);
+    try {
+        // Cascade via FKs on team_captains, player_requests, league_standings.
+        // Matches reference teams without ON DELETE — block delete if any matches exist.
+        $stmt = $pdo->prepare('SELECT COUNT(*) FROM matches WHERE home_team_id = ? OR away_team_id = ?');
+        $stmt->execute([$teamId, $teamId]);
+        if ((int)$stmt->fetchColumn() > 0) {
+            returnJson(['success' => false, 'error' => 'Cannot delete: team has match history. Delete those matches first.']);
+        }
+        // Players: keep history by detaching, or delete if you prefer. We detach.
+        $pdo->prepare('UPDATE players SET team_id = NULL WHERE team_id = ?')->execute([$teamId]);
+        $pdo->prepare('DELETE FROM teams WHERE team_id = ?')->execute([$teamId]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete team: ' . $e->getMessage()]);
+    }
+}
+
+// ---------------------- Admin: players ----------------------
+
+function adminAddPlayer() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $teamId = isset($d['team_id']) ? (int)$d['team_id'] : 0;
+    $name = isset($d['player_name']) ? trim($d['player_name']) : '';
+    if ($teamId <= 0 || $name === '') {
+        returnJson(['success' => false, 'error' => 'team_id and player_name are required']);
+    }
+    try {
+        $stmt = $pdo->prepare('INSERT INTO players (player_name, team_id) VALUES (?, ?)');
+        $stmt->execute([$name, $teamId]);
+        returnJson(['success' => true, 'player_id' => (int)$pdo->lastInsertId()]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to add player: ' . $e->getMessage()]);
+    }
+}
+
+function adminDeletePlayer() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $playerId = isset($d['player_id']) ? (int)$d['player_id'] : 0;
+    if ($playerId <= 0) returnJson(['success' => false, 'error' => 'player_id required']);
+    try {
+        // Block delete if player has any results recorded against them.
+        $hasResults = false;
+        foreach (['singles_results' => ['home_player_id','away_player_id'],
+                  'doubles_results' => ['home_player1_id','home_player2_id','away_player1_id','away_player2_id'],
+                  'high_finishes'   => ['player_id'],
+                  'one_eighties'    => ['player_id']] as $tbl => $cols) {
+            $clauses = implode(' OR ', array_map(fn($c) => "$c = ?", $cols));
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tbl WHERE $clauses");
+            $stmt->execute(array_fill(0, count($cols), $playerId));
+            if ((int)$stmt->fetchColumn() > 0) { $hasResults = true; break; }
+        }
+        if ($hasResults) {
+            returnJson(['success' => false, 'error' => 'Cannot delete: player has recorded results. Detach by editing match results first, or keep them on file.']);
+        }
+        $pdo->prepare('DELETE FROM players WHERE player_id = ?')->execute([$playerId]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete player: ' . $e->getMessage()]);
+    }
+}
+
+// ---------------------- Admin: player requests ----------------------
+
+function adminListPendingRequests() {
+    global $pdo;
+    requireAdmin();
+    $status = isset($_GET['status']) ? $_GET['status'] : 'pending';
+    if (!in_array($status, ['pending','approved','denied','all'], true)) $status = 'pending';
+    $sql = 'SELECT pr.*, t.team_name, t.division
+            FROM player_requests pr
+            JOIN teams t ON pr.team_id = t.team_id';
+    $params = [];
+    if ($status !== 'all') { $sql .= ' WHERE pr.status = ?'; $params[] = $status; }
+    $sql .= ' ORDER BY pr.requested_at DESC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    returnJson(['success' => true, 'requests' => $stmt->fetchAll()]);
+}
+
+function adminApproveRequest() {
+    global $pdo;
+    $adminId = requireAdmin();
+    $d = readJsonBody();
+    $requestId = isset($d['request_id']) ? (int)$d['request_id'] : 0;
+    if ($requestId <= 0) returnJson(['success' => false, 'error' => 'request_id required']);
+    try {
+        $pdo->beginTransaction();
+        $stmt = $pdo->prepare('SELECT * FROM player_requests WHERE request_id = ? FOR UPDATE');
+        $stmt->execute([$requestId]);
+        $req = $stmt->fetch();
+        if (!$req) { $pdo->rollBack(); returnJson(['success' => false, 'error' => 'Request not found']); }
+        if ($req['status'] !== 'pending') { $pdo->rollBack(); returnJson(['success' => false, 'error' => 'Request already reviewed']); }
+        $pdo->prepare('INSERT INTO players (player_name, team_id) VALUES (?, ?)')
+            ->execute([$req['player_name'], $req['team_id']]);
+        $pdo->prepare("UPDATE player_requests SET status = 'approved', reviewed_at = NOW(), reviewed_by_admin_id = ? WHERE request_id = ?")
+            ->execute([$adminId, $requestId]);
+        $pdo->commit();
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        returnJson(['success' => false, 'error' => 'Failed to approve: ' . $e->getMessage()]);
+    }
+}
+
+function adminDenyRequest() {
+    global $pdo;
+    $adminId = requireAdmin();
+    $d = readJsonBody();
+    $requestId = isset($d['request_id']) ? (int)$d['request_id'] : 0;
+    if ($requestId <= 0) returnJson(['success' => false, 'error' => 'request_id required']);
+    try {
+        $stmt = $pdo->prepare("UPDATE player_requests SET status = 'denied', reviewed_at = NOW(), reviewed_by_admin_id = ? WHERE request_id = ? AND status = 'pending'");
+        $stmt->execute([$adminId, $requestId]);
+        if ($stmt->rowCount() === 0) {
+            returnJson(['success' => false, 'error' => 'Request not found or already reviewed']);
+        }
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to deny: ' . $e->getMessage()]);
+    }
+}
+
+// ---------------------- Admin: matches ----------------------
+
+function adminListMatches() {
+    global $pdo;
+    requireAdmin();
+    $sql = 'SELECT m.*, ht.team_name AS home_team_name, at.team_name AS away_team_name
+            FROM matches m
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            ORDER BY m.match_date DESC, m.match_id DESC';
+    $stmt = $pdo->query($sql);
+    returnJson(['success' => true, 'matches' => $stmt->fetchAll()]);
+}
+
+function adminDeleteMatch() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $matchId = isset($d['match_id']) ? (int)$d['match_id'] : 0;
+    if ($matchId <= 0) returnJson(['success' => false, 'error' => 'match_id required']);
+    try {
+        // FKs are ON DELETE CASCADE for child stat tables in the fresh schema.
+        $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// ---------------------- Team session helpers ----------------------
+
+function teamMe() {
+    if (empty($_SESSION['captain_id'])) {
+        returnJson(['success' => true, 'captain' => null]);
+    }
+    returnJson(['success' => true, 'captain' => [
+        'captain_id' => (int)$_SESSION['captain_id'],
+        'team_id'    => (int)($_SESSION['team_id'] ?? 0),
+        'team_name'  => $_SESSION['team_name'] ?? null,
+        'division'   => $_SESSION['division'] ?? null,
+    ]]);
+}
+
+function teamLogout() {
+    unset($_SESSION['captain_id'], $_SESSION['team_id'], $_SESSION['team_name'], $_SESSION['division']);
+    returnJson(['success' => true]);
+}
+
+function teamRequestPlayer() {
+    global $pdo;
+    $captainId = requireCaptain();
+    $teamId = (int)($_SESSION['team_id'] ?? 0);
+    $d = readJsonBody();
+    $name = isset($d['player_name']) ? trim($d['player_name']) : '';
+    if ($name === '') returnJson(['success' => false, 'error' => 'player_name is required']);
+    try {
+        $stmt = $pdo->prepare('INSERT INTO player_requests (team_id, requested_by_captain_id, player_name) VALUES (?, ?, ?)');
+        $stmt->execute([$teamId, $captainId, $name]);
+        returnJson(['success' => true, 'request_id' => (int)$pdo->lastInsertId()]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to submit request: ' . $e->getMessage()]);
+    }
+}
+
+function teamMyRequests() {
+    global $pdo;
+    requireCaptain();
+    $teamId = (int)($_SESSION['team_id'] ?? 0);
+    $stmt = $pdo->prepare('SELECT * FROM player_requests WHERE team_id = ? ORDER BY requested_at DESC');
+    $stmt->execute([$teamId]);
+    returnJson(['success' => true, 'requests' => $stmt->fetchAll()]);
+}
+
+function teamListMyMatches() {
+    global $pdo;
+    requireCaptain();
+    $captainId = (int)$_SESSION['captain_id'];
+    $teamId    = (int)($_SESSION['team_id'] ?? 0);
+    // Show matches submitted by this captain OR involving this team.
+    $stmt = $pdo->prepare('SELECT m.*, ht.team_name AS home_team_name, at.team_name AS away_team_name
+            FROM matches m
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            WHERE m.submitted_by_captain_id = ? OR m.home_team_id = ? OR m.away_team_id = ?
+            ORDER BY m.match_date DESC, m.match_id DESC');
+    $stmt->execute([$captainId, $teamId, $teamId]);
+    returnJson(['success' => true, 'matches' => $stmt->fetchAll()]);
+}
+
+function teamDeleteMatch() {
+    global $pdo;
+    requireCaptain();
+    $captainId = (int)$_SESSION['captain_id'];
+    $teamId    = (int)($_SESSION['team_id'] ?? 0);
+    $d = readJsonBody();
+    $matchId = isset($d['match_id']) ? (int)$d['match_id'] : 0;
+    if ($matchId <= 0) returnJson(['success' => false, 'error' => 'match_id required']);
+    try {
+        // Captains can delete a match they submitted, or one their team played in.
+        $stmt = $pdo->prepare('SELECT submitted_by_captain_id, home_team_id, away_team_id FROM matches WHERE match_id = ?');
+        $stmt->execute([$matchId]);
+        $row = $stmt->fetch();
+        if (!$row) returnJson(['success' => false, 'error' => 'Match not found']);
+        $allowed = ((int)$row['submitted_by_captain_id'] === $captainId)
+                || ((int)$row['home_team_id'] === $teamId)
+                || ((int)$row['away_team_id'] === $teamId);
+        if (!$allowed) returnJson(['success' => false, 'error' => 'Not allowed to delete this match']);
+        $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
     }
 }
 ?>
