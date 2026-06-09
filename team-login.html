@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Team captain login for the Crawley Darts League. Submit scores, edit your team's submitted matches, and request to add new players.">
+    <meta name="description" content="Team captain dashboard for the Crawley Darts League. Submit scores, edit your team's matches, view team and player stats, request to add new players.">
     <meta name="robots" content="noindex,nofollow">
     <title>CDL | Team Login</title>
     <link rel="stylesheet" href="styles.css">
@@ -25,7 +25,6 @@
         .team-pane.active { display: block; }
 
         .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-        .form-row.full { grid-template-columns: 1fr; }
         .small-note { font-size: 0.85rem; color: var(--dark-gray); margin-top: 4px; }
 
         .data-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -33,7 +32,7 @@
         .data-table td { padding: 10px; border-bottom: 1px solid var(--medium-gray); }
         .data-table tr:nth-child(even) td { background: #f9f9f9; }
 
-        .btn-sm { padding: 6px 12px; font-size: 0.9rem; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-sm { padding: 6px 12px; font-size: 0.9rem; border: none; border-radius: 4px; cursor: pointer; color: white; margin-right: 4px; }
         .btn-edit { background: var(--primary); }
         .btn-delete { background: #c62828; }
         .btn-delete:hover { background: #a31515; }
@@ -44,12 +43,40 @@
         .status-approved { background: #e8f5e9; color: #2e7d32; }
         .status-denied   { background: #ffebee; color: #c62828; }
 
-        .quick-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin: 10px 0 20px; }
-        .quick-action { background: var(--light-gray); border-radius: 8px; padding: 18px; border-left: 4px solid var(--secondary); }
-        .quick-action h4 { color: var(--primary); margin: 0 0 8px; }
-        .quick-action a { display: inline-block; margin-top: 8px; color: var(--primary); font-weight: 600; text-decoration: none; border-bottom: 1px solid var(--primary); }
+        /* Match form (ported from scoreinput.html) */
+        .submit-mode-banner {
+            background: #fff3e0; border-left: 4px solid #ef6c00; padding: 10px 15px;
+            border-radius: 4px; margin-bottom: 15px; display: none; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+        }
+        .submit-mode-banner.visible { display: flex; }
+        .submit-mode-banner button { background: #ef6c00; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
 
-        /* Basic dropdown styling (shared) */
+        .doubles-match, .singles-match {
+            margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .match-header { font-weight: bold; margin-bottom: 10px; color: var(--primary); border-bottom: 1px solid var(--medium-gray); padding-bottom: 5px; }
+        .doubles-players, .singles-players { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .singles-match .home-side, .singles-match .away-side { flex: 1 1 200px; }
+        .doubles-match .home-side, .doubles-match .away-side { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+        .player-select, .score-select {
+            width: 100%; padding: 7px; border: 1px solid var(--medium-gray); border-radius: 4px; font-size: 0.95rem; background: white;
+        }
+        .score-select { max-width: 200px; min-width: 130px; text-align: center; }
+
+        .stats-section { margin-top: 10px; padding: 12px; background: #f9f9f9; border-radius: 5px; }
+        .stats-row { display: flex; gap: 10px; margin-bottom: 8px; align-items: center; flex-wrap: wrap; }
+        .stats-row select { flex: 2 1 200px; padding: 7px; border: 1px solid var(--medium-gray); border-radius: 4px; }
+        .stats-row input[type="number"] { flex: 1 1 100px; padding: 7px; border: 1px solid var(--medium-gray); border-radius: 4px; }
+        .add-stat-btn, .remove-stat-btn { padding: 7px 12px; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .add-stat-btn { background: var(--primary); }
+        .remove-stat-btn { background: #c62828; }
+
+        .quick-stat { display: inline-block; background: var(--light-gray); border-radius: 8px; padding: 12px 18px; margin: 5px 8px 5px 0; min-width: 110px; text-align: center; border-left: 4px solid var(--secondary); }
+        .quick-stat .v { font-size: 1.6rem; font-weight: 700; color: var(--primary); display: block; }
+        .quick-stat .k { font-size: 0.8rem; color: var(--dark-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Dropdown nav styling (shared) */
         .nav .dropdown { position: relative; }
         .nav .dropdown-toggle { cursor: pointer; }
         .nav .dropdown-menu { display: none; position: absolute; background: white; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 1000; border-radius: 4px; padding: 10px 0; }
@@ -60,6 +87,8 @@
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
+            .doubles-players, .singles-players { flex-direction: column; }
+            .score-select { width: 100%; max-width: none; }
             .nav-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
             .nav-menu.active { display: block; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
@@ -144,7 +173,7 @@
                 </div>
                 <button type="submit" class="btn">Log In</button>
             </form>
-            <p class="small-note" style="margin-top:15px;">Don't have a login yet? Your league admin can create one for you.</p>
+            <p class="small-note" style="margin-top:15px;">No login yet? Ask your league admin to create one for your team.</p>
         </section>
 
         <!-- DASHBOARD VIEW -->
@@ -158,32 +187,106 @@
             </div>
 
             <div class="team-tabs" role="tablist">
-                <button class="team-tab active" data-pane="paneSubmit">Submit / View Scores</button>
+                <button class="team-tab active" data-pane="paneSubmit">Submit Score</button>
+                <button class="team-tab" data-pane="paneMyMatches">My Matches</button>
+                <button class="team-tab" data-pane="paneMyTeam">My Team</button>
+                <button class="team-tab" data-pane="panePlayers">Players</button>
                 <button class="team-tab" data-pane="paneRequest">Request Player</button>
-                <button class="team-tab" data-pane="paneMyRequests">My Requests</button>
+                <button class="team-tab" data-pane="paneMyRequests">My Requests <span id="myReqCount"></span></button>
             </div>
 
             <div id="dashMsg" class="auth-msg"></div>
 
-            <!-- Submit / View Scores pane -->
+            <!-- Submit Score pane -->
             <div id="paneSubmit" class="team-pane active">
-                <div class="quick-actions">
-                    <div class="quick-action">
-                        <h4>Submit a New Score</h4>
-                        <p class="small-note" style="margin:0;">Record a match result, individual singles &amp; doubles outcomes, 180s and high finishes.</p>
-                        <a href="scoreinput.html">Open Submit Score &rarr;</a>
-                    </div>
-                    <div class="quick-action">
-                        <h4>Edit a Submitted Score</h4>
-                        <p class="small-note" style="margin:0;">Open the detailed editor to amend an existing submission.</p>
-                        <a href="editscores.html">Open Edit Score &rarr;</a>
-                    </div>
+                <div id="editModeBanner" class="submit-mode-banner">
+                    <span><strong>Editing match #<span id="editMatchIdLabel"></span></strong> — submitting will overwrite the existing result.</span>
+                    <button type="button" id="cancelEditBtn">Cancel Edit</button>
                 </div>
 
-                <h3 style="margin-top:20px;">Your Team's Submitted Matches</h3>
-                <p class="small-note">Quick delete below. For detailed edits, use the "Edit a Submitted Score" link above.</p>
+                <form id="matchForm">
+                    <input type="hidden" id="editMatchId" value="">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Division</label>
+                            <select id="division" disabled>
+                                <option value="premier">Premier Division</option>
+                                <option value="a">A Division</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Match Type</label>
+                            <select id="matchType">
+                                <option value="league" selected>League</option>
+                                <option value="cup">Cup</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Home Team (your team)</label>
+                            <select id="homeTeam" disabled></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Away Team</label>
+                            <select id="awayTeam"></select>
+                        </div>
+                    </div>
+                    <div class="form-group" id="cupRoundContainer" style="display:none;">
+                        <label>Cup Round</label>
+                        <select id="cupRound">
+                            <option value="">Select Cup Round</option>
+                            <option value="Last 16">Last 16</option>
+                            <option value="Quarter Final">Quarter Final</option>
+                            <option value="Semi Final">Semi Final</option>
+                            <option value="Final">Final</option>
+                        </select>
+                    </div>
+
+                    <h3>Doubles Matches (3 games)</h3>
+                    <div id="doublesMatches"></div>
+
+                    <h3>Singles Matches (6 games)</h3>
+                    <div id="singlesMatches"></div>
+
+                    <h3>180s</h3>
+                    <div id="oneEightiesSection" class="stats-section"></div>
+
+                    <h3>High Finishes</h3>
+                    <div id="highFinishesSection" class="stats-section"></div>
+
+                    <button type="submit" id="submitBtn" class="btn" style="margin-top:15px;">Submit Score</button>
+                </form>
+            </div>
+
+            <!-- My Matches pane -->
+            <div id="paneMyMatches" class="team-pane">
+                <h3>Your Team's Submitted Matches</h3>
+                <p class="small-note">Click <strong>Edit</strong> to load the match into the Submit Score form, or <strong>Delete</strong> to remove it (cascades to its results, 180s, and high finishes).</p>
                 <table class="data-table" id="myMatchesTable">
                     <thead><tr><th>Date</th><th>Type / Div</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- My Team pane -->
+            <div id="paneMyTeam" class="team-pane">
+                <h3>Team Record</h3>
+                <div id="teamStats"></div>
+
+                <h3 style="margin-top:25px;">Squad</h3>
+                <table class="data-table" id="rosterTable">
+                    <thead><tr><th>Player</th><th>Played</th><th>Won</th><th>Lost</th><th>Win %</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Players (division-wide) pane -->
+            <div id="panePlayers" class="team-pane">
+                <h3>Players in Your Division</h3>
+                <p class="small-note">League singles results only. Players with zero games are hidden.</p>
+                <table class="data-table" id="divPlayersTable">
+                    <thead><tr><th>#</th><th>Player</th><th>Team</th><th>Played</th><th>Won</th><th>Lost</th><th>Win %</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -191,7 +294,7 @@
             <!-- Request Player pane -->
             <div id="paneRequest" class="team-pane">
                 <h3>Request a New Player</h3>
-                <p class="small-note">Submit the player's name; an admin will approve or deny the request before the player is added to your roster.</p>
+                <p class="small-note">Submit the player's name; an admin will approve or deny it before the player is added to your roster. Approved requests appear in your Squad automatically.</p>
                 <form id="requestForm" style="max-width:480px;">
                     <div class="form-group">
                         <label>Player Name</label>
@@ -215,6 +318,14 @@
 <script>
 const API = 'api.php';
 
+// ====== state ======
+let me = null;                 // { captain_id, team_id, team_name, division }
+let _teamsCache = [];          // teams in our division (for away dropdown)
+let _myPlayersCache = [];      // players on our team
+let _awayPlayersCache = {};    // team_name -> array of players
+let _editingMatchId = null;    // null = new submission, otherwise editing
+
+// ====== helpers ======
 async function apiCall(endpoint, opts = {}) {
     const url = `${API}?endpoint=${encodeURIComponent(endpoint)}`;
     const res = await fetch(url, Object.assign({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }, opts));
@@ -222,24 +333,43 @@ async function apiCall(endpoint, opts = {}) {
     try { json = await res.json(); } catch (e) { return { success: false, error: 'Invalid server response' }; }
     return json;
 }
-
-function showMsg(elId, text, type = 'info') {
-    const el = document.getElementById(elId);
-    el.textContent = text;
-    el.className = 'auth-msg ' + type;
+async function apiGet(endpoint, params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    const url = `${API}?endpoint=${encodeURIComponent(endpoint)}${qs ? '&' + qs : ''}`;
+    const res = await fetch(url, { credentials: 'same-origin' });
+    try { return await res.json(); } catch (e) { return []; }
 }
+function showMsg(elId, text, type = 'info') { const el = document.getElementById(elId); el.textContent = text; el.className = 'auth-msg ' + type; }
 function clearMsg(elId) { const el = document.getElementById(elId); el.textContent=''; el.className='auth-msg'; }
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 
+// ====== session bootstrap ======
 async function init() {
-    const me = await apiCall('team-me');
-    if (me.success && me.captain) {
-        document.getElementById('loggedTeam').textContent = me.captain.team_name + ' (' + (me.captain.division === 'premier' ? 'Premier' : 'A') + ')';
-        document.getElementById('dashTitle').textContent = me.captain.team_name + ' — Team Dashboard';
+    const res = await apiCall('team-me');
+    if (res.success && res.captain) {
+        me = res.captain;
+        document.getElementById('loggedTeam').textContent = me.team_name + ' (' + (me.division === 'premier' ? 'Premier' : 'A') + ')';
+        document.getElementById('dashTitle').textContent = me.team_name + ' — Team Dashboard';
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboardView').style.display = '';
+
+        // Prep submit form to defaults
+        document.getElementById('division').value = me.division;
+        const homeSel = document.getElementById('homeTeam');
+        homeSel.innerHTML = `<option value="${escapeHtml(me.team_name)}">${escapeHtml(me.team_name)}</option>`;
+
+        await loadAwayTeams();
+        generateDoublesMatches();
+        generateSinglesMatches();
+        generateOneEightiesInputs();
+        generateHighFinishesInputs();
+
         loadMyMatches();
+        loadMyTeam();
+        loadDivisionPlayers();
         loadMyRequests();
     } else {
+        me = null;
         document.getElementById('loginView').style.display = '';
         document.getElementById('dashboardView').style.display = 'none';
     }
@@ -249,14 +379,14 @@ document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMsg('loginMsg');
     const fd = new FormData(e.target);
-    // Existing team login endpoint accepts JSON {username,password} and sets session via handleLogin().
-    const body = JSON.stringify({ username: fd.get('username'), password: fd.get('password') });
-    const res = await apiCall('login', { method: 'POST', body });
-    if (res.success) { init(); } else { showMsg('loginMsg', res.error || 'Login failed', 'error'); }
+    const res = await apiCall('login', { method: 'POST', body: JSON.stringify({ username: fd.get('username'), password: fd.get('password') }) });
+    if (res.success) init();
+    else showMsg('loginMsg', res.error || 'Login failed', 'error');
 });
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
     await apiCall('team-logout', { method: 'POST' });
+    me = null;
     init();
 });
 
@@ -269,30 +399,504 @@ document.querySelectorAll('.team-tab').forEach(btn => {
     });
 });
 
+// ====== Match form: load helpers ======
+async function loadAwayTeams() {
+    const teams = await apiGet('teams', { division: me.division });
+    _teamsCache = Array.isArray(teams) ? teams : [];
+    const sel = document.getElementById('awayTeam');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Select Away Team</option>';
+    _teamsCache.forEach(t => {
+        if (t.team_name !== me.team_name) {
+            sel.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(t.team_name)}">${escapeHtml(t.team_name)}</option>`);
+        }
+    });
+    if (current) sel.value = current;
+}
+
+async function getPlayersForTeam(teamName) {
+    if (!teamName) return [];
+    if (_awayPlayersCache[teamName]) return _awayPlayersCache[teamName];
+    const players = await apiGet('players', { team_name: teamName });
+    const list = Array.isArray(players) ? players : [];
+    _awayPlayersCache[teamName] = list;
+    return list;
+}
+
+// ====== Doubles ======
+function doublesScoreOptions() {
+    // Both divisions: best of 3 doubles (first to 2)
+    return `<option value="">Select Score</option>
+            <option value="2-0">2-0 (Home Win)</option>
+            <option value="2-1">2-1 (Home Win)</option>
+            <option value="1-2">1-2 (Away Win)</option>
+            <option value="0-2">0-2 (Away Win)</option>`;
+}
+function generateDoublesMatches() {
+    const wrap = document.getElementById('doublesMatches');
+    wrap.innerHTML = '';
+    for (let i = 1; i <= 3; i++) {
+        const div = document.createElement('div');
+        div.className = 'doubles-match';
+        div.innerHTML = `
+            <div class="match-header">Doubles Game ${i}</div>
+            <div class="doubles-players">
+                <div class="home-side">
+                    <select class="player-select home-player1" data-match="${i}"><option value="">Select Home Player 1</option></select>
+                    <select class="player-select home-player2" data-match="${i}"><option value="">Select Home Player 2</option></select>
+                </div>
+                <select class="score-select doubles-score" data-match="${i}">${doublesScoreOptions()}</select>
+                <div class="away-side">
+                    <select class="player-select away-player1" data-match="${i}"><option value="">Select Away Player 1</option></select>
+                    <select class="player-select away-player2" data-match="${i}"><option value="">Select Away Player 2</option></select>
+                </div>
+            </div>`;
+        wrap.appendChild(div);
+    }
+    wrap.querySelectorAll('.home-player1, .home-player2, .away-player1, .away-player2').forEach(s => s.addEventListener('change', updateDoublesPlayerOptions));
+    updateDoublesPlayerOptions();
+}
+
+function selectedPlayersIn(selectors) {
+    const set = new Set();
+    document.querySelectorAll(selectors).forEach(s => { if (s.value) set.add(s.value); });
+    return set;
+}
+
+async function updateDoublesPlayerOptions() {
+    const homeTeamName = me ? me.team_name : '';
+    const awayTeamName = document.getElementById('awayTeam').value;
+    const selHome = selectedPlayersIn('.home-player1, .home-player2');
+    const selAway = selectedPlayersIn('.away-player1, .away-player2');
+    const homePlayers = await getPlayersForTeam(homeTeamName);
+    const awayPlayers = awayTeamName ? await getPlayersForTeam(awayTeamName) : [];
+
+    document.querySelectorAll('.home-player1, .home-player2').forEach(s => fillExcluding(s, homePlayers, selHome));
+    document.querySelectorAll('.away-player1, .away-player2').forEach(s => fillExcluding(s, awayPlayers, selAway));
+}
+
+// ====== Singles ======
+function singlesScoreOptions(division) {
+    if (division === 'premier') {
+        // Best of 5
+        return `<option value="">Select Score</option>
+                <option value="3-0">3-0 (Home Win)</option>
+                <option value="3-1">3-1 (Home Win)</option>
+                <option value="3-2">3-2 (Home Win)</option>
+                <option value="2-3">2-3 (Away Win)</option>
+                <option value="1-3">1-3 (Away Win)</option>
+                <option value="0-3">0-3 (Away Win)</option>`;
+    }
+    // A Division: best of 3
+    return `<option value="">Select Score</option>
+            <option value="2-0">2-0 (Home Win)</option>
+            <option value="2-1">2-1 (Home Win)</option>
+            <option value="1-2">1-2 (Away Win)</option>
+            <option value="0-2">0-2 (Away Win)</option>`;
+}
+function generateSinglesMatches() {
+    const wrap = document.getElementById('singlesMatches');
+    wrap.innerHTML = '';
+    const opts = singlesScoreOptions(me.division);
+    for (let i = 1; i <= 6; i++) {
+        const div = document.createElement('div');
+        div.className = 'singles-match';
+        div.innerHTML = `
+            <div class="match-header">Singles Game ${i}</div>
+            <div class="singles-players">
+                <div class="home-side"><select class="player-select home-player" data-match="${i}"><option value="">Select Home Player</option></select></div>
+                <select class="score-select singles-score" data-match="${i}">${opts}</select>
+                <div class="away-side"><select class="player-select away-player" data-match="${i}"><option value="">Select Away Player</option></select></div>
+            </div>`;
+        wrap.appendChild(div);
+    }
+    wrap.querySelectorAll('.home-player, .away-player').forEach(s => s.addEventListener('change', updateSinglesPlayerOptions));
+    updateSinglesPlayerOptions();
+}
+
+async function updateSinglesPlayerOptions() {
+    const homeTeamName = me ? me.team_name : '';
+    const awayTeamName = document.getElementById('awayTeam').value;
+    const selHome = selectedPlayersIn('.home-player');
+    const selAway = selectedPlayersIn('.away-player');
+    const homePlayers = await getPlayersForTeam(homeTeamName);
+    const awayPlayers = awayTeamName ? await getPlayersForTeam(awayTeamName) : [];
+    document.querySelectorAll('.home-player').forEach(s => fillExcluding(s, homePlayers, selHome));
+    document.querySelectorAll('.away-player').forEach(s => fillExcluding(s, awayPlayers, selAway));
+}
+
+function fillExcluding(selectEl, playerList, excludeSet) {
+    const current = selectEl.value;
+    const placeholder = selectEl.options[0] ? selectEl.options[0].text : 'Select Player';
+    selectEl.innerHTML = `<option value="">${placeholder}</option>`;
+    // Allow current selection to remain even though it's "excluded"
+    playerList.forEach(p => {
+        if (excludeSet.has(p.player_name) && p.player_name !== current) return;
+        selectEl.insertAdjacentHTML('beforeend', `<option value="${escapeHtml(p.player_name)}">${escapeHtml(p.player_name)}</option>`);
+    });
+    if (current) selectEl.value = current;
+}
+
+// Away team change → refresh player dropdowns + stat dropdowns
+document.getElementById('awayTeam').addEventListener('change', async () => {
+    await updateDoublesPlayerOptions();
+    await updateSinglesPlayerOptions();
+    document.querySelectorAll('.one-eighty-player, .high-finish-player').forEach(populateStatPlayerOptions);
+});
+
+// Match type toggles cup round
+document.getElementById('matchType').addEventListener('change', (e) => {
+    document.getElementById('cupRoundContainer').style.display = e.target.value === 'cup' ? '' : 'none';
+});
+
+// ====== 180s / High Finishes ======
+function generateOneEightiesInputs() {
+    const c = document.getElementById('oneEightiesSection');
+    c.innerHTML = '';
+    addOneEightyRow();
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'add-stat-btn'; add.textContent = 'Add Another 180';
+    add.addEventListener('click', addOneEightyRow);
+    c.appendChild(add);
+}
+function addOneEightyRow() {
+    const c = document.getElementById('oneEightiesSection');
+    const n = c.querySelectorAll('.stats-row').length;
+    const row = document.createElement('div');
+    row.className = 'stats-row';
+    row.innerHTML = `<select class="player-select one-eighty-player" data-row="${n+1}"><option value="">Select Player</option></select>
+                     <input type="number" class="one-eighty-count" value="1" min="1" placeholder="Number of 180s">
+                     ${n > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}`;
+    const addBtn = c.querySelector('.add-stat-btn');
+    c.insertBefore(row, addBtn);
+    const rb = row.querySelector('.remove-stat-btn'); if (rb) rb.addEventListener('click', () => row.remove());
+    populateStatPlayerOptions(row.querySelector('.one-eighty-player'));
+}
+function generateHighFinishesInputs() {
+    const c = document.getElementById('highFinishesSection');
+    c.innerHTML = '';
+    addHighFinishRow();
+    const add = document.createElement('button');
+    add.type = 'button'; add.className = 'add-stat-btn'; add.textContent = 'Add Another High Finish';
+    add.addEventListener('click', addHighFinishRow);
+    c.appendChild(add);
+}
+function addHighFinishRow() {
+    const c = document.getElementById('highFinishesSection');
+    const n = c.querySelectorAll('.stats-row').length;
+    const row = document.createElement('div');
+    row.className = 'stats-row';
+    row.innerHTML = `<select class="player-select high-finish-player" data-row="${n+1}"><option value="">Select Player</option></select>
+                     <input type="number" class="high-finish-value" min="100" placeholder="Finish value">
+                     ${n > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}`;
+    const addBtn = c.querySelector('.add-stat-btn');
+    c.insertBefore(row, addBtn);
+    const rb = row.querySelector('.remove-stat-btn'); if (rb) rb.addEventListener('click', () => row.remove());
+    populateStatPlayerOptions(row.querySelector('.high-finish-player'));
+}
+async function populateStatPlayerOptions(select) {
+    if (!select) return;
+    const home = me ? me.team_name : '';
+    const away = document.getElementById('awayTeam').value;
+    const current = select.value;
+    select.innerHTML = '<option value="">Select Player</option>';
+    if (home) {
+        const hp = await getPlayersForTeam(home);
+        hp.forEach(p => select.add(new Option(`${p.player_name} (${home})`, p.player_name)));
+    }
+    if (away) {
+        const ap = await getPlayersForTeam(away);
+        ap.forEach(p => select.add(new Option(`${p.player_name} (${away})`, p.player_name)));
+    }
+    if (current) select.value = current;
+}
+
+// ====== Submit / Update ======
+document.getElementById('matchForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    if (!me) return;
+
+    const matchType = document.getElementById('matchType').value;
+    const awayTeam  = document.getElementById('awayTeam').value;
+    if (!awayTeam) { showMsg('dashMsg', 'Please pick an away team.', 'error'); return; }
+
+    const payload = {
+        division: me.division,
+        matchType,
+        homeTeam: me.team_name,
+        awayTeam,
+        doubles: [],
+        singles: [],
+        oneEighties: [],
+        highFinishes: [],
+    };
+    if (matchType === 'cup') {
+        const cr = document.getElementById('cupRound').value;
+        if (!cr) { showMsg('dashMsg', 'Please pick a Cup Round.', 'error'); return; }
+        payload.cupRound = cr;
+    }
+
+    document.querySelectorAll('.doubles-match').forEach(m => {
+        const hp1 = m.querySelector('.home-player1').value;
+        const hp2 = m.querySelector('.home-player2').value;
+        const ap1 = m.querySelector('.away-player1').value;
+        const ap2 = m.querySelector('.away-player2').value;
+        const score = m.querySelector('.doubles-score').value;
+        if (hp1 && hp2 && ap1 && ap2 && score) payload.doubles.push({ homePlayer1: hp1, homePlayer2: hp2, awayPlayer1: ap1, awayPlayer2: ap2, score });
+    });
+    document.querySelectorAll('.singles-match').forEach(m => {
+        const hp = m.querySelector('.home-player').value;
+        const ap = m.querySelector('.away-player').value;
+        const score = m.querySelector('.singles-score').value;
+        if (hp && ap && score) payload.singles.push({ homePlayer: hp, awayPlayer: ap, score });
+    });
+    document.querySelectorAll('#oneEightiesSection .stats-row').forEach(r => {
+        const p = r.querySelector('.one-eighty-player').value;
+        const c = r.querySelector('.one-eighty-count').value;
+        if (p && c) payload.oneEighties.push({ player: p, count: parseInt(c, 10) });
+    });
+    document.querySelectorAll('#highFinishesSection .stats-row').forEach(r => {
+        const p = r.querySelector('.high-finish-player').value;
+        const v = r.querySelector('.high-finish-value').value;
+        if (p && v) payload.highFinishes.push({ player: p, value: parseInt(v, 10) });
+    });
+    if (!payload.doubles.length && !payload.singles.length) {
+        showMsg('dashMsg', 'Enter scores for at least one game.', 'error');
+        return;
+    }
+
+    // Editing → set matchId
+    if (_editingMatchId) payload.matchId = _editingMatchId;
+
+    const btn = document.getElementById('submitBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = _editingMatchId ? 'Updating...' : 'Submitting...';
+
+    const endpoint = _editingMatchId ? 'update-match' : 'submit-match';
+    let res;
+    try { res = await apiCall(endpoint, { method: 'POST', body: JSON.stringify(payload) }); }
+    catch (err) {
+        showMsg('dashMsg', 'Network error: ' + (err.message || err), 'error');
+        btn.disabled = false; btn.textContent = origText; return;
+    }
+
+    if (res.success) {
+        showMsg('dashMsg', _editingMatchId ? 'Match updated successfully.' : 'Match submitted successfully.', 'success');
+        resetForm();
+        loadMyMatches();
+        loadMyTeam();
+        loadDivisionPlayers();
+    } else {
+        showMsg('dashMsg', res.error || 'Failed', 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = _editingMatchId ? 'Update Match' : 'Submit Score';
+});
+
+document.getElementById('cancelEditBtn').addEventListener('click', () => {
+    _editingMatchId = null;
+    document.getElementById('editMatchId').value = '';
+    document.getElementById('editModeBanner').classList.remove('visible');
+    document.getElementById('submitBtn').textContent = 'Submit Score';
+    resetForm();
+});
+
+function resetForm() {
+    _editingMatchId = null;
+    document.getElementById('editMatchId').value = '';
+    document.getElementById('editModeBanner').classList.remove('visible');
+    document.getElementById('matchType').value = 'league';
+    document.getElementById('cupRoundContainer').style.display = 'none';
+    document.getElementById('cupRound').value = '';
+    document.getElementById('awayTeam').value = '';
+    generateDoublesMatches();
+    generateSinglesMatches();
+    generateOneEightiesInputs();
+    generateHighFinishesInputs();
+    document.getElementById('submitBtn').textContent = 'Submit Score';
+}
+
+// ====== Edit flow ======
+async function editMatch(matchId) {
+    document.querySelectorAll('.team-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.team-pane').forEach(p => p.classList.remove('active'));
+    document.querySelector('.team-tab[data-pane="paneSubmit"]').classList.add('active');
+    document.getElementById('paneSubmit').classList.add('active');
+
+    const detail = await apiGet('match-details', { match_id: matchId });
+    if (!detail || detail.success === false) {
+        showMsg('dashMsg', 'Could not load match details.', 'error'); return;
+    }
+
+    _editingMatchId = Number(matchId);
+    document.getElementById('editMatchId').value = matchId;
+    document.getElementById('editMatchIdLabel').textContent = matchId;
+    document.getElementById('editModeBanner').classList.add('visible');
+
+    document.getElementById('matchType').value = detail.match_type;
+    document.getElementById('cupRoundContainer').style.display = detail.match_type === 'cup' ? '' : 'none';
+    if (detail.cup_round) document.getElementById('cupRound').value = detail.cup_round;
+
+    // Set away team (it may be our team if we were the away side — handle either)
+    const ourAway = detail.away_team === me.team_name;
+    const otherTeam = ourAway ? detail.home_team : detail.away_team;
+    document.getElementById('awayTeam').value = otherTeam;
+    await updateDoublesPlayerOptions();
+    await updateSinglesPlayerOptions();
+
+    // Populate doubles
+    generateDoublesMatches();
+    (detail.doubles || []).slice(0, 3).forEach((d, idx) => {
+        const m = document.querySelectorAll('.doubles-match')[idx];
+        if (!m) return;
+        m.querySelector('.home-player1').value = ourAway ? d.away_player1_name : d.home_player1_name;
+        m.querySelector('.home-player2').value = ourAway ? d.away_player2_name : d.home_player2_name;
+        m.querySelector('.away-player1').value = ourAway ? d.home_player1_name : d.away_player1_name;
+        m.querySelector('.away-player2').value = ourAway ? d.home_player2_name : d.away_player2_name;
+        const hs = ourAway ? d.away_score : d.home_score;
+        const as = ourAway ? d.home_score : d.away_score;
+        m.querySelector('.doubles-score').value = `${hs}-${as}`;
+    });
+
+    // Populate singles
+    generateSinglesMatches();
+    (detail.singles || []).slice(0, 6).forEach((s, idx) => {
+        const m = document.querySelectorAll('.singles-match')[idx];
+        if (!m) return;
+        m.querySelector('.home-player').value = ourAway ? s.away_player_name : s.home_player_name;
+        m.querySelector('.away-player').value = ourAway ? s.home_player_name : s.away_player_name;
+        const hs = ourAway ? s.away_score : s.home_score;
+        const as = ourAway ? s.home_score : s.away_score;
+        m.querySelector('.singles-score').value = `${hs}-${as}`;
+    });
+
+    // 180s
+    generateOneEightiesInputs();
+    const oeRows = document.querySelectorAll('#oneEightiesSection .stats-row');
+    (detail.oneEighties || []).forEach((o, idx) => {
+        if (idx >= oeRows.length) addOneEightyRow();
+        const row = document.querySelectorAll('#oneEightiesSection .stats-row')[idx];
+        row.querySelector('.one-eighty-player').value = o.player_name;
+        row.querySelector('.one-eighty-count').value = o.count;
+    });
+
+    // High finishes
+    generateHighFinishesInputs();
+    const hfRows = document.querySelectorAll('#highFinishesSection .stats-row');
+    (detail.highFinishes || []).forEach((h, idx) => {
+        if (idx >= hfRows.length) addHighFinishRow();
+        const row = document.querySelectorAll('#highFinishesSection .stats-row')[idx];
+        row.querySelector('.high-finish-player').value = h.player_name;
+        row.querySelector('.high-finish-value').value = h.finish_value;
+    });
+
+    document.getElementById('submitBtn').textContent = 'Update Match';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ====== My Matches ======
 async function loadMyMatches() {
     const res = await apiCall('team-list-my-matches');
     const tbody = document.querySelector('#myMatchesTable tbody');
     tbody.innerHTML = '';
     (res.matches || []).forEach(m => {
+        // A team can only edit/delete matches it submitted itself (i.e. the
+        // logged-in captain is the submitter). Matches where we were the
+        // away side and the other team submitted are read-only here — ask
+        // that team's captain (or an admin) to amend it.
+        const weSubmitted = String(m.submitted_by_captain_id || '') === String(me.captain_id);
+        const actions = weSubmitted
+            ? `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
+               <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>`
+            : `<span class="small-note" title="Submitted by the other team">read-only</span>`;
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
                         <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
                         <td>${escapeHtml(m.home_team_name || '—')}</td>
                         <td>${m.home_score} - ${m.away_score}</td>
                         <td>${escapeHtml(m.away_team_name || '—')}</td>
-                        <td><button class="btn-sm btn-delete" data-id="${m.match_id}">Delete</button></td>`;
+                        <td>${actions}</td>`;
         tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteMatch(b.dataset.id)));
+    tbody.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id, act = b.dataset.act;
+        if (act === 'edit') editMatch(id);
+        else if (act === 'delete') deleteMyMatch(id);
+    }));
 }
 
-async function deleteMatch(id) {
-    if (!confirm('Delete this match? All its results, 180s, and high finishes will be removed too.')) return;
+async function deleteMyMatch(id) {
+    if (!confirm('Delete this match? Its results, 180s, and high finishes will be removed too.')) return;
     const res = await apiCall('team-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
-    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMyMatches(); }
+    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMyMatches(); loadMyTeam(); loadDivisionPlayers(); }
     else showMsg('dashMsg', res.error || 'Failed', 'error');
 }
 
+// ====== My Team / Roster ======
+async function loadMyTeam() {
+    // Team record
+    const table = await apiGet('league-table', { division: me.division });
+    const teamRow = (Array.isArray(table) ? table : []).find(t => t.team_name === me.team_name);
+    const stats = document.getElementById('teamStats');
+    if (teamRow) {
+        const played = +teamRow.played || 0;
+        const won = +teamRow.won || 0;
+        const pct = played ? Math.round((won / played) * 100) : 0;
+        stats.innerHTML = `
+            <span class="quick-stat"><span class="v">${played}</span><span class="k">Played</span></span>
+            <span class="quick-stat"><span class="v">${won}</span><span class="k">Won</span></span>
+            <span class="quick-stat"><span class="v">${teamRow.lost || 0}</span><span class="k">Lost</span></span>
+            <span class="quick-stat"><span class="v">${pct}%</span><span class="k">Win %</span></span>
+            <span class="quick-stat"><span class="v">${teamRow.points || 0}</span><span class="k">Points</span></span>`;
+    } else {
+        stats.innerHTML = '<p class="small-note">No matches recorded yet this season.</p>';
+    }
+
+    // Roster with per-player W/L/Win%
+    _myPlayersCache = await getPlayersForTeam(me.team_name);
+    const ranking = await apiGet('singles-ranking', { division: me.division });
+    const rankByName = Object.fromEntries((Array.isArray(ranking) ? ranking : []).map(p => [p.player_name, p]));
+
+    const tbody = document.querySelector('#rosterTable tbody');
+    tbody.innerHTML = '';
+    _myPlayersCache.forEach(p => {
+        const r = rankByName[p.player_name];
+        const played = r ? +r.played || 0 : 0;
+        const won = r ? +r.won || 0 : 0;
+        const lost = r ? +r.lost || 0 : 0;
+        const pct = played ? Math.round((won / played) * 100) : 0;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(p.player_name)}</td><td>${played}</td><td>${won}</td><td>${lost}</td><td>${pct}%</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// ====== Division Players ======
+async function loadDivisionPlayers() {
+    const ranking = await apiGet('singles-ranking', { division: me.division });
+    const tbody = document.querySelector('#divPlayersTable tbody');
+    tbody.innerHTML = '';
+    const rows = (Array.isArray(ranking) ? ranking : [])
+        .filter(p => (+p.played || 0) > 0)
+        .map(p => {
+            const played = +p.played || 0;
+            const won    = +p.won    || 0;
+            const lost   = +p.lost   || 0;
+            const pct    = played ? (won / played) * 100 : 0;
+            return { ...p, played, won, lost, pct };
+        })
+        .sort((a, b) => b.pct - a.pct || b.played - a.played);
+    rows.forEach((p, i) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${i + 1}</td><td>${escapeHtml(p.player_name)}</td><td>${escapeHtml(p.team_name || '')}</td>
+                        <td>${p.played}</td><td>${p.won}</td><td>${p.lost}</td><td>${p.pct.toFixed(1)}%</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// ====== Player request ======
 document.getElementById('requestForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     clearMsg('dashMsg');
@@ -306,7 +910,9 @@ async function loadMyRequests() {
     const res = await apiCall('team-my-requests');
     const tbody = document.querySelector('#myRequestsTable tbody');
     tbody.innerHTML = '';
+    let pending = 0;
     (res.requests || []).forEach(r => {
+        if (r.status === 'pending') pending++;
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(r.requested_at)}</td>
                         <td>${escapeHtml(r.player_name)}</td>
@@ -314,10 +920,10 @@ async function loadMyRequests() {
                         <td>${escapeHtml(r.reviewed_at || '—')}</td>`;
         tbody.appendChild(tr);
     });
+    document.getElementById('myReqCount').textContent = pending ? ` (${pending})` : '';
 }
 
-function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
-
+// ====== Mobile nav ======
 document.addEventListener('DOMContentLoaded', function() {
     const mobileToggle = document.querySelector('.mobile-toggle');
     const navMenu = document.querySelector('.nav-menu');

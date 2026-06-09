@@ -82,20 +82,9 @@
     <priority>0.7</priority>
   </url>
   
-  <!-- Score Submission Pages -->
-  <url>
-    <loc>https://crawleydartsleague.com/scoreinput.html</loc>
-    <lastmod>2025-05-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://crawleydartsleague.com/editscores.html</loc>
-    <lastmod>2025-05-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  
+  <!-- Score submission/edit pages were removed; their functionality
+       is now inside team-login.html which is intentionally noindex. -->
+
   <!-- Join Section -->
   <url>
     <loc>https://crawleydartsleague.com/registration.html</loc>

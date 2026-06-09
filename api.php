@@ -1109,27 +1109,55 @@ function submitMatch() {
 function updateMatch() {
     global $pdo;
     $transactionStarted = false;
-    
+
     try {
         // Get raw POST data
         $rawData = file_get_contents('php://input');
         error_log("Update match raw data: " . $rawData);
-        
+
         $data = json_decode($rawData, true);
-        
+
         if (json_last_error() !== JSON_ERROR_NONE) {
             returnJson(['success' => false, 'error' => 'Invalid JSON data: ' . json_last_error_msg()]);
             return;
         }
-        
+
         if (!$data) {
             returnJson(['success' => false, 'error' => 'No data received']);
             return;
         }
-        
+
         // Validate required fields
         if (!isset($data['matchId']) || !isset($data['homeTeam']) || !isset($data['awayTeam'])) {
             returnJson(['success' => false, 'error' => 'Missing required fields: matchId, homeTeam or awayTeam']);
+            return;
+        }
+
+        // Authorisation: an admin session may edit any match; a captain
+        // session may only edit a match their team played in or submitted.
+        // No session at all is rejected.
+        $matchIdForAuth = (int)$data['matchId'];
+        if (!empty($_SESSION['admin_id'])) {
+            // admin — allow
+        } elseif (!empty($_SESSION['captain_id'])) {
+            $captainId = (int)$_SESSION['captain_id'];
+            $teamId    = (int)($_SESSION['team_id'] ?? 0);
+            $authStmt = $pdo->prepare('SELECT submitted_by_captain_id, home_team_id, away_team_id FROM matches WHERE match_id = ?');
+            $authStmt->execute([$matchIdForAuth]);
+            $row = $authStmt->fetch();
+            if (!$row) {
+                returnJson(['success' => false, 'error' => 'Match not found']);
+                return;
+            }
+            $owns = ((int)$row['submitted_by_captain_id'] === $captainId)
+                 || ((int)$row['home_team_id'] === $teamId)
+                 || ((int)$row['away_team_id'] === $teamId);
+            if (!$owns) {
+                returnJson(['success' => false, 'error' => 'Not allowed to edit this match']);
+                return;
+            }
+        } else {
+            returnJson(['success' => false, 'error' => 'Login required to edit a match']);
             return;
         }
         
