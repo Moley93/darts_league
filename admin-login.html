@@ -47,6 +47,24 @@
         .status-approved { background: #e8f5e9; color: #2e7d32; }
         .status-denied   { background: #ffebee; color: #c62828; }
 
+        /* Edit modal */
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: none; align-items: flex-start; justify-content: center;
+            z-index: 2000; padding: 40px 15px; overflow-y: auto;
+        }
+        .modal-backdrop.visible { display: flex; }
+        .modal-card {
+            background: white; border-radius: 8px; max-width: 520px; width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 22px; position: relative;
+        }
+        .modal-card h3 { color: var(--primary); margin: 0 0 12px; }
+        .modal-card .form-group label { font-weight: 600; }
+        .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; }
+        .modal-close { position: absolute; top: 10px; right: 14px; font-size: 1.6rem; line-height: 1; background: none; border: none; cursor: pointer; color: var(--dark-gray); }
+        .btn-secondary { background: var(--medium-gray); color: var(--primary); padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
+        .btn-secondary:hover { background: #d0d0d0; }
+
         /* Basic dropdown styling (shared with other pages) */
         .nav .dropdown { position: relative; }
         .nav .dropdown-toggle { cursor: pointer; }
@@ -243,7 +261,7 @@
                     </select>
                 </div>
                 <table class="data-table" id="requestsTable">
-                    <thead><tr><th>Requested</th><th>Team</th><th>Player</th><th>Status</th><th>Action</th></tr></thead>
+                    <thead><tr><th>Requested (date &amp; time)</th><th>Team</th><th>Player</th><th>Status</th><th>Action</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -274,6 +292,68 @@
                 </form>
             </div>
         </section>
+    </div>
+
+    <!-- ===================== Edit Modal ===================== -->
+    <div id="modalBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-card">
+            <button type="button" class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+            <h3 id="modalTitle">Edit</h3>
+            <div id="modalMsg" class="auth-msg"></div>
+
+            <!-- Team edit form -->
+            <form id="editTeamForm" style="display:none;">
+                <input type="hidden" name="team_id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Team Name</label>
+                        <input name="team_name" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Division</label>
+                        <select name="division" required>
+                            <option value="premier">Premier</option>
+                            <option value="a">A</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Captain Username</label>
+                        <input name="captain_username" type="text">
+                        <div class="small-note">Leave unchanged to keep current username.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>New Captain Password</label>
+                        <input name="captain_password" type="text" placeholder="(leave blank to keep current)">
+                        <div class="small-note">Only fill in to reset.</div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-cancel>Cancel</button>
+                    <button type="submit" class="btn">Save Team</button>
+                </div>
+            </form>
+
+            <!-- Player edit form -->
+            <form id="editPlayerForm" style="display:none;">
+                <input type="hidden" name="player_id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Player Name</label>
+                        <input name="player_name" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Team</label>
+                        <select name="team_id" required></select>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-cancel>Cancel</button>
+                    <button type="submit" class="btn">Save Player</button>
+                </div>
+            </form>
+        </div>
     </div>
 
 <script>
@@ -343,14 +423,8 @@ async function loadAllDashboardData() {
 
 // ----- teams -----
 async function loadTeams() {
-    // Public endpoint returns array by division; combine premier + a.
-    const [premier, a] = await Promise.all([
-        fetch(`${API}?endpoint=teams&division=premier`).then(r => r.json()).catch(() => []),
-        fetch(`${API}?endpoint=teams&division=a`).then(r => r.json()).catch(() => []),
-    ]);
-    const teams = []
-        .concat(Array.isArray(premier) ? premier.map(t => Object.assign({ division: 'premier' }, t)) : [])
-        .concat(Array.isArray(a) ? a.map(t => Object.assign({ division: 'a' }, t)) : []);
+    const res = await apiCall('admin-list-teams');
+    const teams = (res && res.success && Array.isArray(res.teams)) ? res.teams : [];
     _teamsCache = teams;
 
     // Populate teams table
@@ -358,19 +432,32 @@ async function loadTeams() {
     tbody.innerHTML = '';
     teams.forEach(t => {
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${t.team_id}</td><td>${escapeHtml(t.team_name)}</td><td>${t.division === 'premier' ? 'Premier' : 'A'}</td>
-            <td><button class="btn-sm btn-delete" data-id="${t.team_id}">Delete</button></td>`;
+        tr.innerHTML = `<td>${t.team_id}</td>
+                        <td>${escapeHtml(t.team_name)}</td>
+                        <td>${t.division === 'premier' ? 'Premier' : 'A'}</td>
+                        <td>
+                            <button class="btn-sm btn-edit"   data-id="${t.team_id}" data-act="edit">Edit</button>
+                            <button class="btn-sm btn-delete" data-id="${t.team_id}" data-act="delete">Delete</button>
+                        </td>`;
         tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteTeam(b.dataset.id)));
+    tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id, act = b.dataset.act;
+        if (act === 'edit') openTeamModal(id);
+        else if (act === 'delete') deleteTeam(id);
+    }));
 
     // Populate selectors that depend on teams
     const sel = document.getElementById('addPlayerTeam');
     const filt = document.getElementById('playersFilter');
+    const editPlayerTeamSel = document.querySelector('#editPlayerForm select[name="team_id"]');
     sel.innerHTML = ''; filt.innerHTML = '<option value="">All teams</option>';
+    if (editPlayerTeamSel) editPlayerTeamSel.innerHTML = '';
     teams.forEach(t => {
-        sel.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${escapeHtml(t.team_name)} (${t.division === 'premier' ? 'P' : 'A'})</option>`);
+        const label = `${escapeHtml(t.team_name)} (${t.division === 'premier' ? 'P' : 'A'})`;
+        sel.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${label}</option>`);
         filt.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${escapeHtml(t.team_name)}</option>`);
+        if (editPlayerTeamSel) editPlayerTeamSel.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${label}</option>`);
     });
 }
 
@@ -395,22 +482,32 @@ async function deleteTeam(id) {
 }
 
 // ----- players -----
+let _playersCache = [];
+
 async function loadPlayers() {
-    // /api.php?endpoint=players returns all players with their team_id
-    const players = await fetch(`${API}?endpoint=players`).then(r => r.json()).catch(() => []);
+    const res = await apiCall('admin-list-players');
+    const players = (res && res.success && Array.isArray(res.players)) ? res.players : [];
+    _playersCache = players;
     const tbody = document.querySelector('#playersTable tbody');
     const filter = document.getElementById('playersFilter').value;
     tbody.innerHTML = '';
-    const teamById = Object.fromEntries(_teamsCache.map(t => [String(t.team_id), t]));
-    (Array.isArray(players) ? players : []).forEach(p => {
+    players.forEach(p => {
         if (filter && String(p.team_id) !== String(filter)) return;
-        const t = teamById[String(p.team_id)];
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${p.player_id}</td><td>${escapeHtml(p.player_name)}</td><td>${t ? escapeHtml(t.team_name) : '<em>unattached</em>'}</td>
-            <td><button class="btn-sm btn-delete" data-id="${p.player_id}">Delete</button></td>`;
+        tr.innerHTML = `<td>${p.player_id}</td>
+                        <td>${escapeHtml(p.player_name)}</td>
+                        <td>${p.team_name ? escapeHtml(p.team_name) : '<em>unattached</em>'}</td>
+                        <td>
+                            <button class="btn-sm btn-edit"   data-id="${p.player_id}" data-act="edit">Edit</button>
+                            <button class="btn-sm btn-delete" data-id="${p.player_id}" data-act="delete">Delete</button>
+                        </td>`;
         tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deletePlayer(b.dataset.id)));
+    tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id, act = b.dataset.act;
+        if (act === 'edit') openPlayerModal(id);
+        else if (act === 'delete') deletePlayer(id);
+    }));
 }
 
 document.getElementById('playersFilter').addEventListener('change', loadPlayers);
@@ -446,9 +543,9 @@ async function loadRequests() {
         const actions = r.status === 'pending'
             ? `<button class="btn-sm btn-approve" data-id="${r.request_id}" data-act="approve">Approve</button>
                <button class="btn-sm btn-deny"    data-id="${r.request_id}" data-act="deny">Deny</button>`
-            : '<em>—</em>';
+            : `<span class="small-note">reviewed ${escapeHtml(fmtDateTime(r.reviewed_at))}</span>`;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${escapeHtml(r.requested_at)}</td>
+        tr.innerHTML = `<td>${escapeHtml(fmtDateTime(r.requested_at))}</td>
                         <td>${escapeHtml(r.team_name)} (${r.division === 'premier' ? 'P' : 'A'})</td>
                         <td>${escapeHtml(r.player_name)}</td>
                         <td><span class="status-pill status-${r.status}">${r.status}</span></td>
@@ -504,6 +601,101 @@ document.getElementById('changePasswordForm').addEventListener('submit', async (
 
 // ----- utilities -----
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// Format a MySQL/MariaDB timestamp (e.g. "2026-06-09 14:30:15") as a
+// readable "09 Jun 2026, 14:30" string. Returns an em-dash for null/blank.
+function fmtDateTime(s) {
+    if (!s) return '—';
+    const d = new Date(String(s).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return String(s);
+    return d.toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+}
+
+// ----- edit modal -----
+const modalBackdrop = () => document.getElementById('modalBackdrop');
+const modalTitle    = () => document.getElementById('modalTitle');
+const modalMsg      = () => document.getElementById('modalMsg');
+const editTeamForm   = () => document.getElementById('editTeamForm');
+const editPlayerForm = () => document.getElementById('editPlayerForm');
+
+function openModal(which, title) {
+    modalTitle().textContent = title;
+    modalMsg().textContent = ''; modalMsg().className = 'auth-msg';
+    editTeamForm().style.display   = which === 'team'   ? '' : 'none';
+    editPlayerForm().style.display = which === 'player' ? '' : 'none';
+    modalBackdrop().classList.add('visible');
+}
+function closeModal() { modalBackdrop().classList.remove('visible'); }
+document.getElementById('modalClose').addEventListener('click', closeModal);
+modalBackdrop().addEventListener('click', (e) => { if (e.target === modalBackdrop()) closeModal(); });
+document.querySelectorAll('[data-cancel]').forEach(b => b.addEventListener('click', closeModal));
+
+function openTeamModal(teamId) {
+    const t = _teamsCache.find(t => String(t.team_id) === String(teamId));
+    if (!t) { showMsg('dashMsg', 'Team not found in current list', 'error'); return; }
+    const f = editTeamForm();
+    f.elements['team_id'].value         = t.team_id;
+    f.elements['team_name'].value       = t.team_name || '';
+    f.elements['division'].value        = t.division || 'premier';
+    f.elements['captain_username'].value = t.captain_username || '';
+    f.elements['captain_password'].value = '';
+    openModal('team', `Edit Team — ${t.team_name}`);
+}
+
+editTeamForm().addEventListener('submit', async (e) => {
+    e.preventDefault();
+    modalMsg().textContent = ''; modalMsg().className = 'auth-msg';
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({
+        team_id:          Number(fd.get('team_id')),
+        team_name:        fd.get('team_name'),
+        division:         fd.get('division'),
+        captain_username: fd.get('captain_username') || '',
+        captain_password: fd.get('captain_password') || '',
+    });
+    const res = await apiCall('update-team', { method: 'POST', body });
+    if (res.success) {
+        closeModal();
+        showMsg('dashMsg', 'Team updated.', 'success');
+        loadTeams(); loadPlayers();
+    } else {
+        modalMsg().textContent = res.error || 'Failed to update team';
+        modalMsg().className = 'auth-msg error';
+    }
+});
+
+function openPlayerModal(playerId) {
+    const p = _playersCache.find(p => String(p.player_id) === String(playerId));
+    if (!p) { showMsg('dashMsg', 'Player not found in current list', 'error'); return; }
+    const f = editPlayerForm();
+    f.elements['player_id'].value   = p.player_id;
+    f.elements['player_name'].value = p.player_name || '';
+    f.elements['team_id'].value     = p.team_id || '';
+    openModal('player', `Edit Player — ${p.player_name}`);
+}
+
+editPlayerForm().addEventListener('submit', async (e) => {
+    e.preventDefault();
+    modalMsg().textContent = ''; modalMsg().className = 'auth-msg';
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({
+        player_id:   Number(fd.get('player_id')),
+        player_name: fd.get('player_name'),
+        team_id:     Number(fd.get('team_id')),
+    });
+    const res = await apiCall('update-player', { method: 'POST', body });
+    if (res.success) {
+        closeModal();
+        showMsg('dashMsg', 'Player updated.', 'success');
+        loadPlayers();
+    } else {
+        modalMsg().textContent = res.error || 'Failed to update player';
+        modalMsg().className = 'auth-msg error';
+    }
+});
 
 // ----- mobile nav (shared pattern) -----
 document.addEventListener('DOMContentLoaded', function() {

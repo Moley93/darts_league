@@ -308,7 +308,7 @@
             <div id="paneMyRequests" class="team-pane">
                 <h3>Your Player Requests</h3>
                 <table class="data-table" id="myRequestsTable">
-                    <thead><tr><th>Submitted</th><th>Player</th><th>Status</th><th>Reviewed</th></tr></thead>
+                    <thead><tr><th>Submitted (date &amp; time)</th><th>Player</th><th>Status</th><th>Reviewed (date &amp; time)</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -342,6 +342,17 @@ async function apiGet(endpoint, params = {}) {
 function showMsg(elId, text, type = 'info') { const el = document.getElementById(elId); el.textContent = text; el.className = 'auth-msg ' + type; }
 function clearMsg(elId) { const el = document.getElementById(elId); el.textContent=''; el.className='auth-msg'; }
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+// Format a MariaDB timestamp ("2026-06-09 14:30:15") as "09 Jun 2026, 14:30".
+function fmtDateTime(s) {
+    if (!s) return '—';
+    const d = new Date(String(s).replace(' ', 'T'));
+    if (isNaN(d.getTime())) return String(s);
+    return d.toLocaleString('en-GB', {
+        day: '2-digit', month: 'short', year: 'numeric',
+        hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+}
 
 // ====== session bootstrap ======
 async function init() {
@@ -914,10 +925,10 @@ async function loadMyRequests() {
     (res.requests || []).forEach(r => {
         if (r.status === 'pending') pending++;
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${escapeHtml(r.requested_at)}</td>
+        tr.innerHTML = `<td>${escapeHtml(fmtDateTime(r.requested_at))}</td>
                         <td>${escapeHtml(r.player_name)}</td>
                         <td><span class="status-pill status-${r.status}">${r.status}</span></td>
-                        <td>${escapeHtml(r.reviewed_at || '—')}</td>`;
+                        <td>${escapeHtml(fmtDateTime(r.reviewed_at))}</td>`;
         tbody.appendChild(tr);
     });
     document.getElementById('myReqCount').textContent = pending ? ` (${pending})` : '';

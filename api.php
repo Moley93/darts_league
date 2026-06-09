@@ -139,9 +139,13 @@ switch ($endpoint) {
     case 'admin-logout':      requirePost(); adminLogout(); break;
     case 'admin-me':          adminMe(); break;
     case 'admin-change-password': requirePost(); adminChangePassword(); break;
+    case 'admin-list-teams':  adminListTeams(); break;
     case 'add-team':          requirePost(); adminAddTeam(); break;
+    case 'update-team':       requirePost(); adminUpdateTeam(); break;
     case 'delete-team':       requirePost(); adminDeleteTeam(); break;
+    case 'admin-list-players': adminListPlayers(); break;
     case 'add-player':        requirePost(); adminAddPlayer(); break;
+    case 'update-player':     requirePost(); adminUpdatePlayer(); break;
     case 'delete-player':     requirePost(); adminDeletePlayer(); break;
     case 'pending-requests':  adminListPendingRequests(); break;
     case 'approve-request':   requirePost(); adminApproveRequest(); break;
@@ -1565,6 +1569,97 @@ function adminAddTeam() {
             returnJson(['success' => false, 'error' => 'Username already in use, choose another']);
         }
         returnJson(['success' => false, 'error' => 'Failed to add team: ' . $e->getMessage()]);
+    }
+}
+
+function adminListTeams() {
+    global $pdo;
+    requireAdmin();
+    // Each team has at most one captain in normal use, but the schema doesn't
+    // enforce uniqueness on team_id in team_captains, so pick the first by id.
+    $sql = "SELECT t.team_id, t.team_name, t.division, t.created_at,
+                   (SELECT tc.username   FROM team_captains tc WHERE tc.team_id = t.team_id ORDER BY tc.captain_id ASC LIMIT 1) AS captain_username,
+                   (SELECT tc.captain_id FROM team_captains tc WHERE tc.team_id = t.team_id ORDER BY tc.captain_id ASC LIMIT 1) AS captain_id
+            FROM teams t
+            ORDER BY t.division, t.team_name";
+    $rows = $pdo->query($sql)->fetchAll();
+    returnJson(['success' => true, 'teams' => $rows]);
+}
+
+function adminUpdateTeam() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $teamId   = isset($d['team_id']) ? (int)$d['team_id'] : 0;
+    $name     = isset($d['team_name']) ? trim($d['team_name']) : '';
+    $division = isset($d['division']) ? $d['division'] : '';
+    $newUsername = isset($d['captain_username']) ? trim($d['captain_username']) : '';
+    $newPassword = isset($d['captain_password']) ? $d['captain_password'] : '';
+    if ($teamId <= 0 || $name === '' || !in_array($division, ['premier','a'], true)) {
+        returnJson(['success' => false, 'error' => 'team_id, team_name and division (premier|a) are required']);
+    }
+    try {
+        $pdo->beginTransaction();
+        $pdo->prepare('UPDATE teams SET team_name = ?, division = ? WHERE team_id = ?')
+            ->execute([$name, $division, $teamId]);
+
+        // Optionally update the captain login. Skip silently if no captain row
+        // yet (admin can create one via add-team for a brand-new team).
+        $cap = $pdo->prepare('SELECT captain_id FROM team_captains WHERE team_id = ? ORDER BY captain_id ASC LIMIT 1');
+        $cap->execute([$teamId]);
+        $captainId = $cap->fetchColumn();
+        if ($captainId) {
+            if ($newUsername !== '') {
+                $pdo->prepare('UPDATE team_captains SET username = ? WHERE captain_id = ?')
+                    ->execute([$newUsername, (int)$captainId]);
+            }
+            if ($newPassword !== '') {
+                if (strlen($newPassword) < 4) {
+                    $pdo->rollBack();
+                    returnJson(['success' => false, 'error' => 'New captain password must be at least 4 characters']);
+                }
+                $hash = password_hash($newPassword, PASSWORD_BCRYPT);
+                $pdo->prepare('UPDATE team_captains SET password_hash = ? WHERE captain_id = ?')
+                    ->execute([$hash, (int)$captainId]);
+            }
+        }
+        $pdo->commit();
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        if (strpos($e->getMessage(), 'Duplicate') !== false) {
+            returnJson(['success' => false, 'error' => 'That captain username is already in use, choose another']);
+        }
+        returnJson(['success' => false, 'error' => 'Failed to update team: ' . $e->getMessage()]);
+    }
+}
+
+function adminListPlayers() {
+    global $pdo;
+    requireAdmin();
+    $sql = 'SELECT p.player_id, p.player_name, p.team_id, p.created_at, t.team_name, t.division
+            FROM players p LEFT JOIN teams t ON p.team_id = t.team_id
+            ORDER BY t.division, t.team_name, p.player_name';
+    $rows = $pdo->query($sql)->fetchAll();
+    returnJson(['success' => true, 'players' => $rows]);
+}
+
+function adminUpdatePlayer() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $playerId = isset($d['player_id']) ? (int)$d['player_id'] : 0;
+    $name     = isset($d['player_name']) ? trim($d['player_name']) : '';
+    $teamId   = isset($d['team_id']) ? (int)$d['team_id'] : 0;
+    if ($playerId <= 0 || $name === '' || $teamId <= 0) {
+        returnJson(['success' => false, 'error' => 'player_id, player_name and team_id are required']);
+    }
+    try {
+        $pdo->prepare('UPDATE players SET player_name = ?, team_id = ? WHERE player_id = ?')
+            ->execute([$name, $teamId, $playerId]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to update player: ' . $e->getMessage()]);
     }
 }
 
