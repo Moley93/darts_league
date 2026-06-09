@@ -204,25 +204,29 @@ function getPlayers() {
 function getLeagueTable() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
-    
+
     try {
+        // Drive the query from `teams` (LEFT JOIN league_standings) so teams
+        // that have just been added but have no standings row yet still show
+        // up in the table with zeros for played / won / lost / points. The
+        // previous INNER JOIN hid any team that hadn't had a match recorded.
         $stmt = $pdo->prepare("
-            SELECT 
+            SELECT
                 t.team_name,
-                ls.played,
-                ls.won,
-                ls.drawn,
-                ls.lost,
-                ls.games_for,
-                ls.games_against,
-                (ls.games_for - ls.games_against) as goal_diff,
-                ls.points
-            FROM league_standings ls
-            JOIN teams t ON ls.team_id = t.team_id
-            WHERE ls.division = ?
-            ORDER BY ls.points DESC, goal_diff DESC, ls.games_for DESC
+                COALESCE(ls.played, 0)         AS played,
+                COALESCE(ls.won, 0)            AS won,
+                COALESCE(ls.drawn, 0)          AS drawn,
+                COALESCE(ls.lost, 0)           AS lost,
+                COALESCE(ls.games_for, 0)      AS games_for,
+                COALESCE(ls.games_against, 0)  AS games_against,
+                (COALESCE(ls.games_for, 0) - COALESCE(ls.games_against, 0)) AS goal_diff,
+                COALESCE(ls.points, 0)         AS points
+            FROM teams t
+            LEFT JOIN league_standings ls ON ls.team_id = t.team_id
+            WHERE t.division = ?
+            ORDER BY points DESC, goal_diff DESC, games_for DESC, t.team_name ASC
         ");
-        
+
         $stmt->execute([$division]);
         returnJson($stmt->fetchAll());
     } catch (Exception $e) {
