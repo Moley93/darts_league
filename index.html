@@ -98,18 +98,30 @@
             padding: 15px;
             text-align: center;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            /* Column flex so the button can be pushed to the bottom no matter
+               how long or short each card's description text is — keeps every
+               button on the same baseline across the grid row. */
+            display: flex;
+            flex-direction: column;
         }
-        
+
         .quick-link:hover {
             transform: translateY(-5px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-        
+
         .quick-link h3 {
             color: var(--primary);
             margin-bottom: 10px;
         }
-        
+
+        .quick-link p {
+            /* Paragraph fills any leftover space so the button below it sits
+               at the bottom of the card. */
+            flex-grow: 1;
+            margin-bottom: 15px;
+        }
+
         .quick-link a {
             display: inline-block;
             text-decoration: none;
@@ -119,6 +131,11 @@
             border-radius: 4px;
             border: 1px solid var(--primary);
             transition: all 0.3s ease;
+            /* Pin the button to the bottom of the card and centre it on the
+               horizontal axis (the flex container is column-oriented, so
+               cross-axis = horizontal here). */
+            margin-top: auto;
+            align-self: center;
         }
         
         .quick-link a:hover {
