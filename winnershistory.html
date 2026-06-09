@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="en">
+    <link rel="icon" href="cdl.png">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Roll of Honour for the Crawley Darts League. View past winners and runners-up of every league division, knockout cup, singles, pairs, trebles, captain & secretary, and special competitions.">
+    <meta name="keywords" content="Crawley darts winners, darts roll of honour, CDL champions, Crawley Darts League history">
+    <link rel="canonical" href="https://crawleydartsleague.com/winnershistory.html">
+    <meta property="og:title" content="CDL | Winners History">
+    <meta property="og:description" content="Roll of Honour for the Crawley Darts League — past winners and runners-up across every competition.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://crawleydartsleague.com/winnershistory.html">
+    <title>CDL | Winners History</title>
+    <link rel="stylesheet" href="styles.css">
+<style>
+        /* Page header / season banner */
+        .season-banner {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .season-banner h2 {
+            font-size: 1.8rem;
+            margin: 0 0 8px 0;
+        }
+
+        .season-banner p {
+            font-size: 1rem;
+            margin: 0;
+            opacity: 0.95;
+        }
+
+        /* Season selector (for future seasons) */
+        .season-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .season-tab {
+            padding: 8px 18px;
+            background: var(--light-gray);
+            color: var(--primary);
+            border: 1px solid var(--medium-gray);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
+
+        .season-tab:hover {
+            background: var(--medium-gray);
+        }
+
+        .season-tab.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* Group of competitions */
+        .winners-group {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .winners-group h3 {
+            color: var(--primary);
+            font-size: 1.3rem;
+            margin: 0 0 15px 0;
+            padding-bottom: 8px;
+            border-bottom: 2px solid var(--secondary);
+        }
+
+        /* Grid of winner cards inside a group */
+        .winners-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        /* Individual winner card */
+        .winner-card {
+            background: var(--light-gray);
+            border-radius: 6px;
+            padding: 15px;
+            border-left: 4px solid var(--secondary);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .winner-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+        }
+
+        .winner-card .comp-title {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        .winner-card .result-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 0.95rem;
+        }
+
+        .winner-card .result-row .label {
+            font-size: 1.1rem;
+            line-height: 1;
+        }
+
+        .winner-card .result-row.winner-row {
+            font-weight: 600;
+            color: #1a237e;
+        }
+
+        .winner-card .result-row.runner-row {
+            color: var(--dark-gray);
+        }
+
+        .winner-card .result-row .name {
+            flex: 1;
+        }
+
+        /* Highlight card for stand-alone special comps */
+        .winner-card.special {
+            border-left-color: #c79100;
+            background: #fffaf0;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .season-banner h2 {
+                font-size: 1.4rem;
+            }
+
+            .winners-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Mobile nav (shared with other pages) */
+        @media (max-width: 768px) {
+            .nav-menu {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                width: 100%;
+                background: white;
+                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                z-index: 1000;
+                padding: 0;
+                margin: 0;
+            }
+
+            .nav-menu.active {
+                display: block;
+            }
+
+            .nav-menu li {
+                margin: 0;
+                padding: 0;
+                display: block;
+                border-bottom: 1px solid var(--light-gray);
+            }
+
+            .nav-menu a {
+                padding: 15px 20px;
+                display: block;
+            }
+
+            .nav .dropdown-menu {
+                position: static;
+                box-shadow: none;
+                background: var(--light-gray);
+                width: 100%;
+                padding: 0;
+            }
+        }
+</style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo-container">
+            <img src="cdl-logo.png" alt="Crawley Darts League Logo" class="logo">
+        </div>
+        <h1>Crawley Darts League</h1>
+        <button class="mobile-toggle" aria-label="Toggle menu">
+            <span class="bar"></span>
+            <span class="bar"></span>
+            <span class="bar"></span>
+        </button>
+    </header>
+
+    <nav class="nav">
+        <ul class="nav-menu">
+            <li><a href="index.html">Home</a></li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">League</a>
+                <ul class="dropdown-menu">
+                    <li><a href="leaguetable.html">League Table</a></li>
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
+                    <li><a href="leagueresults.html">Results</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Competitions</a>
+                <ul class="dropdown-menu">
+                    <li><a href="knockoutcup.html">Knockout Cup</a></li>
+                    <li><a href="singlescup.html">Singles Cup</a></li>
+                    <li><a href="pairscup.html">Pairs Cup</a></li>
+                    <li><a href="treblescup.html">Trebles Cup</a></li>
+                    <li><a href="captainscup.html">Captains Cup</a></li>
+                    <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
+                    <li><a href="charitycup.html">Charity Cup</a></li>
+                    <li><a href="cupdraw.html">Bracket Generator</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Statistics</a>
+                <ul class="dropdown-menu">
+                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
+                    <li><a href="playerrankings.html">Player Rankings</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Information</a>
+                <ul class="dropdown-menu">
+                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
+                    <li><a href="rules.html">League Rules</a></li>
+                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
+                    <li><a href="players.html">Players</a></li>
+                    <li><a href="winnershistory.html">Winners History</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Submit Score</a>
+                <ul class="dropdown-menu">
+                    <li><a href="scoreinput.html">Submit Score</a></li>
+                    <li><a href="editscores.html">Edit Score</a></li>
+                </ul>
+            </li>
+
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle">Join</a>
+                <ul class="dropdown-menu">
+                    <li><a href="registration.html">Registration Form</a></li>
+                    <li><a href="findateam.html">Find a Team</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="container">
+
+        <!-- Season banner -->
+        <section class="season-banner">
+            <h2>Winners History</h2>
+            <p>Roll of Honour — Crawley Darts League Champions</p>
+        </section>
+
+        <!-- Season selector (extend as new seasons are added) -->
+        <div class="season-tabs" role="tablist" aria-label="Select season">
+            <button class="season-tab active" data-season="2025-26" aria-selected="true">2025 / 2026</button>
+        </div>
+
+        <!-- 2025 / 2026 Season -->
+        <div class="season-content" data-season="2025-26">
+
+            <div class="winners-group">
+                <h3>League Champions</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Jubilee Club</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Unbearables</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Dingles</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Dr Samuel Johnson</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Knockout Cup</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Knockout Cup</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Rebels</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">New Moon</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division Knockout Cup</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">The Pelham</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Dingles</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Singles Cup</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Singles</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Paul Comper</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Gary Simpson</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division Singles</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Owen Grantham</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Randall Barlow</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Pairs Cup</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Pairs</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Dartbreakers</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Rebels</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division Pairs</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Pelham</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Pelham</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Trebles Cup</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Trebles</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Jubilee Club</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Rebels</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division Trebles</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Johnson</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Disappointers</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Captain &amp; Secretary Cup</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Cap/Sec</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Paul Comper</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Pete Stevenson</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division Cap/Sec</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Stu Campbell</span>
+                        </div>
+                        <div class="result-row runner-row">
+                            <span class="label" aria-label="Runner-up">🥈</span>
+                            <span class="name">Connor Fountain</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Player Stats Winner</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Gary Simpson</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Jess Oxlade</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>High Finish</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🎯</span>
+                            <span class="name">Martyn Byrne (154)</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🎯</span>
+                            <span class="name">Tom Fox (156)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Most 180s</h3>
+                <div class="winners-grid">
+                    <div class="winner-card">
+                        <div class="comp-title">Premier Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🎯</span>
+                            <span class="name">Mal Richardson (6)</span>
+                        </div>
+                    </div>
+                    <div class="winner-card">
+                        <div class="comp-title">A Division</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🎯</span>
+                            <span class="name">Jamie Evans (4)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="winners-group">
+                <h3>Special Competitions</h3>
+                <div class="winners-grid">
+                    <div class="winner-card special">
+                        <div class="comp-title">Paul &amp; Terry Charity Comp</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Owen &amp; Warren Grantham</span>
+                        </div>
+                    </div>
+                    <div class="winner-card special">
+                        <div class="comp-title">Memorial Comp</div>
+                        <div class="result-row winner-row">
+                            <span class="label" aria-label="Winner">🏆</span>
+                            <span class="name">Mick Kirrage &amp; Steve Clark</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- /2025-26 season -->
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mobile nav toggle (shared pattern with other pages)
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navMenu = document.querySelector('.nav-menu');
+            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+
+            if (mobileToggle && navMenu) {
+                mobileToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    this.classList.toggle('active');
+                    const bars = this.querySelectorAll('.bar');
+                    if (this.classList.contains('active')) {
+                        bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
+                        bars[1].style.opacity = '0';
+                        bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
+                    } else {
+                        bars[0].style.transform = 'none';
+                        bars[1].style.opacity = '1';
+                        bars[2].style.transform = 'none';
+                    }
+                });
+            }
+
+            dropdownToggles.forEach(toggle => {
+                toggle.addEventListener('click', function(e) {
+                    if (window.innerWidth <= 768) {
+                        e.preventDefault();
+                        const parentLi = this.parentElement;
+                        document.querySelectorAll('.dropdown.active').forEach(item => {
+                            if (item !== parentLi) item.classList.remove('active');
+                        });
+                        parentLi.classList.toggle('active');
+                    }
+                });
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!navMenu) return;
+                const isClickInsideNav = navMenu.contains(e.target) || (mobileToggle && mobileToggle.contains(e.target));
+                if (!isClickInsideNav && navMenu.classList.contains('active')) {
+                    navMenu.classList.remove('active');
+                    if (mobileToggle) mobileToggle.classList.remove('active');
+                }
+            });
+
+            // Season tab switching (ready for future seasons)
+            const seasonTabs = document.querySelectorAll('.season-tab');
+            const seasonContents = document.querySelectorAll('.season-content');
+
+            seasonTabs.forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const season = this.getAttribute('data-season');
+                    seasonTabs.forEach(t => {
+                        t.classList.remove('active');
+                        t.setAttribute('aria-selected', 'false');
+                    });
+                    this.classList.add('active');
+                    this.setAttribute('aria-selected', 'true');
+                    seasonContents.forEach(c => {
+                        c.style.display = (c.getAttribute('data-season') === season) ? '' : 'none';
+                    });
+                });
+            });
+        });
+    </script>
+</body>
+</html>
