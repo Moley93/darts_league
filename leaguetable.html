@@ -41,7 +41,7 @@
             width: 10%;
         }
 
-        /* Promotion zone styling (green tint for A Division top 2) */
+        /* Promotion zone styling (green tint for A Division top 1) */
         #league-table tr.promotion-zone {
             background-color: rgba(76, 175, 80, 0.1);
         }
@@ -640,8 +640,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const row = document.createElement('tr');
                 const position = index + 1;
 
-                // Add promotion/relegation zone classes
-                if (division === 'a' && position <= 2) {
+                // Add promotion/relegation zone classes:
+                //   A Division: top 1 highlighted green (1 promotion)
+                //   Premier Division: bottom 1 highlighted red (1 relegation)
+                if (division === 'a' && position === 1) {
                     row.classList.add('promotion-zone');
                 } else if (division === 'premier' && position === filteredData.length) {
                     row.classList.add('relegation-zone');
