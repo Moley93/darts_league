@@ -853,6 +853,35 @@ function submitMatch() {
                 $stmt->execute([$matchId]);
             }
         } else {
+            // Duplicate-submission guard. Reject if a match between these two
+            // teams of the same type and division has already been submitted
+            // today. This protects against rapid double-clicks of the Submit
+            // Score button and accidental re-submissions. To change a result
+            // already on file, the captain should use Edit Score instead.
+            $dupStmt = $pdo->prepare("
+                SELECT match_id FROM matches
+                WHERE home_team_id = ?
+                  AND away_team_id = ?
+                  AND match_type = ?
+                  AND division = ?
+                  AND DATE(match_date) = CURDATE()
+                LIMIT 1
+            ");
+            $dupStmt->execute([$homeTeamId, $awayTeamId, $data['matchType'], $data['division']]);
+            $existingMatchId = $dupStmt->fetchColumn();
+            if ($existingMatchId) {
+                if ($transactionStarted && $pdo->inTransaction()) {
+                    $pdo->rollBack();
+                }
+                returnJson([
+                    'success' => false,
+                    'error'   => 'This match has already been submitted today. To change the result, use Edit Score instead.',
+                    'duplicate' => true,
+                    'existingMatchId' => (int)$existingMatchId,
+                ]);
+                return;
+            }
+
             if ($data['matchType'] === 'cup' && $cupRound) {
                 $stmt = $pdo->prepare("
                     INSERT INTO matches (home_team_id, away_team_id, match_type, division, status, match_date, cup_round, submitted_by_captain_id)

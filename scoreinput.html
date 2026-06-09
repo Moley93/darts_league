@@ -1468,27 +1468,44 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Submitting match data:', matchData); // Debug output
 
-            const result = await postApi('submit-match', matchData);
-            
+            // Disable the Submit Score button while the request is in flight so
+            // a rapid double-click cannot create a duplicate match.
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.textContent : '';
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Submitting...';
+            }
+
+            let result;
+            try {
+                result = await postApi('submit-match', matchData);
+            } catch (err) {
+                console.error('Network/parse error submitting match:', err);
+                alert('Error submitting match: ' + (err.message || err));
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = originalBtnText; }
+                return;
+            }
+
             if (result.success) {
                 alert('Match score submitted successfully!');
-                
+
                 // Reset form fields but keep the home team (captain's team)
                 const homeTeam = document.getElementById('home-team').value;
                 const division = document.getElementById('division').value;
-                
+
                 document.getElementById('match-form').reset();
-                
+
                 // Restore values
                 document.getElementById('division').value = division;
                 document.getElementById('home-team').value = homeTeam;
                 document.getElementById('home-team').disabled = true;
-                
+
                 // Reset cup round selection
                 document.getElementById('cup-round').value = '';
                 document.getElementById('cup-round').disabled = true;
                 document.getElementById('cup-round-container').classList.add('disabled-field');
-                
+
                 // Reload form elements
                 loadAwayTeamOptions();
                 generateDoublesMatches();
@@ -1498,6 +1515,12 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 alert('Error submitting match: ' + (result.error || 'Unknown error'));
                 console.error('Error details:', result);
+            }
+
+            // Re-enable the Submit Score button after a result (success or error)
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalBtnText;
             }
         }
     </script>
