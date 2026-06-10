@@ -590,14 +590,29 @@
                 </div>
                 
                 <div id="premier-fixtures" class="fixtures-container">
-                    <!-- Premier Division Fixtures -->
-                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRvaKAVXshrs_nlBbMv40hu54NSfpsTdKXOz194AsmycDMFFTT8jh7JR_28u2yU18AlkhqV1tK01xS6/pubhtml?gid=783407159&single=true&widget=true&headers=false"></iframe>
+                    <!-- Premier Division Fixtures (src overridden from admin Pages tab if set) -->
+                    <iframe id="premierFixturesFrame" loading="lazy" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRvaKAVXshrs_nlBbMv40hu54NSfpsTdKXOz194AsmycDMFFTT8jh7JR_28u2yU18AlkhqV1tK01xS6/pubhtml?gid=783407159&single=true&widget=true&headers=false"></iframe>
                 </div>
 
                 <div id="a-fixtures" class="fixtures-container hidden">
-                    <!-- A Division Fixtures -->
-                    <iframe src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSP12SFWbeNW0DlaNKwpGVeLatjKu9zUEkvYyYRkC03wgv09n9BaKTJj2ZOA4EsfEScq_fkM_wBlYWu/pubhtml?gid=0&single=true&widget=true&headers=false"></iframe>
+                    <!-- A Division Fixtures (src overridden from admin Pages tab if set) -->
+                    <iframe id="aFixturesFrame" loading="lazy" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSP12SFWbeNW0DlaNKwpGVeLatjKu9zUEkvYyYRkC03wgv09n9BaKTJj2ZOA4EsfEScq_fkM_wBlYWu/pubhtml?gid=0&single=true&widget=true&headers=false"></iframe>
                 </div>
+
+                <script>
+                    // If the admin has set custom URLs in admin-login.html → Pages tab,
+                    // swap the iframe srcs to those (otherwise keep the hardcoded
+                    // fallback above so the page still works on an unmigrated DB).
+                    (async () => {
+                        try {
+                            const r = await fetch('api.php?endpoint=settings');
+                            const j = await r.json();
+                            const s = j && j.settings ? j.settings : {};
+                            if (s.fixtures_premier_url) document.getElementById('premierFixturesFrame').src = s.fixtures_premier_url;
+                            if (s.fixtures_a_url)       document.getElementById('aFixturesFrame').src       = s.fixtures_a_url;
+                        } catch (e) { /* fall back to hardcoded */ }
+                    })();
+                </script>
             </div>
         </div>
     </div>

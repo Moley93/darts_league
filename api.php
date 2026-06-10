@@ -195,6 +195,16 @@ switch ($endpoint) {
     case 'cup-draw-preview':      adminCupDrawPreview(); break;
     case 'admin-cup-draw':        requirePost(); adminCupDraw(); break;
 
+    case 'settings':              listSettings(); break;
+    case 'update-setting':        requirePost(); adminUpdateSetting(); break;
+
+    case 'venues':                listVenues(); break;
+    case 'add-venue':             requirePost(); adminAddVenue(); break;
+    case 'update-venue':          requirePost(); adminUpdateVenue(); break;
+    case 'delete-venue':          requirePost(); adminDeleteVenue(); break;
+
+    case 'contact-info':          getContactInfo(); break;
+
     case 'team-me':           teamMe(); break;
     case 'team-logout':       requirePost(); teamLogout(); break;
     case 'team-request-player': requirePost(); teamRequestPlayer(); break;
@@ -1658,7 +1668,8 @@ function adminListTeams() {
     requireAdmin();
     // Each team has at most one captain in normal use, but the schema doesn't
     // enforce uniqueness on team_id in team_captains, so pick the first by id.
-    $sql = "SELECT t.team_id, t.team_name, t.division, t.created_at,
+    $sql = "SELECT t.team_id, t.team_name, t.division, t.venue,
+                   t.secretary_name, t.secretary_phone, t.created_at,
                    (SELECT tc.username   FROM team_captains tc WHERE tc.team_id = t.team_id ORDER BY tc.captain_id ASC LIMIT 1) AS captain_username,
                    (SELECT tc.captain_id FROM team_captains tc WHERE tc.team_id = t.team_id ORDER BY tc.captain_id ASC LIMIT 1) AS captain_id
             FROM teams t
@@ -1674,6 +1685,9 @@ function adminUpdateTeam() {
     $teamId   = isset($d['team_id']) ? (int)$d['team_id'] : 0;
     $name     = isset($d['team_name']) ? trim($d['team_name']) : '';
     $division = isset($d['division']) ? $d['division'] : '';
+    $venue          = array_key_exists('venue', $d) ? trim((string)$d['venue']) : null;
+    $secretaryName  = array_key_exists('secretary_name', $d) ? trim((string)$d['secretary_name']) : null;
+    $secretaryPhone = array_key_exists('secretary_phone', $d) ? trim((string)$d['secretary_phone']) : null;
     $newUsername = isset($d['captain_username']) ? trim($d['captain_username']) : '';
     $newPassword = isset($d['captain_password']) ? $d['captain_password'] : '';
     if ($teamId <= 0 || $name === '' || !in_array($division, ['premier','a'], true)) {
@@ -1681,8 +1695,15 @@ function adminUpdateTeam() {
     }
     try {
         $pdo->beginTransaction();
-        $pdo->prepare('UPDATE teams SET team_name = ?, division = ? WHERE team_id = ?')
-            ->execute([$name, $division, $teamId]);
+        $pdo->prepare('UPDATE teams SET team_name = ?, division = ?, venue = ?, secretary_name = ?, secretary_phone = ? WHERE team_id = ?')
+            ->execute([
+                $name,
+                $division,
+                $venue === '' ? null : $venue,
+                $secretaryName === '' ? null : $secretaryName,
+                $secretaryPhone === '' ? null : $secretaryPhone,
+                $teamId,
+            ]);
 
         // Optionally update the captain login. Skip silently if no captain row
         // yet (admin can create one via add-team for a brand-new team).
@@ -1906,6 +1927,130 @@ function adminDeleteMatch() {
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// -------- Site settings (admin-editable URLs etc.) --------
+
+function listSettings() {
+    global $pdo;
+    try {
+        $stmt = $pdo->query('SELECT setting_key, setting_value FROM site_settings');
+        $out = [];
+        foreach ($stmt->fetchAll() as $row) {
+            $out[$row['setting_key']] = $row['setting_value'];
+        }
+        returnJson(['success' => true, 'settings' => $out]);
+    } catch (Exception $e) {
+        // Table missing on a not-yet-migrated DB — return empty so the
+        // public pages fall back to their static content rather than 500.
+        returnJson(['success' => true, 'settings' => new stdClass()]);
+    }
+}
+
+function adminUpdateSetting() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $key   = isset($d['key'])   ? trim($d['key'])   : '';
+    $value = isset($d['value']) ? (string)$d['value'] : '';
+    if ($key === '' || strlen($key) > 64) {
+        returnJson(['success' => false, 'error' => 'key required (max 64 chars)']);
+    }
+    try {
+        $stmt = $pdo->prepare('INSERT INTO site_settings (setting_key, setting_value) VALUES (?, ?)
+                               ON DUPLICATE KEY UPDATE setting_value = VALUES(setting_value)');
+        $stmt->execute([$key, $value]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to save setting: ' . $e->getMessage()]);
+    }
+}
+
+// -------- Venues --------
+
+function listVenues() {
+    global $pdo;
+    try {
+        $stmt = $pdo->query('SELECT venue_id, venue_name, address, phone FROM venues ORDER BY venue_name');
+        returnJson(['success' => true, 'venues' => $stmt->fetchAll()]);
+    } catch (Exception $e) {
+        returnJson(['success' => true, 'venues' => []]);
+    }
+}
+
+function adminAddVenue() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $name    = isset($d['venue_name']) ? trim($d['venue_name']) : '';
+    $address = isset($d['address']) ? trim($d['address']) : '';
+    $phone   = isset($d['phone']) ? trim($d['phone']) : '';
+    if ($name === '') returnJson(['success' => false, 'error' => 'venue_name required']);
+    try {
+        $stmt = $pdo->prepare('INSERT INTO venues (venue_name, address, phone) VALUES (?, ?, ?)');
+        $stmt->execute([$name, $address ?: null, $phone ?: null]);
+        returnJson(['success' => true, 'venue_id' => (int)$pdo->lastInsertId()]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to add venue: ' . $e->getMessage()]);
+    }
+}
+
+function adminUpdateVenue() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $id      = isset($d['venue_id']) ? (int)$d['venue_id'] : 0;
+    $name    = isset($d['venue_name']) ? trim($d['venue_name']) : '';
+    $address = isset($d['address']) ? trim($d['address']) : '';
+    $phone   = isset($d['phone']) ? trim($d['phone']) : '';
+    if ($id <= 0 || $name === '') returnJson(['success' => false, 'error' => 'venue_id and venue_name required']);
+    try {
+        $stmt = $pdo->prepare('UPDATE venues SET venue_name = ?, address = ?, phone = ? WHERE venue_id = ?');
+        $stmt->execute([$name, $address ?: null, $phone ?: null, $id]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to update venue: ' . $e->getMessage()]);
+    }
+}
+
+function adminDeleteVenue() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $id = isset($d['venue_id']) ? (int)$d['venue_id'] : 0;
+    if ($id <= 0) returnJson(['success' => false, 'error' => 'venue_id required']);
+    try {
+        $pdo->prepare('DELETE FROM venues WHERE venue_id = ?')->execute([$id]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete venue: ' . $e->getMessage()]);
+    }
+}
+
+// Combined feed for contactinfo.html — venues + teams with their
+// contact info. Phone is only returned when the request is from an
+// authenticated session (admin OR captain) per the existing GDPR
+// model the page implements client-side. Anonymous callers still get
+// every other field.
+function getContactInfo() {
+    global $pdo;
+    $isAuthed = !empty($_SESSION['admin_id']) || !empty($_SESSION['captain_id']);
+    try {
+        $venuesStmt = $pdo->query('SELECT venue_id, venue_name, address, phone FROM venues ORDER BY venue_name');
+        $teamsStmt  = $pdo->query("SELECT team_id, team_name, division, venue, secretary_name,
+                                          " . ($isAuthed ? 'secretary_phone' : 'NULL AS secretary_phone') . "
+                                   FROM teams
+                                   WHERE team_name NOT LIKE '%Bye%' AND team_name NOT LIKE 'bye'
+                                   ORDER BY division, team_name");
+        returnJson([
+            'success' => true,
+            'authed' => $isAuthed,
+            'venues' => $venuesStmt->fetchAll(),
+            'teams'  => $teamsStmt->fetchAll(),
+        ]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to load contact info: ' . $e->getMessage()]);
     }
 }
 

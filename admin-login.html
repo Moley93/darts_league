@@ -187,6 +187,8 @@
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
                 <button class="admin-tab" data-pane="paneCupDraw">Cup Draw</button>
                 <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
+                <button class="admin-tab" data-pane="panePages">Pages (URLs)</button>
+                <button class="admin-tab" data-pane="paneVenues">Venues</button>
                 <button class="admin-tab" data-pane="panePassword">Change Password</button>
                 <button class="admin-tab" data-pane="paneDanger" style="background:#ffebee;color:#c62828;">Season Reset</button>
             </div>
@@ -333,6 +335,65 @@
                 </table>
             </div>
 
+            <!-- Pages pane: admin-editable URLs that drive public pages -->
+            <div id="panePages" class="admin-pane">
+                <h3>Page Source URLs</h3>
+                <p class="small-note">Replace the embedded content on the public site without touching the codebase. For Google Sheets, use the "Publish to web" iframe URL (Sheets &rarr; File &rarr; Share &rarr; Publish to web). For Google Docs, use a <code>/preview</code> link (replace <code>/edit</code> with <code>/preview</code> at the end of the share URL). Save each field independently — blank to fall back to the page's static content.</p>
+
+                <form id="settingsForm" style="max-width:780px;">
+                    <div class="form-group">
+                        <label>Premier Division Fixtures &mdash; Google Sheets URL</label>
+                        <input name="fixtures_premier_url" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pubhtml?...">
+                        <div class="small-note">Loaded into <code>leaguefixtures.html</code> for the Premier tab.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>A Division Fixtures &mdash; Google Sheets URL</label>
+                        <input name="fixtures_a_url" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pubhtml?...">
+                        <div class="small-note">Loaded into <code>leaguefixtures.html</code> for the A Division tab.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>League Rules &mdash; Google Doc URL</label>
+                        <input name="rules_doc_url" type="url" placeholder="https://docs.google.com/document/d/.../preview">
+                        <div class="small-note">Replaces the body of <code>rules.html</code> with this document.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>AGM Minutes &mdash; Google Doc URL</label>
+                        <input name="agm_doc_url" type="url" placeholder="https://docs.google.com/document/d/.../preview">
+                        <div class="small-note">Replaces the body of <code>agm-minutes.html</code> with this document.</div>
+                    </div>
+                    <button type="submit" class="btn">Save All URLs</button>
+                </form>
+            </div>
+
+            <!-- Venues pane: CRUD for venues that contactinfo.html lists -->
+            <div id="paneVenues" class="admin-pane">
+                <h3>Add Venue</h3>
+                <p class="small-note">Venues populate the "Venue Information" table on <code>contactinfo.html</code> and the venue dropdown in the team edit form.</p>
+                <form id="addVenueForm" style="max-width:780px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Venue Name</label>
+                            <input name="venue_name" type="text" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Address</label>
+                            <input name="address" type="text">
+                        </div>
+                    </div>
+                    <div class="form-group" style="max-width:300px;">
+                        <label>Phone</label>
+                        <input name="phone" type="text">
+                    </div>
+                    <button type="submit" class="btn">Add Venue</button>
+                </form>
+
+                <h3 style="margin-top:25px;">Existing Venues</h3>
+                <table class="data-table" id="venuesTable">
+                    <thead><tr><th>Name</th><th>Address</th><th>Phone</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
             <!-- Password pane -->
             <div id="panePassword" class="admin-pane">
                 <h3>Change Admin Password</h3>
@@ -406,6 +467,25 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
+                        <label>Home Venue</label>
+                        <select name="venue"><option value="">(none)</option></select>
+                        <div class="small-note">From the Venues tab.</div>
+                    </div>
+                    <div class="form-group">
+                        <label>Secretary Name</label>
+                        <input name="secretary_name" type="text">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Secretary Phone</label>
+                        <input name="secretary_phone" type="text" placeholder="07xxx xxx xxx">
+                        <div class="small-note">Visible only to logged-in captains (GDPR).</div>
+                    </div>
+                    <div class="form-group"></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
                         <label>Captain Username</label>
                         <input name="captain_username" type="text">
                         <div class="small-note">Leave unchanged to keep current username.</div>
@@ -438,6 +518,29 @@
                 <div class="modal-actions">
                     <button type="button" class="btn-secondary" data-cancel>Cancel</button>
                     <button type="submit" class="btn">Save Player</button>
+                </div>
+            </form>
+
+            <!-- Venue edit form -->
+            <form id="editVenueForm" style="display:none;">
+                <input type="hidden" name="venue_id">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Venue Name</label>
+                        <input name="venue_name" type="text" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input name="phone" type="text">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <input name="address" type="text">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" data-cancel>Cancel</button>
+                    <button type="submit" class="btn">Save Venue</button>
                 </div>
             </form>
         </div>
@@ -504,7 +607,14 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 // ----- shared state -----
 let _teamsCache = [];
 
+// Shared caches for cross-tab needs (venue dropdown in team modal, etc.)
+let _venuesCache = [];
+let _settingsCache = {};
+
 async function loadAllDashboardData() {
+    // Load venues + settings BEFORE teams so the team-edit modal has its
+    // venue dropdown ready as soon as a row is clicked.
+    await Promise.all([loadVenues(), loadSettings()]);
     await Promise.all([
         loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(),
         loadBracketStatus('premier'), loadBracketStatus('a'),
@@ -724,6 +834,8 @@ function openModal(which, title) {
     modalMsg().textContent = ''; modalMsg().className = 'auth-msg';
     editTeamForm().style.display   = which === 'team'   ? '' : 'none';
     editPlayerForm().style.display = which === 'player' ? '' : 'none';
+    const venueForm = document.getElementById('editVenueForm');
+    if (venueForm) venueForm.style.display = which === 'venue' ? '' : 'none';
     modalBackdrop().classList.add('visible');
 }
 function closeModal() { modalBackdrop().classList.remove('visible'); }
@@ -738,6 +850,19 @@ function openTeamModal(teamId) {
     f.elements['team_id'].value         = t.team_id;
     f.elements['team_name'].value       = t.team_name || '';
     f.elements['division'].value        = t.division || 'premier';
+    // Repopulate venue dropdown from latest cache, then pre-select.
+    const venueSel = f.elements['venue'];
+    if (venueSel) {
+        venueSel.innerHTML = '<option value="">(none)</option>';
+        (_venuesCache || []).forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.venue_name; opt.textContent = v.venue_name;
+            venueSel.appendChild(opt);
+        });
+        venueSel.value = t.venue || '';
+    }
+    f.elements['secretary_name'].value   = t.secretary_name  || '';
+    f.elements['secretary_phone'].value  = t.secretary_phone || '';
     f.elements['captain_username'].value = t.captain_username || '';
     f.elements['captain_password'].value = '';
     openModal('team', `Edit Team — ${t.team_name}`);
@@ -751,6 +876,9 @@ editTeamForm().addEventListener('submit', async (e) => {
         team_id:          Number(fd.get('team_id')),
         team_name:        fd.get('team_name'),
         division:         fd.get('division'),
+        venue:            fd.get('venue') || '',
+        secretary_name:   fd.get('secretary_name') || '',
+        secretary_phone:  fd.get('secretary_phone') || '',
         captain_username: fd.get('captain_username') || '',
         captain_password: fd.get('captain_password') || '',
     });
@@ -794,6 +922,115 @@ editPlayerForm().addEventListener('submit', async (e) => {
         modalMsg().className = 'auth-msg error';
     }
 });
+
+// ============== Site Settings (URLs) ==============
+
+async function loadSettings() {
+    const res = await apiCall('settings');
+    _settingsCache = (res && res.success && res.settings) ? res.settings : {};
+    const form = document.getElementById('settingsForm');
+    if (form) {
+        ['fixtures_premier_url','fixtures_a_url','rules_doc_url','agm_doc_url'].forEach(k => {
+            if (form.elements[k]) form.elements[k].value = _settingsCache[k] || '';
+        });
+    }
+}
+
+document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    // Save each setting independently. We do them in parallel since each
+    // is its own row in site_settings.
+    const keys = ['fixtures_premier_url','fixtures_a_url','rules_doc_url','agm_doc_url'];
+    const results = await Promise.all(keys.map(k =>
+        apiCall('update-setting', { method: 'POST', body: JSON.stringify({ key: k, value: fd.get(k) || '' }) })
+    ));
+    const failures = results.filter(r => !r.success);
+    if (failures.length === 0) {
+        showMsg('dashMsg', 'All URLs saved.', 'success');
+        loadSettings();
+    } else {
+        showMsg('dashMsg', 'Some URLs failed to save: ' + failures.map(f => f.error || '?').join('; '), 'error');
+    }
+});
+
+// ============== Venues ==============
+
+async function loadVenues() {
+    const res = await apiCall('venues');
+    _venuesCache = (res && res.success && Array.isArray(res.venues)) ? res.venues : [];
+    const tbody = document.querySelector('#venuesTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    if (_venuesCache.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--dark-gray);font-style:italic;">No venues yet. Add one above.</td></tr>';
+        return;
+    }
+    _venuesCache.forEach(v => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${escapeHtml(v.venue_name)}</td>
+                        <td>${escapeHtml(v.address || '')}</td>
+                        <td>${escapeHtml(v.phone || '')}</td>
+                        <td>
+                            <button class="btn-sm btn-edit"   data-id="${v.venue_id}" data-act="edit">Edit</button>
+                            <button class="btn-sm btn-delete" data-id="${v.venue_id}" data-act="delete">Delete</button>
+                        </td>`;
+        tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id, act = b.dataset.act;
+        if (act === 'edit') openVenueModal(id);
+        else if (act === 'delete') deleteVenue(id);
+    }));
+}
+
+document.getElementById('addVenueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({
+        venue_name: fd.get('venue_name'),
+        address:    fd.get('address') || '',
+        phone:      fd.get('phone') || '',
+    });
+    const res = await apiCall('add-venue', { method: 'POST', body });
+    if (res.success) { showMsg('dashMsg', 'Venue added.', 'success'); e.target.reset(); loadVenues(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+});
+
+function openVenueModal(venueId) {
+    const v = _venuesCache.find(x => String(x.venue_id) === String(venueId));
+    if (!v) { showMsg('dashMsg', 'Venue not found', 'error'); return; }
+    const f = document.getElementById('editVenueForm');
+    f.elements['venue_id'].value   = v.venue_id;
+    f.elements['venue_name'].value = v.venue_name || '';
+    f.elements['address'].value    = v.address || '';
+    f.elements['phone'].value      = v.phone || '';
+    openModal('venue', `Edit Venue — ${v.venue_name}`);
+}
+
+document.getElementById('editVenueForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    modalMsg().textContent = ''; modalMsg().className = 'auth-msg';
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({
+        venue_id:   Number(fd.get('venue_id')),
+        venue_name: fd.get('venue_name'),
+        address:    fd.get('address') || '',
+        phone:      fd.get('phone') || '',
+    });
+    const res = await apiCall('update-venue', { method: 'POST', body });
+    if (res.success) { closeModal(); showMsg('dashMsg', 'Venue updated.', 'success'); loadVenues(); }
+    else { modalMsg().textContent = res.error || 'Failed to update venue'; modalMsg().className = 'auth-msg error'; }
+});
+
+async function deleteVenue(id) {
+    if (!confirm('Delete this venue?')) return;
+    const res = await apiCall('delete-venue', { method: 'POST', body: JSON.stringify({ venue_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Venue deleted.', 'success'); loadVenues(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
 
 // ============== Cup Draw ==============
 

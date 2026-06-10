@@ -27,6 +27,8 @@ DROP PROCEDURE IF EXISTS `advance_cup_winner`;
 DROP PROCEDURE IF EXISTS `calculate_player_rankings`;
 DROP PROCEDURE IF EXISTS `update_league_standings`;
 
+DROP TABLE IF EXISTS `venues`;
+DROP TABLE IF EXISTS `site_settings`;
 DROP TABLE IF EXISTS `announcements`;
 DROP TABLE IF EXISTS `player_requests`;
 DROP TABLE IF EXISTS `admins`;
@@ -179,6 +181,9 @@ CREATE TABLE `teams` (
   `team_id` int(11) NOT NULL AUTO_INCREMENT,
   `team_name` varchar(100) NOT NULL,
   `division` enum('premier','a') NOT NULL,
+  `venue` varchar(100) DEFAULT NULL,
+  `secretary_name` varchar(100) DEFAULT NULL,
+  `secretary_phone` varchar(50) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`team_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
@@ -362,6 +367,26 @@ CREATE TABLE `player_requests` (
 -- ---------------------------------------------------------------------
 -- NEW: League announcements posted by admins and shown on index.html.
 -- ---------------------------------------------------------------------
+
+-- Key-value store for admin-editable settings: Google Sheets / Doc URLs
+-- consumed by leaguefixtures.html, rules.html, agm-minutes.html.
+CREATE TABLE `site_settings` (
+  `setting_key`   varchar(64) NOT NULL,
+  `setting_value` text DEFAULT NULL,
+  `updated_at`    timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`setting_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- Venue directory used by contactinfo.html.
+CREATE TABLE `venues` (
+  `venue_id`   int(11) NOT NULL AUTO_INCREMENT,
+  `venue_name` varchar(100) NOT NULL,
+  `address`    varchar(255) DEFAULT NULL,
+  `phone`      varchar(50)  DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`venue_id`),
+  KEY `idx_venue_name` (`venue_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 CREATE TABLE `announcements` (
   `announcement_id` int(11) NOT NULL AUTO_INCREMENT,
