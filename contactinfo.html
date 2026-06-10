@@ -59,7 +59,16 @@
             border-collapse: collapse;
             margin-top: 20px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            /* Fixed layout so the colgroup widths below are respected
+               instead of being overridden by long cell content. */
+            table-layout: fixed;
+            word-wrap: break-word;
         }
+        /* Right-align phone numbers for readability and consistent vertical
+           alignment of digits. */
+        .contact-table .col-phone { text-align: right; white-space: nowrap; }
+        /* Centre short tag-like values (Division, Role headings, etc.). */
+        .contact-table .col-center { text-align: center; }
 
         .contact-table thead {
             background-color: var(--primary);
@@ -585,12 +594,17 @@
                 <!-- Venue Information Section -->
                 <div class="contact-section">
                     <h2>Venue Information</h2>
-                    <table class="contact-table">
+                    <table class="contact-table" id="venues-table">
+                        <colgroup>
+                            <col style="width: 25%;">
+                            <col style="width: 50%;">
+                            <col style="width: 25%;">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th>Venue Name</th>
                                 <th>Address</th>
-                                <th>Phone Number</th>
+                                <th class="col-phone">Phone Number</th>
                             </tr>
                         </thead>
                         <tbody id="venuesTbody">
@@ -605,10 +619,16 @@
                     
                     
                     <table class="contact-table" id="team-contact-table">
+                        <colgroup>
+                            <col style="width: 28%;">
+                            <col style="width: 14%;">
+                            <col style="width: 30%;">
+                            <col style="width: 28%;">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th>Team</th>
-                                <th>Division</th>
+                                <th class="col-center">Division</th>
                                 <th>Venue</th>
                                 <th>Secretary</th>
                             </tr>
@@ -623,7 +643,11 @@
                 <div class="contact-section">
                     <h2>Committee Information</h2>
                     <p style="margin-bottom:15px;">To get in touch with any committee member, please email <a href="mailto:secretary@crawleydartsleague.co.uk"><strong>secretary@crawleydartsleague.co.uk</strong></a> and your message will be passed on.</p>
-                    <table class="contact-table">
+                    <table class="contact-table" id="committee-table">
+                        <colgroup>
+                            <col style="width: 45%;">
+                            <col style="width: 55%;">
+                        </colgroup>
                         <thead>
                             <tr>
                                 <th>Name</th>
@@ -935,7 +959,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             const tr = document.createElement('tr');
                             tr.innerHTML = '<td>' + escHtml(v.venue_name) + '</td>' +
                                            '<td>' + escHtml(v.address || '') + '</td>' +
-                                           '<td>' + escHtml(v.phone || '') + '</td>';
+                                           '<td class="col-phone">' + escHtml(v.phone || '') + '</td>';
                             vt.appendChild(tr);
                         });
                     }
@@ -953,7 +977,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             // phone numbers in the Venue Information table above
                             // are kept because they are public business numbers.
                             tr.innerHTML = '<td>' + escHtml(t.team_name) + '</td>' +
-                                           '<td>' + (t.division === 'premier' ? 'Premier' : 'A') + '</td>' +
+                                           '<td class="col-center">' + (t.division === 'premier' ? 'Premier' : 'A') + '</td>' +
                                            '<td>' + escHtml(t.venue || '') + '</td>' +
                                            '<td>' + escHtml(t.secretary_name || '') + '</td>';
                             tt.appendChild(tr);
