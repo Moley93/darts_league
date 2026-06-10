@@ -9,6 +9,30 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Convert any PHP warning/notice/error into an exception so it surfaces
+// through the global exception handler below as a clean JSON response
+// instead of as printed HTML that breaks res.json() on the client.
+set_error_handler(function($severity, $message, $file, $line) {
+    if (!(error_reporting() & $severity)) return false;
+    throw new ErrorException($message, 0, $severity, $file, $line);
+});
+
+// Global fallback so any uncaught exception (e.g. a missing table or a
+// query syntax issue) becomes a valid JSON response. Without this the
+// client receives a half-flushed PHP error page and parses it as
+// "Invalid server response".
+set_exception_handler(function($e) {
+    error_log('Uncaught in api.php: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+    // returnJson clears the output buffer and prints JSON.
+    if (function_exists('returnJson')) {
+        returnJson(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
+    } else {
+        while (ob_get_level()) ob_end_clean();
+        header('Content-Type: application/json');
+        echo json_encode(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
+    }
+});
+
 // Turn on error logging but disable displaying errors
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
@@ -1521,11 +1545,25 @@ function adminLogin() {
     if ($username === '' || $password === '') {
         returnJson(['success' => false, 'error' => 'Username and password are required']);
     }
-    $stmt = $pdo->prepare('SELECT * FROM admins WHERE username = ?');
-    $stmt->execute([$username]);
-    $admin = $stmt->fetch();
-    if (!$admin || !password_verify($password, $admin['password_hash'])) {
-        returnJson(['success' => false, 'error' => 'Invalid credentials']);
+    try {
+        $stmt = $pdo->prepare('SELECT * FROM admins WHERE username = ?');
+        $stmt->execute([$username]);
+        $admin = $stmt->fetch();
+    } catch (PDOException $e) {
+        // Most common cause: the `admins` table doesn't exist because
+        // fresh-schema.sql wasn't imported, or setup-admin.php was
+        // never visited to seed the initial admin row.
+        $msg = $e->getMessage();
+        if (stripos($msg, "doesn't exist") !== false || stripos($msg, 'no such table') !== false) {
+            returnJson(['success' => false, 'error' => "The 'admins' table does not exist. Import db/fresh-schema.sql via phpMyAdmin, then visit /setup-admin.php once to create the initial admin."]);
+        }
+        returnJson(['success' => false, 'error' => 'Database error during login: ' . $msg]);
+    }
+    if (!$admin) {
+        returnJson(['success' => false, 'error' => 'Invalid credentials (no such admin user)']);
+    }
+    if (!password_verify($password, $admin['password_hash'])) {
+        returnJson(['success' => false, 'error' => 'Invalid credentials (wrong password)']);
     }
     $_SESSION['admin_id'] = (int)$admin['admin_id'];
     $_SESSION['admin_username'] = $admin['username'];
