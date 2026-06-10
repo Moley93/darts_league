@@ -603,15 +603,7 @@
                 <div class="contact-section">
                     <h2>Team Information</h2>
                     
-                    <div class="login-info" id="login-required-notice">
-                        <p><strong>Notice:</strong> Team secretary contact details are only visible to team captains for GDPR reasons.</p>
-                        <button class="login-button" id="open-login-modal">Log in as Captain</button>
-                    </div>
-                    
-                    <div id="logged-in-notice" class="login-info hidden">
-                        <p><strong>Logged in:</strong> Secretary contact details are now visible.</p>
-                        <button class="login-button" id="logout-button">Log out</button>
-                    </div>
+                    <p class="small-note" style="color:#757575;margin-bottom:15px;">Phone numbers for team secretaries are no longer shown on this page in line with GDPR. To get in touch with a team, contact the league via the committee details below.</p>
                     
                     <table class="contact-table" id="team-contact-table">
                         <thead>
@@ -620,19 +612,14 @@
                                 <th>Division</th>
                                 <th>Venue</th>
                                 <th>Secretary</th>
-                                <th>Contact Number</th>
                             </tr>
                         </thead>
                         <tbody id="teamsTbody">
-                            <tr><td colspan="5" style="text-align:center;color:#757575;font-style:italic;padding:20px;">Loading teams...</td></tr>
+                            <tr><td colspan="4" style="text-align:center;color:#757575;font-style:italic;padding:20px;">Loading teams...</td></tr>
                         </tbody>
                     </table>
-                    
-                    <div class="gdpr-notice">
-                        <p>In accordance with GDPR regulations, team secretary personal contact information is only accessible to registered team captains who have logged in.</p>
-                    </div>
                 </div>
-                
+
                 <!-- Committee Information Section -->
                 <div class="contact-section">
                     <h2>Committee Information</h2>
@@ -642,7 +629,6 @@
                                 <th>Name</th>
                                 <th>Role</th>
                                 <th>Email</th>
-                                <th>Phone Number</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -650,29 +636,21 @@
                                 <td>Mike Kirrage</td>
                                 <td>League Chairman</td>
                                 <td><a href="mailto:chairman@crawleydartsleague.co.uk">chairman@crawleydartsleague.co.uk</a></td>
-                                <td class="phone-hidden">07738 552 089</td>
-                                <td class="phone-placeholder">Login required</td>
                             </tr>
                             <tr>
                                 <td>Clare Sabourn</td>
                                 <td>League Secretary</td>
                                 <td><a href="mailto:secretary@crawleydartsleague.co.uk">secretary@crawleydartsleague.co.uk</a></td>
-                                <td class="phone-hidden">07917 692 025</td>
-                                <td class="phone-placeholder">Login required</td>
                             </tr>
                             <tr>
                                 <td>Jackie Moran</td>
                                 <td>Treasurer</td>
                                 <td><a href="mailto:treasurer@crawleydartsleague.co.uk">treasurer@crawleydartsleague.co.uk</a></td>
-                                <td class="phone-hidden">07886 815 121</td>
-                                <td class="phone-placeholder">Login required</td>
                             </tr>
                             <tr>
                                 <td>Warren Grantham</td>
                                 <td>Competitions Secretary</td>
                                 <td><a href="mailto:cup@crawleydartsleague.co.uk">cup@crawleydartsleague.co.uk</a></td>
-                                <td class="phone-hidden">07514 411 200</td>
-                                <td class="phone-placeholder">Login required</td>
                             </tr>
                         </tbody>
                     </table>
@@ -984,18 +962,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (tt) {
                     tt.innerHTML = '';
                     if (!j.teams || j.teams.length === 0) {
-                        tt.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#757575;font-style:italic;padding:20px;">No teams recorded yet.</td></tr>';
+                        tt.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#757575;font-style:italic;padding:20px;">No teams recorded yet.</td></tr>';
                     } else {
                         j.teams.forEach(t => {
                             const tr = document.createElement('tr');
-                            const phoneCell = authed
-                                ? (t.secretary_phone ? escHtml(t.secretary_phone) : '<em>not set</em>')
-                                : '<span class="phone-placeholder"><a href="team-login.html">Log in as Captain</a> to view</span>';
+                            // Phone numbers removed from team rows (GDPR). Venue
+                            // phone numbers in the Venue Information table above
+                            // are kept because they are public business numbers.
                             tr.innerHTML = '<td>' + escHtml(t.team_name) + '</td>' +
                                            '<td>' + (t.division === 'premier' ? 'Premier' : 'A') + '</td>' +
                                            '<td>' + escHtml(t.venue || '') + '</td>' +
-                                           '<td>' + escHtml(t.secretary_name || '') + '</td>' +
-                                           '<td>' + phoneCell + '</td>';
+                                           '<td>' + escHtml(t.secretary_name || '') + '</td>';
                             tt.appendChild(tr);
                         });
                     }
