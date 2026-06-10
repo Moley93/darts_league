@@ -343,6 +343,20 @@ function showMsg(elId, text, type = 'info') { const el = document.getElementById
 function clearMsg(elId) { const el = document.getElementById(elId); el.textContent=''; el.className='auth-msg'; }
 function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
 
+// Safe-set a <select>'s value, even if the option isn't loaded yet.
+// During edit pre-fill the player dropdowns are repopulated asynchronously,
+// so a naive ".value = name" can lose if the option doesn't exist at that
+// instant. We inject the option in that case so the chosen player sticks.
+function setSelectValue(sel, val) {
+    if (!sel) return;
+    if (val == null || val === '') { sel.value = ''; return; }
+    const v = String(val);
+    if (![...sel.options].some(o => o.value === v)) {
+        sel.add(new Option(v, v));
+    }
+    sel.value = v;
+}
+
 // Format a MariaDB timestamp ("2026-06-09 14:30:15") as "09 Jun 2026, 14:30".
 function fmtDateTime(s) {
     if (!s) return '—';
@@ -762,13 +776,13 @@ async function editMatch(matchId) {
     (detail.doubles || []).slice(0, 3).forEach((d, idx) => {
         const m = document.querySelectorAll('.doubles-match')[idx];
         if (!m) return;
-        m.querySelector('.home-player1').value = ourAway ? d.away_player1_name : d.home_player1_name;
-        m.querySelector('.home-player2').value = ourAway ? d.away_player2_name : d.home_player2_name;
-        m.querySelector('.away-player1').value = ourAway ? d.home_player1_name : d.away_player1_name;
-        m.querySelector('.away-player2').value = ourAway ? d.home_player2_name : d.away_player2_name;
+        setSelectValue(m.querySelector('.home-player1'), ourAway ? d.away_player1_name : d.home_player1_name);
+        setSelectValue(m.querySelector('.home-player2'), ourAway ? d.away_player2_name : d.home_player2_name);
+        setSelectValue(m.querySelector('.away-player1'), ourAway ? d.home_player1_name : d.away_player1_name);
+        setSelectValue(m.querySelector('.away-player2'), ourAway ? d.home_player2_name : d.away_player2_name);
         const hs = ourAway ? d.away_score : d.home_score;
         const as = ourAway ? d.home_score : d.away_score;
-        m.querySelector('.doubles-score').value = `${hs}-${as}`;
+        setSelectValue(m.querySelector('.doubles-score'), `${hs}-${as}`);
     });
 
     // Populate singles
@@ -776,30 +790,28 @@ async function editMatch(matchId) {
     (detail.singles || []).slice(0, 6).forEach((s, idx) => {
         const m = document.querySelectorAll('.singles-match')[idx];
         if (!m) return;
-        m.querySelector('.home-player').value = ourAway ? s.away_player_name : s.home_player_name;
-        m.querySelector('.away-player').value = ourAway ? s.home_player_name : s.away_player_name;
+        setSelectValue(m.querySelector('.home-player'), ourAway ? s.away_player_name : s.home_player_name);
+        setSelectValue(m.querySelector('.away-player'), ourAway ? s.home_player_name : s.away_player_name);
         const hs = ourAway ? s.away_score : s.home_score;
         const as = ourAway ? s.home_score : s.away_score;
-        m.querySelector('.singles-score').value = `${hs}-${as}`;
+        setSelectValue(m.querySelector('.singles-score'), `${hs}-${as}`);
     });
 
     // 180s
     generateOneEightiesInputs();
-    const oeRows = document.querySelectorAll('#oneEightiesSection .stats-row');
     (detail.oneEighties || []).forEach((o, idx) => {
-        if (idx >= oeRows.length) addOneEightyRow();
+        if (idx >= document.querySelectorAll('#oneEightiesSection .stats-row').length) addOneEightyRow();
         const row = document.querySelectorAll('#oneEightiesSection .stats-row')[idx];
-        row.querySelector('.one-eighty-player').value = o.player_name;
+        setSelectValue(row.querySelector('.one-eighty-player'), o.player_name);
         row.querySelector('.one-eighty-count').value = o.count;
     });
 
     // High finishes
     generateHighFinishesInputs();
-    const hfRows = document.querySelectorAll('#highFinishesSection .stats-row');
     (detail.highFinishes || []).forEach((h, idx) => {
-        if (idx >= hfRows.length) addHighFinishRow();
+        if (idx >= document.querySelectorAll('#highFinishesSection .stats-row').length) addHighFinishRow();
         const row = document.querySelectorAll('#highFinishesSection .stats-row')[idx];
-        row.querySelector('.high-finish-player').value = h.player_name;
+        setSelectValue(row.querySelector('.high-finish-player'), h.player_name);
         row.querySelector('.high-finish-value').value = h.finish_value;
     });
 

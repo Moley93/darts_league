@@ -152,6 +152,7 @@ switch ($endpoint) {
     case 'deny-request':      requirePost(); adminDenyRequest(); break;
     case 'admin-list-matches': adminListMatches(); break;
     case 'admin-delete-match': requirePost(); adminDeleteMatch(); break;
+    case 'admin-season-reset': requirePost(); adminSeasonReset(); break;
 
     case 'team-me':           teamMe(); break;
     case 'team-logout':       requirePost(); teamLogout(); break;
@@ -239,7 +240,26 @@ function getSinglesRanking() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
     $match_type = isset($_GET['match_type']) ? $_GET['match_type'] : null;
-    
+
+    // Build a subquery that pre-filters singles_results by match_type if a
+    // match_type filter was supplied. Using a derived table preserves
+    // LEFT JOIN semantics: players with no qualifying results still appear
+    // in the result set with zeros, instead of being silently filtered out
+    // by a WHERE m.match_type = 'league' that would turn the LEFT JOIN into
+    // an effective INNER JOIN.
+    if ($match_type) {
+        $singlesJoin = "
+            LEFT JOIN (
+                SELECT sr.* FROM singles_results sr
+                JOIN matches mm ON sr.match_id = mm.match_id
+                WHERE mm.match_type = ?
+            ) sr ON (p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id)";
+    } else {
+        $singlesJoin = "
+            LEFT JOIN singles_results sr
+                ON (p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id)";
+    }
+
     try {
         // SQL query to get detailed breakdown of singles scores
         // Use different queries for Premier and A divisions due to different scoring systems
@@ -299,8 +319,7 @@ function getSinglesRanking() {
                     END) as points
                 FROM players p
                 JOIN teams t ON p.team_id = t.team_id
-                LEFT JOIN singles_results sr ON p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id
-                LEFT JOIN matches m ON sr.match_id = m.match_id
+                $singlesJoin
                 WHERE t.division = ?
             ";
         } else {
@@ -363,23 +382,22 @@ function getSinglesRanking() {
                     END) as points
                 FROM players p
                 JOIN teams t ON p.team_id = t.team_id
-                LEFT JOIN singles_results sr ON p.player_id = sr.home_player_id OR p.player_id = sr.away_player_id
-                LEFT JOIN matches m ON sr.match_id = m.match_id
+                $singlesJoin
                 WHERE t.division = ?
             ";
         }
-        
-        // Add match type filter if specified
-        $params = [$division];
-        if ($match_type) {
-            $sql .= " AND m.match_type = ?";
-            $params[] = $match_type;
-        }
-        
-        // Complete the query with GROUP BY and ORDER BY
+
+        // Parameter order has to match the placeholders in the assembled SQL.
+        // When match_type is set, the subquery's `?` for mm.match_type comes
+        // FIRST (it appears before WHERE t.division = ? in the query text).
+        $params = $match_type ? [$match_type, $division] : [$division];
+
+        // Complete the query with GROUP BY and ORDER BY. The final
+        // player_name tiebreaker keeps unplayed (all-zero) rows in a stable,
+        // alphabetical order at the bottom instead of bunching unpredictably.
         $sql .= "
             GROUP BY p.player_id, p.player_name, t.team_name
-            ORDER BY points DESC, won DESC
+            ORDER BY points DESC, won DESC, p.player_name ASC
         ";
         
         $stmt = $pdo->prepare($sql);
@@ -608,7 +626,8 @@ function getMatchDetails() {
         // Get basic match info
         $stmt = $pdo->prepare("
             SELECT m.match_id, m.match_type, m.division, m.home_score, m.away_score,
-                   h.team_name as home_team, a.team_name as away_team, m.cup_round
+                   h.team_name as home_team, a.team_name as away_team, m.cup_round,
+                   m.match_date, m.status, m.submitted_by_captain_id
             FROM matches m
             JOIN teams h ON m.home_team_id = h.team_id
             JOIN teams a ON m.away_team_id = a.team_id
@@ -1825,6 +1844,42 @@ function adminDeleteMatch() {
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// Wipe everything except the admins table. Designed to be triggered at the
+// end of a season after the user has confirmed twice in the UI. Note that
+// TRUNCATE in MySQL implicitly commits, so we do NOT wrap this in an explicit
+// transaction; FK checks are disabled and re-enabled around the loop instead.
+function adminSeasonReset() {
+    global $pdo;
+    requireAdmin();
+    $tables = [
+        // Child tables first (defensive — FK checks off anyway).
+        'doubles_results',
+        'singles_results',
+        'high_finishes',
+        'one_eighties',
+        'league_standings',
+        'player_requests',
+        'matches',
+        // Then parents.
+        'team_captains',
+        'players',
+        'teams',
+    ];
+    $cleared = [];
+    try {
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
+        foreach ($tables as $t) {
+            $pdo->exec("TRUNCATE TABLE `$t`");
+            $cleared[] = $t;
+        }
+        $pdo->exec('SET FOREIGN_KEY_CHECKS = 1');
+        returnJson(['success' => true, 'cleared' => $cleared]);
+    } catch (Exception $e) {
+        try { $pdo->exec('SET FOREIGN_KEY_CHECKS = 1'); } catch (Exception $e2) {}
+        returnJson(['success' => false, 'error' => 'Reset failed: ' . $e->getMessage(), 'cleared' => $cleared]);
     }
 }
 

@@ -58,6 +58,25 @@
             background: white; border-radius: 8px; max-width: 520px; width: 100%;
             box-shadow: 0 10px 30px rgba(0,0,0,0.3); padding: 22px; position: relative;
         }
+        .modal-card.modal-wide { max-width: 900px; }
+        .modal-card .match-info {
+            background: var(--light-gray); border-radius: 6px; padding: 12px 15px;
+            margin-bottom: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px;
+        }
+        .modal-card .match-info .label { font-size: 0.75rem; color: var(--dark-gray); text-transform: uppercase; letter-spacing: 0.5px; }
+        .modal-card .match-info .val { font-weight: 600; color: var(--primary); }
+        .match-edit-game { background: #f9f9f9; padding: 10px; border-radius: 5px; margin-bottom: 8px; }
+        .match-edit-game .game-row { display: grid; grid-template-columns: 1fr 1fr 110px 1fr 1fr; gap: 6px; align-items: center; }
+        .match-edit-game.singles .game-row { grid-template-columns: 1fr 110px 1fr; }
+        .match-edit-game .game-label { font-weight: 600; color: var(--primary); margin-bottom: 6px; font-size: 0.9rem; }
+        .match-edit-game select { padding: 6px; border: 1px solid var(--medium-gray); border-radius: 4px; font-size: 0.9rem; width: 100%; }
+
+        /* Danger Zone (season reset) */
+        .danger-zone { background: #fff5f5; border: 2px solid #c62828; border-radius: 8px; padding: 20px; margin-top: 10px; }
+        .danger-zone h3 { color: #c62828; margin: 0 0 10px; }
+        .danger-zone p { color: #6a1b1b; margin-bottom: 12px; }
+        .btn-danger { background: #c62828; color: white; padding: 10px 18px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; }
+        .btn-danger:hover { background: #a31515; }
         .modal-card h3 { color: var(--primary); margin: 0 0 12px; }
         .modal-card .form-group label { font-weight: 600; }
         .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 15px; }
@@ -178,6 +197,7 @@
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
                 <button class="admin-tab" data-pane="panePassword">Change Password</button>
+                <button class="admin-tab" data-pane="paneDanger" style="background:#ffebee;color:#c62828;">Season Reset</button>
             </div>
 
             <div id="dashMsg" class="auth-msg"></div>
@@ -291,7 +311,36 @@
                     <button type="submit" class="btn">Change Password</button>
                 </form>
             </div>
+
+            <!-- Danger Zone / Season Reset pane -->
+            <div id="paneDanger" class="admin-pane">
+                <h3 style="color:#c62828;">&#9888;&#65039; Danger Zone</h3>
+                <div class="danger-zone">
+                    <h3>Full Season Reset</h3>
+                    <p>This will <strong>permanently delete</strong>:</p>
+                    <ul style="margin-bottom:12px;">
+                        <li>All <strong>teams</strong> and their captain logins</li>
+                        <li>All <strong>players</strong></li>
+                        <li>All <strong>matches</strong>, singles results, doubles results</li>
+                        <li>All <strong>180s</strong> and <strong>high finishes</strong></li>
+                        <li>All <strong>league standings</strong></li>
+                        <li>All <strong>player requests</strong> (pending, approved, denied)</li>
+                    </ul>
+                    <p>Your admin account is <em>not</em> affected. You'll have to add every team and player from scratch afterwards. <strong>There is no undo.</strong></p>
+                    <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season &mdash;&nbsp;Delete Everything</button>
+                </div>
+            </div>
         </section>
+    </div>
+
+    <!-- ============== Match Edit Modal (large) ============== -->
+    <div id="matchEditBackdrop" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="matchEditTitle">
+        <div class="modal-card modal-wide">
+            <button type="button" class="modal-close" id="matchEditClose" aria-label="Close">&times;</button>
+            <h3 id="matchEditTitle">Edit Match</h3>
+            <div id="matchEditMsg" class="auth-msg"></div>
+            <div id="matchEditBody"></div>
+        </div>
     </div>
 
     <!-- ===================== Edit Modal ===================== -->
@@ -575,10 +624,17 @@ async function loadMatches() {
                         <td>${escapeHtml(m.home_team_name || '—')}</td>
                         <td>${m.home_score} - ${m.away_score}</td>
                         <td>${escapeHtml(m.away_team_name || '—')}</td>
-                        <td><button class="btn-sm btn-delete" data-id="${m.match_id}">Delete</button></td>`;
+                        <td>
+                            <button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
+                            <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>
+                        </td>`;
         tbody.appendChild(tr);
     });
-    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteMatch(b.dataset.id)));
+    tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
+        const id = b.dataset.id, act = b.dataset.act;
+        if (act === 'edit') openMatchEditModal(id);
+        else if (act === 'delete') deleteMatch(id);
+    }));
 }
 
 async function deleteMatch(id) {
@@ -694,6 +750,291 @@ editPlayerForm().addEventListener('submit', async (e) => {
     } else {
         modalMsg().textContent = res.error || 'Failed to update player';
         modalMsg().className = 'auth-msg error';
+    }
+});
+
+// ============== Match Edit Modal ==============
+
+// Safe-set a <select>'s value; injects the option if missing so pre-fill
+// works even if the option list is loaded async.
+function setSelectValue(sel, val) {
+    if (!sel) return;
+    if (val == null || val === '') { sel.value = ''; return; }
+    const v = String(val);
+    if (![...sel.options].some(o => o.value === v)) sel.add(new Option(v, v));
+    sel.value = v;
+}
+
+// Score option strings per division/match-kind.
+function doublesScoreOpts() {
+    return [
+        ['', 'Select Score'],
+        ['2-0', '2-0 (Home Win)'], ['2-1', '2-1 (Home Win)'],
+        ['1-2', '1-2 (Away Win)'], ['0-2', '0-2 (Away Win)'],
+    ];
+}
+function singlesScoreOpts(division) {
+    if (division === 'premier') {
+        return [
+            ['', 'Select Score'],
+            ['3-0', '3-0 (Home Win)'], ['3-1', '3-1 (Home Win)'], ['3-2', '3-2 (Home Win)'],
+            ['2-3', '2-3 (Away Win)'], ['1-3', '1-3 (Away Win)'], ['0-3', '0-3 (Away Win)'],
+        ];
+    }
+    return doublesScoreOpts();
+}
+function optionListHtml(pairs) {
+    return pairs.map(([v, l]) => `<option value="${escapeHtml(v)}">${escapeHtml(l)}</option>`).join('');
+}
+function playerOptionsHtml(players, prefix) {
+    const opts = [`<option value="">${escapeHtml(prefix || 'Select Player')}</option>`];
+    players.forEach(p => opts.push(`<option value="${escapeHtml(p.player_name)}">${escapeHtml(p.player_name)}</option>`));
+    return opts.join('');
+}
+
+async function openMatchEditModal(matchId) {
+    document.getElementById('matchEditMsg').className = 'auth-msg';
+    document.getElementById('matchEditMsg').textContent = '';
+    document.getElementById('matchEditBody').innerHTML = '<p class="small-note">Loading match...</p>';
+    document.getElementById('matchEditBackdrop').classList.add('visible');
+
+    // 1) Fetch match details
+    const detail = await fetch(`${API}?endpoint=match-details&match_id=${encodeURIComponent(matchId)}`, { credentials: 'same-origin' }).then(r => r.json()).catch(() => null);
+    if (!detail || detail.success === false) {
+        document.getElementById('matchEditBody').innerHTML = '<p class="auth-msg error" style="display:block;">Could not load match details.</p>';
+        return;
+    }
+
+    // 2) Fetch players for both teams in parallel
+    const [homePlayers, awayPlayers] = await Promise.all([
+        fetch(`${API}?endpoint=players&team_name=${encodeURIComponent(detail.home_team)}`).then(r => r.json()).catch(() => []),
+        fetch(`${API}?endpoint=players&team_name=${encodeURIComponent(detail.away_team)}`).then(r => r.json()).catch(() => []),
+    ]);
+    const allPlayers = [
+        ...(Array.isArray(homePlayers) ? homePlayers.map(p => ({ ...p, _team: detail.home_team })) : []),
+        ...(Array.isArray(awayPlayers) ? awayPlayers.map(p => ({ ...p, _team: detail.away_team })) : []),
+    ];
+
+    // 3) Build form HTML
+    const div = detail.division;
+    const docOpts = singlesScoreOpts(div);
+    const dblOpts = doublesScoreOpts();
+
+    let html = '';
+    html += `<div class="match-info">
+        <div><div class="label">Date</div><div class="val">${escapeHtml(detail.match_date || '—')}</div></div>
+        <div><div class="label">Type</div><div class="val">${escapeHtml(detail.match_type)}${detail.cup_round ? ' — ' + escapeHtml(detail.cup_round) : ''}</div></div>
+        <div><div class="label">Division</div><div class="val">${div === 'premier' ? 'Premier' : 'A'}</div></div>
+        <div><div class="label">Home</div><div class="val">${escapeHtml(detail.home_team)}</div></div>
+        <div><div class="label">Away</div><div class="val">${escapeHtml(detail.away_team)}</div></div>
+    </div>`;
+
+    html += `<form id="matchEditForm">
+        <input type="hidden" name="matchId" value="${detail.match_id}">
+        <input type="hidden" name="homeTeam" value="${escapeHtml(detail.home_team)}">
+        <input type="hidden" name="awayTeam" value="${escapeHtml(detail.away_team)}">
+        <input type="hidden" name="division" value="${escapeHtml(div)}">
+        <input type="hidden" name="matchType" value="${escapeHtml(detail.match_type)}">
+        ${detail.cup_round ? `<input type="hidden" name="cupRound" value="${escapeHtml(detail.cup_round)}">` : ''}
+
+        <h4 style="color:var(--primary);margin-top:15px;">Doubles (3 games)</h4>
+        <div id="meDoubles"></div>
+
+        <h4 style="color:var(--primary);margin-top:15px;">Singles (6 games)</h4>
+        <div id="meSingles"></div>
+
+        <h4 style="color:var(--primary);margin-top:15px;">180s</h4>
+        <div id="me180s"></div>
+        <button type="button" id="meAdd180" class="add-stat-btn" style="margin-top:6px;">Add Another 180</button>
+
+        <h4 style="color:var(--primary);margin-top:15px;">High Finishes</h4>
+        <div id="meHighFinishes"></div>
+        <button type="button" id="meAddFinish" class="add-stat-btn" style="margin-top:6px;">Add Another High Finish</button>
+
+        <div class="modal-actions">
+            <button type="button" class="btn-secondary" id="meCancel">Cancel</button>
+            <button type="submit" class="btn">Save Changes</button>
+        </div>
+    </form>`;
+
+    document.getElementById('matchEditBody').innerHTML = html;
+    document.getElementById('meCancel').addEventListener('click', closeMatchEditModal);
+
+    // 3a) Doubles rows
+    const meDoubles = document.getElementById('meDoubles');
+    for (let i = 1; i <= 3; i++) {
+        const existing = (detail.doubles || [])[i - 1] || null;
+        const row = document.createElement('div');
+        row.className = 'match-edit-game';
+        row.innerHTML = `
+            <div class="game-label">Doubles Game ${i}</div>
+            <div class="game-row">
+                <select class="me-home-p1">${playerOptionsHtml(homePlayers, 'Home Player 1')}</select>
+                <select class="me-home-p2">${playerOptionsHtml(homePlayers, 'Home Player 2')}</select>
+                <select class="me-doubles-score">${optionListHtml(dblOpts)}</select>
+                <select class="me-away-p1">${playerOptionsHtml(awayPlayers, 'Away Player 1')}</select>
+                <select class="me-away-p2">${playerOptionsHtml(awayPlayers, 'Away Player 2')}</select>
+            </div>`;
+        meDoubles.appendChild(row);
+        if (existing) {
+            setSelectValue(row.querySelector('.me-home-p1'), existing.home_player1_name);
+            setSelectValue(row.querySelector('.me-home-p2'), existing.home_player2_name);
+            setSelectValue(row.querySelector('.me-away-p1'), existing.away_player1_name);
+            setSelectValue(row.querySelector('.me-away-p2'), existing.away_player2_name);
+            setSelectValue(row.querySelector('.me-doubles-score'), `${existing.home_score}-${existing.away_score}`);
+        }
+    }
+
+    // 3b) Singles rows
+    const meSingles = document.getElementById('meSingles');
+    for (let i = 1; i <= 6; i++) {
+        const existing = (detail.singles || [])[i - 1] || null;
+        const row = document.createElement('div');
+        row.className = 'match-edit-game singles';
+        row.innerHTML = `
+            <div class="game-label">Singles Game ${i}</div>
+            <div class="game-row">
+                <select class="me-home-p">${playerOptionsHtml(homePlayers, 'Home Player')}</select>
+                <select class="me-singles-score">${optionListHtml(docOpts)}</select>
+                <select class="me-away-p">${playerOptionsHtml(awayPlayers, 'Away Player')}</select>
+            </div>`;
+        meSingles.appendChild(row);
+        if (existing) {
+            setSelectValue(row.querySelector('.me-home-p'), existing.home_player_name);
+            setSelectValue(row.querySelector('.me-away-p'), existing.away_player_name);
+            setSelectValue(row.querySelector('.me-singles-score'), `${existing.home_score}-${existing.away_score}`);
+        }
+    }
+
+    // 3c) 180s rows
+    function add180Row(initial) {
+        const wrap = document.getElementById('me180s');
+        const row = document.createElement('div');
+        row.className = 'stats-row';
+        row.style.marginBottom = '6px';
+        row.innerHTML = `
+            <select class="me-180-player" style="flex:2 1 200px;">${playerOptionsHtml(allPlayers, 'Select Player')}</select>
+            <input type="number" class="me-180-count" value="1" min="1" placeholder="Number of 180s" style="flex:1 1 100px;padding:6px;border:1px solid var(--medium-gray);border-radius:4px;">
+            <button type="button" class="remove-stat-btn">Remove</button>`;
+        row.style.display = 'flex'; row.style.gap = '8px'; row.style.alignItems = 'center';
+        row.querySelector('.remove-stat-btn').addEventListener('click', () => row.remove());
+        wrap.appendChild(row);
+        if (initial) {
+            setSelectValue(row.querySelector('.me-180-player'), initial.player_name);
+            row.querySelector('.me-180-count').value = initial.count;
+        }
+    }
+    (detail.oneEighties || []).forEach(add180Row);
+    if (!(detail.oneEighties || []).length) add180Row();
+    document.getElementById('meAdd180').addEventListener('click', () => add180Row());
+
+    // 3d) High finishes rows
+    function addHFRow(initial) {
+        const wrap = document.getElementById('meHighFinishes');
+        const row = document.createElement('div');
+        row.className = 'stats-row';
+        row.style.marginBottom = '6px';
+        row.innerHTML = `
+            <select class="me-hf-player" style="flex:2 1 200px;">${playerOptionsHtml(allPlayers, 'Select Player')}</select>
+            <input type="number" class="me-hf-value" min="100" placeholder="Finish value" style="flex:1 1 100px;padding:6px;border:1px solid var(--medium-gray);border-radius:4px;">
+            <button type="button" class="remove-stat-btn">Remove</button>`;
+        row.style.display = 'flex'; row.style.gap = '8px'; row.style.alignItems = 'center';
+        row.querySelector('.remove-stat-btn').addEventListener('click', () => row.remove());
+        wrap.appendChild(row);
+        if (initial) {
+            setSelectValue(row.querySelector('.me-hf-player'), initial.player_name);
+            row.querySelector('.me-hf-value').value = initial.finish_value;
+        }
+    }
+    (detail.highFinishes || []).forEach(addHFRow);
+    if (!(detail.highFinishes || []).length) addHFRow();
+    document.getElementById('meAddFinish').addEventListener('click', () => addHFRow());
+
+    document.getElementById('matchEditTitle').textContent = `Edit Match #${detail.match_id}: ${detail.home_team} vs ${detail.away_team}`;
+    document.getElementById('matchEditForm').addEventListener('submit', submitMatchEdit);
+}
+
+function closeMatchEditModal() { document.getElementById('matchEditBackdrop').classList.remove('visible'); }
+document.getElementById('matchEditClose').addEventListener('click', closeMatchEditModal);
+document.getElementById('matchEditBackdrop').addEventListener('click', (e) => { if (e.target.id === 'matchEditBackdrop') closeMatchEditModal(); });
+
+async function submitMatchEdit(e) {
+    e.preventDefault();
+    const form = e.target;
+    const payload = {
+        matchId:   Number(form.matchId.value),
+        homeTeam:  form.homeTeam.value,
+        awayTeam:  form.awayTeam.value,
+        division:  form.division.value,
+        matchType: form.matchType.value,
+        doubles:   [],
+        singles:   [],
+        oneEighties: [],
+        highFinishes: [],
+    };
+    if (form.cupRound) payload.cupRound = form.cupRound.value;
+
+    document.querySelectorAll('#meDoubles .match-edit-game').forEach(g => {
+        const hp1 = g.querySelector('.me-home-p1').value;
+        const hp2 = g.querySelector('.me-home-p2').value;
+        const ap1 = g.querySelector('.me-away-p1').value;
+        const ap2 = g.querySelector('.me-away-p2').value;
+        const score = g.querySelector('.me-doubles-score').value;
+        if (hp1 && hp2 && ap1 && ap2 && score) payload.doubles.push({ homePlayer1: hp1, homePlayer2: hp2, awayPlayer1: ap1, awayPlayer2: ap2, score });
+    });
+    document.querySelectorAll('#meSingles .match-edit-game').forEach(g => {
+        const hp = g.querySelector('.me-home-p').value;
+        const ap = g.querySelector('.me-away-p').value;
+        const score = g.querySelector('.me-singles-score').value;
+        if (hp && ap && score) payload.singles.push({ homePlayer: hp, awayPlayer: ap, score });
+    });
+    document.querySelectorAll('#me180s .stats-row').forEach(r => {
+        const p = r.querySelector('.me-180-player').value;
+        const c = r.querySelector('.me-180-count').value;
+        if (p && c) payload.oneEighties.push({ player: p, count: parseInt(c, 10) });
+    });
+    document.querySelectorAll('#meHighFinishes .stats-row').forEach(r => {
+        const p = r.querySelector('.me-hf-player').value;
+        const v = r.querySelector('.me-hf-value').value;
+        if (p && v) payload.highFinishes.push({ player: p, value: parseInt(v, 10) });
+    });
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true; const orig = submitBtn.textContent; submitBtn.textContent = 'Saving...';
+    const res = await apiCall('update-match', { method: 'POST', body: JSON.stringify(payload) });
+    submitBtn.disabled = false; submitBtn.textContent = orig;
+    if (res.success) {
+        closeMatchEditModal();
+        showMsg('dashMsg', 'Match updated.', 'success');
+        loadMatches();
+    } else {
+        const msg = document.getElementById('matchEditMsg');
+        msg.textContent = res.error || 'Failed to update match';
+        msg.className = 'auth-msg error';
+    }
+}
+
+// ============== Season Reset ==============
+
+document.getElementById('seasonResetBtn').addEventListener('click', async () => {
+    // First confirmation
+    if (!confirm("FINAL WARNING ONE OF TWO\n\nThis will permanently delete ALL teams, players, matches, results, 180s, high finishes, league standings, and player requests.\n\nYour admin account stays. There is NO undo.\n\nProceed?")) return;
+    // Second confirmation with typed phrase
+    const typed = prompt('FINAL WARNING TWO OF TWO\n\nType the word RESET (in capitals) to confirm.');
+    if (typed !== 'RESET') {
+        alert('Reset cancelled — confirmation text did not match.');
+        return;
+    }
+    // Disable button and call endpoint
+    const btn = document.getElementById('seasonResetBtn');
+    btn.disabled = true; const orig = btn.textContent; btn.textContent = 'Resetting...';
+    const res = await apiCall('admin-season-reset', { method: 'POST', body: JSON.stringify({}) });
+    btn.disabled = false; btn.textContent = orig;
+    if (res.success) {
+        showMsg('dashMsg', 'Season reset complete. All teams, players, matches, and stats wiped.', 'success');
+        loadTeams(); loadPlayers(); loadRequests(); loadMatches();
+    } else {
+        showMsg('dashMsg', res.error || 'Reset failed', 'error');
     }
 });
 
