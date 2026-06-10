@@ -30,18 +30,12 @@
   
   <!-- Cup Section -->
   <url>
-    <loc>https://crawleydartsleague.com/cupbracket.html</loc>
+    <loc>https://crawleydartsleague.com/knockoutcup.html</loc>
     <lastmod>2025-05-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
-  <url>
-    <loc>https://crawleydartsleague.com/cupdraw.html</loc>
-    <lastmod>2025-05-12</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
+
   <!-- Statistics Section -->
   <url>
     <loc>https://crawleydartsleague.com/180sfinishes.html</loc>
