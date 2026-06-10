@@ -185,6 +185,7 @@
                 <button class="admin-tab" data-pane="panePlayers">Players</button>
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
+                <button class="admin-tab" data-pane="paneCupDraw">Cup Draw</button>
                 <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
                 <button class="admin-tab" data-pane="panePassword">Change Password</button>
                 <button class="admin-tab" data-pane="paneDanger" style="background:#ffebee;color:#c62828;">Season Reset</button>
@@ -284,6 +285,27 @@
                     <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
                     <tbody></tbody>
                 </table>
+            </div>
+
+            <!-- Cup Draw pane -->
+            <div id="paneCupDraw" class="admin-pane">
+                <h3>Knockout Cup Draw</h3>
+                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Teams whose name contains "bye" auto-advance their opponent.</p>
+
+                <div class="form-row" style="max-width:720px;">
+                    <div class="form-group" style="text-align:center;">
+                        <button type="button" id="drawPremierBtn" class="btn" style="width:100%;">Draw Premier Division</button>
+                        <div class="small-note" id="drawPremierStatus" style="margin-top:8px;"></div>
+                    </div>
+                    <div class="form-group" style="text-align:center;">
+                        <button type="button" id="drawABtn" class="btn" style="width:100%;">Draw A Division</button>
+                        <div class="small-note" id="drawAStatus" style="margin-top:8px;"></div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top:25px;">Current Bracket Status</h3>
+                <div id="bracketStatusPremier" style="margin-bottom:20px;"></div>
+                <div id="bracketStatusA"></div>
             </div>
 
             <!-- Announcements pane -->
@@ -480,7 +502,7 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 let _teamsCache = [];
 
 async function loadAllDashboardData() {
-    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements()]);
+    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(), loadBracketStatus('premier'), loadBracketStatus('a')]);
 }
 
 // ----- teams -----
@@ -765,6 +787,59 @@ editPlayerForm().addEventListener('submit', async (e) => {
         modalMsg().className = 'auth-msg error';
     }
 });
+
+// ============== Cup Draw ==============
+
+async function loadBracketStatus(division) {
+    const targetId = division === 'premier' ? 'bracketStatusPremier' : 'bracketStatusA';
+    const target = document.getElementById(targetId);
+    if (!target) return;
+    try {
+        const res = await fetch(`${API}?endpoint=cup-bracket&division=${encodeURIComponent(division)}`);
+        const data = await res.json();
+        const label = division === 'premier' ? 'Premier Division' : 'A Division';
+        if (!data || !data.success || !Array.isArray(data.matches) || data.matches.length === 0) {
+            target.innerHTML = `<strong>${label}:</strong> <span style="color:#c62828;">No draw yet.</span>`;
+            return;
+        }
+        // Count by round, plus status totals
+        const byRound = {};
+        const order = [];
+        let completed = 0, scheduled = 0, pending = 0;
+        data.matches.forEach(m => {
+            const r = m.cup_round || 'Round';
+            if (!byRound[r]) { byRound[r] = { total: 0, completed: 0 }; order.push(r); }
+            byRound[r].total++;
+            if (m.status === 'completed') { byRound[r].completed++; completed++; }
+            else if (m.status === 'scheduled') scheduled++;
+            else pending++;
+        });
+        const rows = order.map(r => `<li><strong>${escapeHtml(r)}:</strong> ${byRound[r].completed}/${byRound[r].total} completed</li>`).join('');
+        target.innerHTML = `<strong>${label}:</strong> ${data.matches.length} matches (${completed} completed, ${scheduled} ready to play, ${pending} awaiting winners)<ul style="margin:6px 0 0 18px;padding:0;">${rows}</ul>`;
+    } catch (e) {
+        target.innerHTML = '<span style="color:#c62828;">Could not load bracket status.</span>';
+    }
+}
+
+async function performDraw(division) {
+    const label = division === 'premier' ? 'Premier' : 'A';
+    if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket — every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
+    const statusEl = document.getElementById(division === 'premier' ? 'drawPremierStatus' : 'drawAStatus');
+    statusEl.style.color = ''; statusEl.textContent = 'Drawing...';
+    const res = await apiCall('admin-cup-draw', { method: 'POST', body: JSON.stringify({ division }) });
+    if (res.success) {
+        statusEl.style.color = '#2e7d32';
+        statusEl.textContent = `Draw complete — ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
+        loadBracketStatus(division);
+        loadMatches();
+    } else {
+        statusEl.style.color = '#c62828';
+        statusEl.textContent = res.error || 'Draw failed.';
+    }
+}
+
+document.getElementById('drawPremierBtn').addEventListener('click', () => performDraw('premier'));
+document.getElementById('drawABtn').addEventListener('click', () => performDraw('a'));
 
 // ============== Announcements ==============
 

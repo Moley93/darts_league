@@ -158,6 +158,9 @@ switch ($endpoint) {
     case 'add-announcement':      requirePost(); adminAddAnnouncement(); break;
     case 'delete-announcement':   requirePost(); adminDeleteAnnouncement(); break;
 
+    case 'cup-bracket':           getCupBracket(); break;
+    case 'admin-cup-draw':        requirePost(); adminCupDraw(); break;
+
     case 'team-me':           teamMe(); break;
     case 'team-logout':       requirePost(); teamLogout(); break;
     case 'team-request-player': requirePost(); teamRequestPlayer(); break;
@@ -1109,22 +1112,13 @@ function submitMatch() {
             }
         }
         
-        // If it's a cup match, advance winner to next round
+        // If it's a cup match, advance winner via the bracket-link
+        // columns set up by the draw. Falls back to a no-op (with log)
+        // for legacy cup matches that pre-date the bracket linkage.
         if ($data['matchType'] === 'cup') {
-            try {
-                // First check if the stored procedure exists
-                $stmt = $pdo->query("SHOW PROCEDURE STATUS WHERE Db = DATABASE() AND Name = 'advance_cup_winner'");
-                if ($stmt->rowCount() > 0) {
-                    $pdo->exec("CALL advance_cup_winner($matchId)");
-                } else {
-                    error_log("Stored procedure 'advance_cup_winner' not found");
-                }
-            } catch (Exception $e) {
-                error_log("Error advancing cup winner: " . $e->getMessage());
-                // Continue anyway - cup progression can be handled manually
-            }
+            advanceCupWinner($matchId);
         }
-        
+
         returnJson(['success' => true, 'matchId' => $matchId]);
     } catch (Exception $e) {
         // Only rollback if we started a transaction
@@ -1444,20 +1438,10 @@ function updateMatch() {
             }
         }
         
-        // If it's a cup match, update cup progression
+        // If it's a cup match, advance the (possibly changed) winner via
+        // bracket-link columns. Safe to call repeatedly on the same match.
         if ($data['matchType'] === 'cup') {
-            try {
-                // First check if the stored procedure exists
-                $stmt = $pdo->query("SHOW PROCEDURE STATUS WHERE Db = DATABASE() AND Name = 'advance_cup_winner'");
-                if ($stmt->rowCount() > 0) {
-                    $pdo->exec("CALL advance_cup_winner($matchId)");
-                } else {
-                    error_log("Stored procedure 'advance_cup_winner' not found");
-                }
-            } catch (Exception $e) {
-                error_log("Error advancing cup winner: " . $e->getMessage());
-                // Continue anyway - cup progression can be handled manually
-            }
+            advanceCupWinner($matchId);
         }
         
         returnJson(['success' => true, 'matchId' => $matchId]);
@@ -1874,6 +1858,198 @@ function adminDeleteMatch() {
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// -------- Cup bracket --------
+
+function getCupBracket() {
+    global $pdo;
+    $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
+    try {
+        $stmt = $pdo->prepare("
+            SELECT m.match_id, m.match_date, m.cup_round, m.status,
+                   m.home_score, m.away_score,
+                   m.home_team_id, m.away_team_id,
+                   ht.team_name AS home_team, at.team_name AS away_team,
+                   m.next_match_id, m.next_match_slot
+            FROM matches m
+            LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            WHERE m.match_type = 'cup' AND m.division = ?
+            ORDER BY m.match_date ASC, m.match_id ASC");
+        $stmt->execute([$division]);
+        returnJson(['success' => true, 'matches' => $stmt->fetchAll()]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to load bracket: ' . $e->getMessage()]);
+    }
+}
+
+// Advance a cup winner to the linked downstream match. Replaces the
+// pre-existing `advance_cup_winner` stored procedure with PHP that uses
+// the explicit next_match_id / next_match_slot columns on matches. Safe
+// to call repeatedly (idempotent for the same winner). Failures are
+// logged and swallowed so a bracket mishap can't break score submission.
+function advanceCupWinner($matchId) {
+    global $pdo;
+    try {
+        $stmt = $pdo->prepare('SELECT match_type, home_team_id, away_team_id,
+                               home_score, away_score, next_match_id, next_match_slot
+                               FROM matches WHERE match_id = ?');
+        $stmt->execute([$matchId]);
+        $m = $stmt->fetch();
+        if (!$m || $m['match_type'] !== 'cup' || empty($m['next_match_id'])) return;
+
+        // Determine winner; draws do nothing (cup matches shouldn't draw).
+        $winner = null;
+        if ((int)$m['home_score'] > (int)$m['away_score']) $winner = (int)$m['home_team_id'];
+        elseif ((int)$m['away_score'] > (int)$m['home_score']) $winner = (int)$m['away_team_id'];
+        if (!$winner) return;
+
+        $col = $m['next_match_slot'] === 'away' ? 'away_team_id' : 'home_team_id';
+        $pdo->prepare("UPDATE matches SET $col = ? WHERE match_id = ?")
+            ->execute([$winner, (int)$m['next_match_id']]);
+
+        // If the next match now has both teams set and is still pending,
+        // promote it to 'scheduled' so the captains can submit a score.
+        $stmt = $pdo->prepare('SELECT home_team_id, away_team_id, status FROM matches WHERE match_id = ?');
+        $stmt->execute([(int)$m['next_match_id']]);
+        $next = $stmt->fetch();
+        if ($next && $next['home_team_id'] && $next['away_team_id'] && $next['status'] === 'pending') {
+            $pdo->prepare("UPDATE matches SET status = 'scheduled' WHERE match_id = ?")
+                ->execute([(int)$m['next_match_id']]);
+        }
+    } catch (Exception $e) {
+        error_log('advanceCupWinner failed: ' . $e->getMessage());
+    }
+}
+
+// Generate a random first-round draw for a division's knockout cup.
+// Wipes any existing cup matches for the division (and their child
+// stats via CASCADE), then inserts a complete bracket (all rounds)
+// with first-round teams populated and later rounds left pending so
+// they fill in as winners advance. Handles odd team counts by padding
+// with NULL placeholders that auto-advance the real opponent. Also
+// treats any team with "bye" in its name (case-insensitive) as a
+// virtual bye and auto-advances its opponent.
+function adminCupDraw() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $division = isset($d['division']) ? $d['division'] : '';
+    if (!in_array($division, ['premier', 'a'], true)) {
+        returnJson(['success' => false, 'error' => 'division must be premier or a']);
+    }
+
+    try {
+        // Snapshot teams
+        $stmt = $pdo->prepare('SELECT team_id, team_name FROM teams WHERE division = ? ORDER BY team_id');
+        $stmt->execute([$division]);
+        $teams = $stmt->fetchAll();
+        if (count($teams) < 2) {
+            returnJson(['success' => false, 'error' => 'Need at least 2 teams in the division to draw a cup']);
+        }
+
+        // Next power of 2 ≥ team count → bracket size
+        $bracketSize = 1;
+        while ($bracketSize < count($teams)) $bracketSize *= 2;
+        $roundsForSize = [
+            2  => ['Final'],
+            4  => ['Semi Final', 'Final'],
+            8  => ['Quarter Final', 'Semi Final', 'Final'],
+            16 => ['Last 16', 'Quarter Final', 'Semi Final', 'Final'],
+        ];
+        if (!isset($roundsForSize[$bracketSize])) {
+            returnJson(['success' => false, 'error' => 'Unsupported team count: ' . count($teams)]);
+        }
+        $rounds = $roundsForSize[$bracketSize];
+
+        $pdo->beginTransaction();
+
+        // Wipe existing cup matches in this division; cascade clears
+        // singles/doubles/180s/finishes via ON DELETE CASCADE.
+        $pdo->prepare("DELETE FROM matches WHERE division = ? AND match_type = 'cup'")
+            ->execute([$division]);
+
+        // Shuffle teams, then pad with NULLs to bracket size.
+        shuffle($teams);
+        while (count($teams) < $bracketSize) $teams[] = null;
+
+        // Round-spread dates: round 1 today, each later round +7 days.
+        $base = new DateTime();
+        $dates = [];
+        for ($r = 0; $r < count($rounds); $r++) {
+            $dt = clone $base;
+            $dt->modify('+' . ($r * 7) . ' days');
+            $dates[] = $dt->format('Y-m-d');
+        }
+
+        // Insert all matches, capture IDs round-by-round.
+        $insertScheduled = $pdo->prepare("INSERT INTO matches (home_team_id, away_team_id, match_date, match_type, division, status, cup_round) VALUES (?, ?, ?, 'cup', ?, 'scheduled', ?)");
+        $insertCompleted = $pdo->prepare("INSERT INTO matches (home_team_id, away_team_id, match_date, match_type, division, status, cup_round, home_score, away_score) VALUES (?, ?, ?, 'cup', ?, 'completed', ?, ?, ?)");
+        $insertPending   = $pdo->prepare("INSERT INTO matches (home_team_id, away_team_id, match_date, match_type, division, status, cup_round) VALUES (NULL, NULL, ?, 'cup', ?, 'pending', ?)");
+        $updateNext      = $pdo->prepare('UPDATE matches SET next_match_id = ?, next_match_slot = ? WHERE match_id = ?');
+
+        // ROUND 1
+        $isByeTeam = function($t) {
+            if (!$t) return true;
+            return stripos($t['team_name'], 'bye') !== false;
+        };
+        $round1Ids = [];
+        $autoAdvanced = [];   // [match_id => winning_team_id] for bye matches
+        $matchCount = $bracketSize / 2;
+        for ($i = 0; $i < $matchCount; $i++) {
+            $h = $teams[$i * 2];
+            $a = $teams[$i * 2 + 1];
+            $hId = $h ? (int)$h['team_id'] : null;
+            $aId = $a ? (int)$a['team_id'] : null;
+            $hBye = $isByeTeam($h);
+            $aBye = $isByeTeam($a);
+
+            if ($hBye && $aBye) {
+                // Both sides empty — degenerate, mark completed 0-0 with no winner.
+                $insertCompleted->execute([$hId, $aId, $dates[0], $division, $rounds[0], 0, 0]);
+            } elseif ($hBye) {
+                // Away advances
+                $insertCompleted->execute([$hId, $aId, $dates[0], $division, $rounds[0], 0, 1]);
+                $autoAdvanced[(int)$pdo->lastInsertId()] = $aId;
+            } elseif ($aBye) {
+                // Home advances
+                $insertCompleted->execute([$hId, $aId, $dates[0], $division, $rounds[0], 1, 0]);
+                $autoAdvanced[(int)$pdo->lastInsertId()] = $hId;
+            } else {
+                $insertScheduled->execute([$hId, $aId, $dates[0], $division, $rounds[0]]);
+            }
+            $round1Ids[] = (int)$pdo->lastInsertId();
+        }
+
+        // ROUNDS 2..N (pending placeholders)
+        $previousIds = $round1Ids;
+        for ($r = 1; $r < count($rounds); $r++) {
+            $thisRoundIds = [];
+            $thisCount = $bracketSize / pow(2, $r + 1);
+            for ($i = 0; $i < $thisCount; $i++) {
+                $insertPending->execute([$dates[$r], $division, $rounds[$r]]);
+                $thisRoundIds[] = (int)$pdo->lastInsertId();
+            }
+            // Link previous round into this one (two-at-a-time).
+            for ($i = 0; $i < count($previousIds); $i++) {
+                $nextId = $thisRoundIds[intdiv($i, 2)];
+                $slot   = ($i % 2 === 0) ? 'home' : 'away';
+                $updateNext->execute([$nextId, $slot, $previousIds[$i]]);
+            }
+            $previousIds = $thisRoundIds;
+        }
+
+        // Propagate bye auto-advances into the next round so the captain
+        // never has to submit a placeholder bye match.
+        foreach ($autoAdvanced as $matchId => $_) advanceCupWinner($matchId);
+
+        $pdo->commit();
+        returnJson(['success' => true, 'bracket_size' => $bracketSize, 'rounds' => $rounds, 'team_count' => count(array_filter($teams))]);
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        returnJson(['success' => false, 'error' => 'Draw failed: ' . $e->getMessage()]);
     }
 }
 

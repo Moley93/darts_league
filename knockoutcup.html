@@ -1074,151 +1074,45 @@
         <div id="cup-results" class="page">
             <div class="card">
                 <div class="knockout-cup-brackets">
-                    <!-- Premier Division Bracket -->
-                    <div class="division-bracket">
-                        <div class="division-header">
-                            <h2>Premier Division</h2>
-                        </div>
-                        <div class="tournament-bracket">
-                            <!-- Quarter Finals -->
-                            <div class="bracket-round">
-                                <div class="round-header">Quarter Finals</div>
-                                <div class="matches">
-                                    <div class="match">
-                                        <div class="team">Rebels</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Jubilee Club</div>
-                                        <div class="winner-slot">The Rebels</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">Dartbreakers</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Dark Side of the Moon</div>
-                                        <div class="winner-slot">Dark Side of the Moon</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">The Unbearables</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Rugby Club</div>
-                                        <div class="winner-slot">The Unbearables</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">Grasshopper</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Bye</div>
-                                        <div class="winner-slot">Grasshopper</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Semi Finals -->
-                            <div class="bracket-round">
-                                <div class="round-header">Semi Finals</div>
-                                <div class="matches">
-                                    <div class="match">
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="winner-slot">Winner SF1</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="winner-slot">Winner SF2</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Final -->
-                            <div class="bracket-round">
-                                <div class="round-header">Final</div>
-                                <div class="matches">
-                                    <div class="match final-match">
-                                        <div class="team placeholder">Winner SF1</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">Winner SF2</div>
-                                        <div class="winner-slot champion">Premier Champion</div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div id="premier-bracket" class="division-bracket">
+                        <div class="division-header"><h2>Premier Division</h2></div>
+                        <div id="premier-bracket-body" class="tournament-bracket">
+                            <p style="text-align:center;color:var(--dark-gray);padding:30px;">Loading bracket...</p>
                         </div>
                     </div>
-
-                    <!-- A Division Bracket -->
-                    <div class="division-bracket">
-                        <div class="division-header">
-                            <h2>A Division</h2>
-                        </div>
-                        <div class="tournament-bracket">
-                            <!-- Quarter Finals -->
-                            <div class="bracket-round">
-                                <div class="round-header">Quarter Finals</div>
-                                <div class="matches">
-                                    <div class="match">
-                                        <div class="team">Dingles</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Dr Samuel Johnson</div>
-                                        <div class="winner-slot">The Dingles</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">Wonkey Arrows</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Disapointers</div>
-                                        <div class="winner-slot">Wonky Arrows</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">Pelham</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Ewhurst Arrows</div>
-                                        <div class="winner-slot">Pelham</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team">APV</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team">Ewhurst Woodys</div>
-                                        <div class="winner-slot">Ewhurst Woodys</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Semi Finals -->
-                            <div class="bracket-round">
-                                <div class="round-header">Semi Finals</div>
-                                <div class="matches">
-                                    <div class="match">
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="winner-slot">Winner SF1</div>
-                                    </div>
-                                    <div class="match">
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">TBC DRAW</div>
-                                        <div class="winner-slot">Winner SF2</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Final -->
-                            <div class="bracket-round">
-                                <div class="round-header">Final</div>
-                                <div class="matches">
-                                    <div class="match final-match">
-                                        <div class="team placeholder">Winner SF1</div>
-                                        <div class="vs">vs</div>
-                                        <div class="team placeholder">Winner SF2</div>
-                                        <div class="winner-slot champion">A Division Champion</div>
-                                    </div>
-                                </div>
-                            </div>
+                    <div id="a-bracket" class="division-bracket">
+                        <div class="division-header"><h2>A Division</h2></div>
+                        <div id="a-bracket-body" class="tournament-bracket">
+                            <p style="text-align:center;color:var(--dark-gray);padding:30px;">Loading bracket...</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Expandable match-details styling -->
+    <style>
+        .match.completed { cursor: pointer; }
+        .match.completed:hover .score-line { background: var(--secondary); }
+        .score-line {
+            background: var(--primary); color: white;
+            padding: 8px 14px; border-radius: 6px;
+            font-weight: 700; text-align: center;
+            margin: 8px 0; font-size: 1.05em;
+            transition: background 0.2s;
+        }
+        .score-line .expand-hint { font-size: 0.75em; font-weight: 400; opacity: 0.8; margin-left: 8px; }
+        .match-details { display: none; margin-top: 12px; padding: 12px; background: white;
+            border-radius: 6px; border: 1px solid var(--medium-gray); text-align: left; }
+        .match-details.expanded { display: block; }
+        .match-details h4 { color: var(--primary); margin: 8px 0 4px; font-size: 0.95em; }
+        .match-details .game-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--medium-gray); font-size: 0.9em; }
+        .match-details .game-row:last-child { border-bottom: none; }
+        .match-details .game-score { font-weight: 700; color: var(--primary); white-space: nowrap; padding: 0 10px; }
+        .empty-bracket { text-align: center; padding: 40px 20px; color: var(--dark-gray); font-style: italic; }
+        .empty-bracket strong { display: block; color: var(--primary); font-size: 1.1em; margin-bottom: 8px; }
+    </style>
 
     <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1310,8 +1204,168 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
-        // Static tournament bracket display - no dynamic functionality needed
+        // ===== Dynamic bracket rendering =====
+        const API = 'api.php';
 
+        function escHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g,
+                c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+
+        async function loadBracket(division, containerId) {
+            const container = document.getElementById(containerId);
+            try {
+                const res = await fetch(`${API}?endpoint=cup-bracket&division=${encodeURIComponent(division)}`);
+                const data = await res.json();
+                if (!data || !data.success) {
+                    container.innerHTML = '<div class="empty-bracket"><strong>Bracket unavailable</strong>' +
+                        escHtml(data && data.error ? data.error : 'Try refreshing the page.') + '</div>';
+                    return;
+                }
+                const matches = Array.isArray(data.matches) ? data.matches : [];
+                if (matches.length === 0) {
+                    container.innerHTML = '<div class="empty-bracket"><strong>No draw made yet</strong>' +
+                        'Once the league admin performs the draw, the bracket will appear here.</div>';
+                    return;
+                }
+                renderBracket(container, matches);
+            } catch (e) {
+                container.innerHTML = '<div class="empty-bracket"><strong>Bracket unavailable</strong>' +
+                    'Could not load the bracket right now.</div>';
+            }
+        }
+
+        function renderBracket(container, matches) {
+            // Group matches by cup_round preserving the order they came back in
+            const order = [];
+            const byRound = {};
+            matches.forEach(m => {
+                const r = m.cup_round || 'Round';
+                if (!byRound[r]) { byRound[r] = []; order.push(r); }
+                byRound[r].push(m);
+            });
+
+            container.innerHTML = '';
+            order.forEach(roundName => {
+                const roundDiv = document.createElement('div');
+                roundDiv.className = 'bracket-round';
+                roundDiv.innerHTML = `<div class="round-header">${escHtml(roundName)}</div>
+                                      <div class="matches"></div>`;
+                const matchesDiv = roundDiv.querySelector('.matches');
+                byRound[roundName].forEach((m, i) => {
+                    matchesDiv.appendChild(buildMatchEl(m, roundName, i));
+                });
+                container.appendChild(roundDiv);
+            });
+        }
+
+        function teamSlotHtml(name, isPlaceholder) {
+            if (!name || isPlaceholder) return '<div class="team placeholder">TBC</div>';
+            return `<div class="team">${escHtml(name)}</div>`;
+        }
+
+        function buildMatchEl(m, roundName, idx) {
+            const wrap = document.createElement('div');
+            const isFinal = /final/i.test(roundName) && !/semi/i.test(roundName);
+            wrap.className = 'match' + (isFinal ? ' final-match' : '');
+
+            const homeName = m.home_team || null;
+            const awayName = m.away_team || null;
+            const isCompleted = m.status === 'completed';
+            const isScheduled = m.status === 'scheduled';
+
+            // Determine winner display
+            let winnerLabel = 'TBC';
+            if (isCompleted) {
+                if (Number(m.home_score) > Number(m.away_score)) winnerLabel = `Winner: ${homeName || 'Home'}`;
+                else if (Number(m.away_score) > Number(m.home_score)) winnerLabel = `Winner: ${awayName || 'Away'}`;
+                else winnerLabel = 'Drawn';
+            }
+
+            wrap.innerHTML = `
+                ${teamSlotHtml(homeName, !homeName)}
+                ${isCompleted
+                    ? `<div class="score-line" data-match="${m.match_id}">${escHtml(homeName || 'Home')} ${m.home_score} - ${m.away_score} ${escHtml(awayName || 'Away')}<span class="expand-hint">▼ click to expand</span></div>`
+                    : '<div class="vs">vs</div>'}
+                ${teamSlotHtml(awayName, !awayName)}
+                ${isScheduled
+                    ? '<div class="winner-slot" style="background:#fff3e0;color:#e65100;">Awaiting result</div>'
+                    : (isCompleted
+                        ? `<div class="winner-slot${isFinal ? ' champion' : ''}">${escHtml(winnerLabel)}</div>`
+                        : '<div class="winner-slot" style="background:var(--medium-gray);color:var(--dark-gray);">Awaiting teams</div>')}
+                <div class="match-details" id="md-${m.match_id}"><p style="color:var(--dark-gray);text-align:center;">Loading details…</p></div>
+            `;
+
+            if (isCompleted) {
+                wrap.classList.add('completed');
+                const scoreEl = wrap.querySelector('.score-line');
+                const detailEl = wrap.querySelector('.match-details');
+                wrap.addEventListener('click', async (e) => {
+                    if (e.target.closest('.match-details')) return;
+                    const opened = detailEl.classList.toggle('expanded');
+                    const hint = scoreEl.querySelector('.expand-hint');
+                    if (hint) hint.textContent = opened ? '▲ click to collapse' : '▼ click to expand';
+                    if (opened && !detailEl.dataset.loaded) {
+                        await loadMatchDetails(m.match_id, detailEl);
+                        detailEl.dataset.loaded = '1';
+                    }
+                });
+            }
+            return wrap;
+        }
+
+        async function loadMatchDetails(matchId, detailEl) {
+            try {
+                const res = await fetch(`${API}?endpoint=match-details&match_id=${matchId}`);
+                const d = await res.json();
+                if (!d || d.success === false) {
+                    detailEl.innerHTML = '<p style="color:#c62828;">Could not load match details.</p>';
+                    return;
+                }
+                let html = '';
+                if ((d.doubles || []).length) {
+                    html += '<h4>Doubles</h4>';
+                    d.doubles.forEach((g, i) => {
+                        html += `<div class="game-row">
+                            <span>Game ${i + 1}: ${escHtml(g.home_player1_name)} & ${escHtml(g.home_player2_name)}</span>
+                            <span class="game-score">${g.home_score} - ${g.away_score}</span>
+                            <span>${escHtml(g.away_player1_name)} & ${escHtml(g.away_player2_name)}</span>
+                        </div>`;
+                    });
+                }
+                if ((d.singles || []).length) {
+                    html += '<h4>Singles</h4>';
+                    d.singles.forEach((g, i) => {
+                        html += `<div class="game-row">
+                            <span>Game ${i + 1}: ${escHtml(g.home_player_name)}</span>
+                            <span class="game-score">${g.home_score} - ${g.away_score}</span>
+                            <span>${escHtml(g.away_player_name)}</span>
+                        </div>`;
+                    });
+                }
+                if ((d.oneEighties || []).length) {
+                    html += '<h4>180s</h4>';
+                    d.oneEighties.forEach(o => {
+                        html += `<div class="game-row"><span>${escHtml(o.player_name)}</span><span class="game-score">${o.count}×</span></div>`;
+                    });
+                }
+                if ((d.highFinishes || []).length) {
+                    html += '<h4>High Finishes</h4>';
+                    d.highFinishes.forEach(h => {
+                        html += `<div class="game-row"><span>${escHtml(h.player_name)}</span><span class="game-score">${h.finish_value}</span></div>`;
+                    });
+                }
+                if (!html) html = '<p style="color:var(--dark-gray);text-align:center;">No individual game data recorded for this match.</p>';
+                detailEl.innerHTML = html;
+            } catch (e) {
+                detailEl.innerHTML = '<p style="color:#c62828;">Failed to load match details.</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            loadBracket('premier', 'premier-bracket-body');
+            loadBracket('a', 'a-bracket-body');
+        });
     </script>
 </body>
 </html>

@@ -217,6 +217,11 @@ CREATE TABLE `matches` (
   `status` enum('scheduled','completed','postponed','pending') DEFAULT 'scheduled',
   `cup_round` varchar(50) DEFAULT NULL,
   `submitted_by_captain_id` int(11) DEFAULT NULL,
+  -- Cup bracket linkage: when a cup match completes its winner is
+  -- written into `next_match_id`'s `next_match_slot` (home or away).
+  -- Both are NULL for league matches and for the final round.
+  `next_match_id` int(11) DEFAULT NULL,
+  `next_match_slot` enum('home','away') DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`match_id`),
   KEY `home_team_id` (`home_team_id`),
@@ -224,9 +229,11 @@ CREATE TABLE `matches` (
   KEY `idx_match_date` (`match_date`),
   KEY `idx_match_division` (`division`),
   KEY `idx_submitted_by` (`submitted_by_captain_id`),
+  KEY `idx_next_match` (`next_match_id`),
   CONSTRAINT `matches_ibfk_1` FOREIGN KEY (`home_team_id`) REFERENCES `teams` (`team_id`),
   CONSTRAINT `matches_ibfk_2` FOREIGN KEY (`away_team_id`) REFERENCES `teams` (`team_id`),
-  CONSTRAINT `matches_ibfk_3` FOREIGN KEY (`submitted_by_captain_id`) REFERENCES `team_captains` (`captain_id`) ON DELETE SET NULL
+  CONSTRAINT `matches_ibfk_3` FOREIGN KEY (`submitted_by_captain_id`) REFERENCES `team_captains` (`captain_id`) ON DELETE SET NULL,
+  CONSTRAINT `matches_next_fk` FOREIGN KEY (`next_match_id`) REFERENCES `matches` (`match_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 CREATE TABLE `singles_results` (
