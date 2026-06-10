@@ -760,16 +760,31 @@ async function editMatch(matchId) {
     document.getElementById('editMatchIdLabel').textContent = matchId;
     document.getElementById('editModeBanner').classList.add('visible');
 
-    document.getElementById('matchType').value = detail.match_type;
+    // Use setSelectValue so the value sticks even if the option list is
+    // still loading async — this was the bug where match type, away team
+    // and (consequently) every away-player dropdown silently failed to
+    // pre-fill because their target options didn't exist yet.
+    setSelectValue(document.getElementById('matchType'), detail.match_type);
     document.getElementById('cupRoundContainer').style.display = detail.match_type === 'cup' ? '' : 'none';
-    if (detail.cup_round) document.getElementById('cupRound').value = detail.cup_round;
+    if (detail.cup_round) setSelectValue(document.getElementById('cupRound'), detail.cup_round);
 
-    // Set away team (it may be our team if we were the away side — handle either)
+    // Make sure the away-team list is loaded before we try to select on it.
+    // For the typical league case the team is already in the dropdown from
+    // init(), but if it's a cup match against another division (or the user
+    // clicked Edit before init finished), we want to be defensive.
+    if (!_teamsCache.length) await loadAwayTeams();
+
+    // Set away team (it may be our team if we were the away side — handle either).
     const ourAway = detail.away_team === me.team_name;
     const otherTeam = ourAway ? detail.home_team : detail.away_team;
-    document.getElementById('awayTeam').value = otherTeam;
-    await updateDoublesPlayerOptions();
-    await updateSinglesPlayerOptions();
+    setSelectValue(document.getElementById('awayTeam'), otherTeam);
+
+    // Warm the player caches for BOTH teams so subsequent dropdown
+    // population sees real player lists rather than empty arrays.
+    await Promise.all([
+        getPlayersForTeam(me.team_name),
+        getPlayersForTeam(otherTeam),
+    ]);
 
     // Populate doubles
     generateDoublesMatches();
