@@ -358,12 +358,13 @@
                     <ul style="margin-bottom:12px;">
                         <li>All <strong>teams</strong> and their captain logins</li>
                         <li>All <strong>players</strong></li>
-                        <li>All <strong>matches</strong>, singles results, doubles results</li>
-                        <li>All <strong>180s</strong> and <strong>high finishes</strong></li>
+                        <li>All <strong>league matches</strong>, singles results, doubles results</li>
+                        <li>The entire <strong>knockout cup bracket</strong> for both divisions (every cup match, all completed and pending rounds)</li>
+                        <li>All <strong>180s</strong> and <strong>high finishes</strong> (from both league and cup)</li>
                         <li>All <strong>league standings</strong></li>
                         <li>All <strong>player requests</strong> (pending, approved, denied)</li>
                     </ul>
-                    <p>Your admin account is <em>not</em> affected. You'll have to add every team and player from scratch afterwards. <strong>There is no undo.</strong></p>
+                    <p>Your admin account and any league announcements are <em>not</em> affected. You'll have to add every team and player from scratch afterwards, and run a fresh cup draw if you want a new bracket. <strong>There is no undo.</strong></p>
                     <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season &mdash;&nbsp;Delete Everything</button>
                 </div>
             </div>
@@ -1183,7 +1184,7 @@ async function submitMatchEdit(e) {
 
 document.getElementById('seasonResetBtn').addEventListener('click', async () => {
     // First confirmation
-    if (!confirm("FINAL WARNING ONE OF TWO\n\nThis will permanently delete ALL teams, players, matches, results, 180s, high finishes, league standings, and player requests.\n\nYour admin account stays. There is NO undo.\n\nProceed?")) return;
+    if (!confirm("FINAL WARNING ONE OF TWO\n\nThis will permanently delete ALL teams, players, league matches, the knockout cup bracket (both divisions), all singles/doubles results, 180s, high finishes, league standings, and player requests.\n\nYour admin account and league announcements stay. There is NO undo.\n\nProceed?")) return;
     // Second confirmation with typed phrase
     const typed = prompt('FINAL WARNING TWO OF TWO\n\nType the word RESET (in capitals) to confirm.');
     if (typed !== 'RESET') {
@@ -1196,8 +1197,18 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
     const res = await apiCall('admin-season-reset', { method: 'POST', body: JSON.stringify({}) });
     btn.disabled = false; btn.textContent = orig;
     if (res.success) {
-        showMsg('dashMsg', 'Season reset complete. All teams, players, matches, and stats wiped.', 'success');
-        loadTeams(); loadPlayers(); loadRequests(); loadMatches();
+        showMsg('dashMsg', 'Season reset complete. All teams, players, league matches, the cup bracket, stats and player requests have been wiped.', 'success');
+        // Refresh every dashboard view that depends on this data — including
+        // the cup bracket status and the per-division draw preview, both of
+        // which were silently stale before this commit.
+        loadTeams();
+        loadPlayers();
+        loadRequests();
+        loadMatches();
+        loadBracketStatus('premier');
+        loadBracketStatus('a');
+        loadDrawPreview('premier');
+        loadDrawPreview('a');
     } else {
         showMsg('dashMsg', res.error || 'Reset failed', 'error');
     }
