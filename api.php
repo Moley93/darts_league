@@ -191,7 +191,7 @@ switch ($endpoint) {
     case 'add-announcement':      requirePost(); adminAddAnnouncement(); break;
     case 'delete-announcement':   requirePost(); adminDeleteAnnouncement(); break;
 
-    case 'cup-bracket':           getCupBracket(); break;
+    case 'cup-bracket':           getBracket(); break;
     case 'admin-cup-draw':        requirePost(); adminCupDraw(); break;
 
     case 'team-me':           teamMe(); break;
@@ -1910,7 +1910,13 @@ function adminDeleteMatch() {
 
 // -------- Cup bracket --------
 
-function getCupBracket() {
+// Returns the full cup bracket for a division (all rounds, current
+// statuses, both team names). Named getBracket() not getCupBracket()
+// because the legacy getcupbracket() — used by the cup-fixtures
+// endpoint — already exists, and PHP function names are
+// case-insensitive so the two would collide as a fatal
+// "Cannot redeclare" at parse time.
+function getBracket() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
     try {
