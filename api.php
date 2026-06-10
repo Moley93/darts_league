@@ -192,6 +192,7 @@ switch ($endpoint) {
     case 'delete-announcement':   requirePost(); adminDeleteAnnouncement(); break;
 
     case 'cup-bracket':           getBracket(); break;
+    case 'cup-draw-preview':      adminCupDrawPreview(); break;
     case 'admin-cup-draw':        requirePost(); adminCupDraw(); break;
 
     case 'team-me':           teamMe(); break;
@@ -1910,6 +1911,89 @@ function adminDeleteMatch() {
 
 // -------- Cup bracket --------
 
+// Given a team count, return [bracketSize, roundNames] for a standard
+// single-elimination bracket. The size is the next power of 2 ≥ teams
+// (so any non-power-of-2 team count just means some first-round byes).
+// Returns [0, null] for unsupported sizes (< 2 or > 64).
+function cupBracketLayout($teamCount) {
+    if ($teamCount < 2) return [0, null];
+    $size = 1;
+    while ($size < $teamCount) $size *= 2;
+    $layouts = [
+        2  => ['Final'],
+        4  => ['Semi Final', 'Final'],
+        8  => ['Quarter Final', 'Semi Final', 'Final'],
+        16 => ['Last 16', 'Quarter Final', 'Semi Final', 'Final'],
+        32 => ['Last 32', 'Last 16', 'Quarter Final', 'Semi Final', 'Final'],
+        64 => ['Last 64', 'Last 32', 'Last 16', 'Quarter Final', 'Semi Final', 'Final'],
+    ];
+    if (!isset($layouts[$size])) return [0, null];
+    return [$size, $layouts[$size]];
+}
+
+// Preview the draw — no DB writes. Tells the admin what the bracket
+// will look like (size, rounds, how many byes there will be) so they
+// can confirm the team list is complete before committing.
+function adminCupDrawPreview() {
+    global $pdo;
+    requireAdmin();
+    $division = isset($_GET['division']) ? $_GET['division'] : '';
+    if (!in_array($division, ['premier', 'a'], true)) {
+        returnJson(['success' => false, 'error' => 'division must be premier or a']);
+    }
+    $stmt = $pdo->prepare('SELECT team_id, team_name FROM teams WHERE division = ? ORDER BY team_name');
+    $stmt->execute([$division]);
+    $teams = $stmt->fetchAll();
+
+    // Count teams that participate vs teams that are named "Bye"
+    // (DB-Bye placeholders still count toward the bracket but are
+    // labelled distinctly so the admin can see them).
+    $realCount = 0; $byeNamedCount = 0;
+    $teamRows = [];
+    foreach ($teams as $t) {
+        $isByeNamed = stripos($t['team_name'], 'bye') !== false;
+        if ($isByeNamed) { $byeNamedCount++; } else { $realCount++; }
+        $teamRows[] = ['team_id' => (int)$t['team_id'], 'team_name' => $t['team_name'], 'is_bye_named' => $isByeNamed];
+    }
+    list($bracketSize, $rounds) = cupBracketLayout(count($teams));
+    if (!$rounds) {
+        returnJson([
+            'success' => true,
+            'division' => $division,
+            'teams' => $teamRows,
+            'team_count' => count($teams),
+            'real_count' => $realCount,
+            'bye_named_count' => $byeNamedCount,
+            'bracket_size' => 0,
+            'rounds' => [],
+            'first_round_byes' => 0,
+            'supported' => false,
+            'message' => count($teams) < 2 ? 'Need at least 2 teams to draw a cup.' : 'Unsupported team count: ' . count($teams),
+        ]);
+    }
+    $padding = $bracketSize - count($teams);
+    $firstRoundByes = $padding + $byeNamedCount;
+    $firstRoundMatches = (int)($bracketSize / 2) - $firstRoundByes;
+    if ($firstRoundMatches < 0) $firstRoundMatches = 0;
+    returnJson([
+        'success' => true,
+        'division' => $division,
+        'teams' => $teamRows,
+        'team_count' => count($teams),
+        'real_count' => $realCount,
+        'bye_named_count' => $byeNamedCount,
+        'bracket_size' => $bracketSize,
+        'rounds' => $rounds,
+        'first_round_name' => $rounds[0],
+        'first_round_byes' => $firstRoundByes,
+        'first_round_matches' => $firstRoundMatches,
+        'supported' => true,
+        'message' => $firstRoundByes > 0
+            ? "{$realCount} teams will be drawn into a {$bracketSize}-slot bracket ({$firstRoundMatches} match" . ($firstRoundMatches === 1 ? '' : 'es') . ", {$firstRoundByes} bye" . ($firstRoundByes === 1 ? '' : 's') . ")."
+            : "{$realCount} teams will be drawn into a clean {$bracketSize}-slot bracket (no byes needed).",
+    ]);
+}
+
 // Returns the full cup bracket for a division (all rounds, current
 // statuses, both team names). Named getBracket() not getCupBracket()
 // because the legacy getcupbracket() — used by the cup-fixtures
@@ -2003,19 +2087,10 @@ function adminCupDraw() {
             returnJson(['success' => false, 'error' => 'Need at least 2 teams in the division to draw a cup']);
         }
 
-        // Next power of 2 ≥ team count → bracket size
-        $bracketSize = 1;
-        while ($bracketSize < count($teams)) $bracketSize *= 2;
-        $roundsForSize = [
-            2  => ['Final'],
-            4  => ['Semi Final', 'Final'],
-            8  => ['Quarter Final', 'Semi Final', 'Final'],
-            16 => ['Last 16', 'Quarter Final', 'Semi Final', 'Final'],
-        ];
-        if (!isset($roundsForSize[$bracketSize])) {
+        list($bracketSize, $rounds) = cupBracketLayout(count($teams));
+        if (!$rounds) {
             returnJson(['success' => false, 'error' => 'Unsupported team count: ' . count($teams)]);
         }
-        $rounds = $roundsForSize[$bracketSize];
 
         $pdo->beginTransaction();
 

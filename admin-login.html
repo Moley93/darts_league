@@ -290,16 +290,18 @@
             <!-- Cup Draw pane -->
             <div id="paneCupDraw" class="admin-pane">
                 <h3>Knockout Cup Draw</h3>
-                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Teams whose name contains "bye" auto-advance their opponent.</p>
+                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64) — leftover slots become first-round byes that auto-advance their opponent.</p>
 
                 <div class="form-row" style="max-width:720px;">
-                    <div class="form-group" style="text-align:center;">
+                    <div class="form-group" style="text-align:left;">
                         <button type="button" id="drawPremierBtn" class="btn" style="width:100%;">Draw Premier Division</button>
-                        <div class="small-note" id="drawPremierStatus" style="margin-top:8px;"></div>
+                        <div class="small-note" id="drawPremierPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
+                        <div class="small-note" id="drawPremierStatus" style="margin-top:4px;"></div>
                     </div>
-                    <div class="form-group" style="text-align:center;">
+                    <div class="form-group" style="text-align:left;">
                         <button type="button" id="drawABtn" class="btn" style="width:100%;">Draw A Division</button>
-                        <div class="small-note" id="drawAStatus" style="margin-top:8px;"></div>
+                        <div class="small-note" id="drawAPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
+                        <div class="small-note" id="drawAStatus" style="margin-top:4px;"></div>
                     </div>
                 </div>
 
@@ -502,7 +504,11 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 let _teamsCache = [];
 
 async function loadAllDashboardData() {
-    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(), loadBracketStatus('premier'), loadBracketStatus('a')]);
+    await Promise.all([
+        loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(),
+        loadBracketStatus('premier'), loadBracketStatus('a'),
+        loadDrawPreview('premier'), loadDrawPreview('a'),
+    ]);
 }
 
 // ----- teams -----
@@ -821,6 +827,35 @@ async function loadBracketStatus(division) {
     }
 }
 
+// Show a live preview of what a draw on this division will produce —
+// the bracket size, the round names, and how many byes there will be —
+// without committing anything. Updated whenever the dashboard loads or
+// teams change, and re-run after each draw.
+async function loadDrawPreview(division) {
+    const previewEl = document.getElementById(division === 'premier' ? 'drawPremierPreview' : 'drawAPreview');
+    const buttonEl  = document.getElementById(division === 'premier' ? 'drawPremierBtn'     : 'drawABtn');
+    if (!previewEl) return;
+    try {
+        const res = await apiCall(`cup-draw-preview&division=${encodeURIComponent(division)}`);
+        if (!res.success) { previewEl.textContent = res.error || 'Preview unavailable.'; previewEl.style.color = '#c62828'; return; }
+        if (!res.supported) {
+            previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> — ${escapeHtml(res.message)}`;
+            previewEl.style.color = '#c62828';
+            if (buttonEl) buttonEl.disabled = true;
+            return;
+        }
+        if (buttonEl) buttonEl.disabled = false;
+        const byeNote = res.first_round_byes > 0
+            ? `<br><span style="color:#e65100;">${res.first_round_byes} first-round bye${res.first_round_byes === 1 ? '' : 's'}</span>`
+            : '<br><span style="color:#2e7d32;">No byes needed (clean bracket).</span>';
+        previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> → ${res.bracket_size}-slot bracket: ${escapeHtml((res.rounds || []).join(' → '))}${byeNote}`;
+        previewEl.style.color = 'var(--primary)';
+    } catch (e) {
+        previewEl.textContent = 'Preview unavailable.';
+        previewEl.style.color = '#c62828';
+    }
+}
+
 async function performDraw(division) {
     const label = division === 'premier' ? 'Premier' : 'A';
     if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket — every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
@@ -831,6 +866,7 @@ async function performDraw(division) {
         statusEl.style.color = '#2e7d32';
         statusEl.textContent = `Draw complete — ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
         loadBracketStatus(division);
+        loadDrawPreview(division);
         loadMatches();
     } else {
         statusEl.style.color = '#c62828';

@@ -1264,6 +1264,17 @@ document.addEventListener('DOMContentLoaded', function() {
             return `<div class="team">${escHtml(name)}</div>`;
         }
 
+        // A "bye" match is one where one side is a NULL placeholder or
+        // the team_name contains "bye" (case-insensitive). These are
+        // auto-completed by the draw and shouldn't render as if a real
+        // match was played.
+        function isByeMatch(m) {
+            const h = m.home_team, a = m.away_team;
+            const isHomeBye = !h || /bye/i.test(h);
+            const isAwayBye = !a || /bye/i.test(a);
+            return (isHomeBye || isAwayBye) && !(isHomeBye && isAwayBye);
+        }
+
         function buildMatchEl(m, roundName, idx) {
             const wrap = document.createElement('div');
             const isFinal = /final/i.test(roundName) && !/semi/i.test(roundName);
@@ -1273,8 +1284,24 @@ document.addEventListener('DOMContentLoaded', function() {
             const awayName = m.away_team || null;
             const isCompleted = m.status === 'completed';
             const isScheduled = m.status === 'scheduled';
+            const bye = isByeMatch(m);
 
-            // Determine winner display
+            // ----- Bye render: collapsed walkover card -----
+            if (bye) {
+                const advancingName = (homeName && !/bye/i.test(homeName)) ? homeName : awayName;
+                wrap.classList.add('bye-match');
+                wrap.style.background = '#fff8e1';
+                wrap.style.border = '2px dashed #ffb300';
+                wrap.innerHTML = `
+                    <div class="team" style="border-color:#ffb300;">${escHtml(advancingName || 'Unknown')}</div>
+                    <div class="vs" style="color:#e65100;">— bye —</div>
+                    <div class="team placeholder" style="background:#fff3e0;color:#e65100;border-color:#ffe082;">no opponent</div>
+                    <div class="winner-slot" style="background:#ef6c00;">Auto-advances</div>
+                `;
+                return wrap;
+            }
+
+            // Determine winner display for played matches
             let winnerLabel = 'TBC';
             if (isCompleted) {
                 if (Number(m.home_score) > Number(m.away_score)) winnerLabel = `Winner: ${homeName || 'Home'}`;
