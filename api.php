@@ -9,27 +9,36 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Convert any PHP warning/notice/error into an exception so it surfaces
-// through the global exception handler below as a clean JSON response
-// instead of as printed HTML that breaks res.json() on the client.
-set_error_handler(function($severity, $message, $file, $line) {
-    if (!(error_reporting() & $severity)) return false;
-    throw new ErrorException($message, 0, $severity, $file, $line);
+// Helper used by every safety-net path to emit a JSON error and stop.
+// Defined as a closure here so it works before the file-level
+// returnJson() function is declared.
+$emitJsonError = function($message) {
+    while (ob_get_level()) { ob_end_clean(); }
+    if (!headers_sent()) {
+        http_response_code(500);
+        header('Content-Type: application/json');
+    }
+    echo json_encode(['success' => false, 'error' => $message]);
+    exit;
+};
+
+// Global fallback so any uncaught exception (missing table, query syntax,
+// etc.) becomes a valid JSON response instead of a half-flushed PHP
+// error page that the client parses as "Invalid server response".
+set_exception_handler(function($e) use ($emitJsonError) {
+    error_log('Uncaught in api.php: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+    $emitJsonError('Server error: ' . $e->getMessage());
 });
 
-// Global fallback so any uncaught exception (e.g. a missing table or a
-// query syntax issue) becomes a valid JSON response. Without this the
-// client receives a half-flushed PHP error page and parses it as
-// "Invalid server response".
-set_exception_handler(function($e) {
-    error_log('Uncaught in api.php: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
-    // returnJson clears the output buffer and prints JSON.
-    if (function_exists('returnJson')) {
-        returnJson(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
-    } else {
-        while (ob_get_level()) ob_end_clean();
-        header('Content-Type: application/json');
-        echo json_encode(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
+// Fatal errors (parse errors, out-of-memory, undefined function calls in
+// PHP 8) cannot be caught by set_error_handler / set_exception_handler.
+// They show up here as the *last error* during shutdown — surface them
+// to the client as JSON so a 500 with an empty body is impossible.
+register_shutdown_function(function() use ($emitJsonError) {
+    $err = error_get_last();
+    if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR, E_USER_ERROR, E_RECOVERABLE_ERROR], true)) {
+        error_log('Fatal in api.php: ' . $err['message'] . ' in ' . $err['file'] . ':' . $err['line']);
+        $emitJsonError('Fatal PHP error: ' . $err['message'] . ' (' . basename($err['file']) . ':' . $err['line'] . ')');
     }
 });
 
