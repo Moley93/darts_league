@@ -154,6 +154,10 @@ switch ($endpoint) {
     case 'admin-delete-match': requirePost(); adminDeleteMatch(); break;
     case 'admin-season-reset': requirePost(); adminSeasonReset(); break;
 
+    case 'announcements':         listAnnouncements(); break;
+    case 'add-announcement':      requirePost(); adminAddAnnouncement(); break;
+    case 'delete-announcement':   requirePost(); adminDeleteAnnouncement(); break;
+
     case 'team-me':           teamMe(); break;
     case 'team-logout':       requirePost(); teamLogout(); break;
     case 'team-request-player': requirePost(); teamRequestPlayer(); break;
@@ -1844,6 +1848,48 @@ function adminDeleteMatch() {
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// -------- Announcements --------
+
+function listAnnouncements() {
+    global $pdo;
+    $stmt = $pdo->query("SELECT announcement_id, title, body, created_at
+                         FROM announcements
+                         ORDER BY created_at DESC, announcement_id DESC");
+    returnJson(['success' => true, 'announcements' => $stmt->fetchAll()]);
+}
+
+function adminAddAnnouncement() {
+    global $pdo;
+    $adminId = requireAdmin();
+    $d = readJsonBody();
+    $title = isset($d['title']) ? trim($d['title']) : '';
+    $body  = isset($d['body']) ? trim($d['body']) : '';
+    if ($title === '' || $body === '') {
+        returnJson(['success' => false, 'error' => 'Title and body are both required']);
+    }
+    try {
+        $stmt = $pdo->prepare('INSERT INTO announcements (title, body, created_by_admin_id) VALUES (?, ?, ?)');
+        $stmt->execute([$title, $body, $adminId]);
+        returnJson(['success' => true, 'announcement_id' => (int)$pdo->lastInsertId()]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to post announcement: ' . $e->getMessage()]);
+    }
+}
+
+function adminDeleteAnnouncement() {
+    global $pdo;
+    requireAdmin();
+    $d = readJsonBody();
+    $id = isset($d['announcement_id']) ? (int)$d['announcement_id'] : 0;
+    if ($id <= 0) returnJson(['success' => false, 'error' => 'announcement_id required']);
+    try {
+        $pdo->prepare('DELETE FROM announcements WHERE announcement_id = ?')->execute([$id]);
+        returnJson(['success' => true]);
+    } catch (Exception $e) {
+        returnJson(['success' => false, 'error' => 'Failed to delete announcement: ' . $e->getMessage()]);
     }
 }
 

@@ -642,39 +642,50 @@
         <!-- Announcements Section -->
         <section class="announcements card">
             <h2>League Announcements</h2>
-
-            <div class="announcement">
-                <div class="date">September 22, 2025</div>
-                <h3>New Season Announcement</h3>
-                <p>🎯 The wait is over! The Crawley Darts League 2025/26 season kicks off on Friday, 3rd October 2025.
-Teams across the Premier Division and A Division will be battling it out every Friday night for points, pride, and the chance to be crowned champions. We’d like to wish all players and teams the very best of luck for the season ahead, may the darts fly true and the doubles go in first time!
-
-Stay tuned for weekly updates, results, and league tables. Let’s make this another fantastic season of darts in Crawley! Game on!</p>
-            </div>
-            
-            <div class="announcement">
-                <div class="date">May 30, 2025</div>
-                <h3>Season End Announcement</h3>
-                <p>🎯 Thank You for a Fantastic Season! A huge thank you to all the teams and players who made the 2024/2025 season truly enjoyable. Your commitment, sportsmanship, and passion for the game are what make this league special. We appreciate your efforts and look forward to even more exciting matches next season! </p>
-            </div>
-            
-            <div class="announcement">
-                <div class="date">May 30, 2025</div>
-                <h3>Finals Night</h3>
-                <p>🎯 Finals Night – Wrapping Up the 2024/2025 Season! Join us at the Ewhurst Wood Social Club from 8pm for an exciting conclusion to the season with all competitions battling it out for glory: Knockout Cup, Singles, Pairs, Trebles, and Captain & Secretary. Whether you’re competing or cheering from the sidelines, come and be part of the atmosphere, support your teammates, and enjoy a great night of darts! </p>
-            </div>
-            
-            <div class="announcement">
-                <div class="date">May 16, 2025</div>
-                <h3>Captain & Secretary Competition</h3>
-                <p>🎯 Captain & Secretary Competition – May 16th! Don’t miss the showdown where captains and secretaries step up to the oche for their chance to shine. Join us at the Ewhurst Wood Social Club from 8pm for some friendly rivalry, great darts, and plenty of support for your team!</p>
+            <div id="announcements-container">
+                <p class="small-note" style="color:#757575;font-style:italic;">Loading announcements...</p>
             </div>
         </section>
                     
     </div>
 
     <script>
+        // Fetch league announcements from the API and render them into the
+        // page in newest-first order. Falls back to a friendly message if
+        // the API is unreachable or returns nothing.
+        function escapeAnnouncementHtml(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+        function formatAnnouncementDate(s) {
+            if (!s) return '';
+            const d = new Date(String(s).replace(' ', 'T'));
+            if (isNaN(d.getTime())) return String(s);
+            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        async function loadAnnouncements() {
+            const container = document.getElementById('announcements-container');
+            if (!container) return;
+            try {
+                const res = await fetch('api.php?endpoint=announcements');
+                const data = await res.json();
+                if (!data.success || !Array.isArray(data.announcements) || data.announcements.length === 0) {
+                    container.innerHTML = '<p class="small-note" style="color:#757575;font-style:italic;">No announcements yet. Check back soon!</p>';
+                    return;
+                }
+                container.innerHTML = data.announcements.map(a => `
+                    <div class="announcement">
+                        <div class="date">${escapeAnnouncementHtml(formatAnnouncementDate(a.created_at))}</div>
+                        <h3>${escapeAnnouncementHtml(a.title)}</h3>
+                        <p style="white-space: pre-wrap;">${escapeAnnouncementHtml(a.body)}</p>
+                    </div>
+                `).join('');
+            } catch (e) {
+                container.innerHTML = '<p class="small-note" style="color:#c62828;">Couldn\'t load announcements right now.</p>';
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
+            loadAnnouncements();
             const mobileToggle = document.querySelector('.mobile-toggle');
             const navMenu = document.querySelector('.nav-menu');
             const dropdownToggles = document.querySelectorAll('.dropdown-toggle');

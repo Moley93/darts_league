@@ -27,6 +27,7 @@ DROP PROCEDURE IF EXISTS `advance_cup_winner`;
 DROP PROCEDURE IF EXISTS `calculate_player_rankings`;
 DROP PROCEDURE IF EXISTS `update_league_standings`;
 
+DROP TABLE IF EXISTS `announcements`;
 DROP TABLE IF EXISTS `player_requests`;
 DROP TABLE IF EXISTS `admins`;
 DROP TABLE IF EXISTS `doubles_results`;
@@ -349,6 +350,22 @@ CREATE TABLE `player_requests` (
   CONSTRAINT `player_requests_team_fk` FOREIGN KEY (`team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE,
   CONSTRAINT `player_requests_captain_fk` FOREIGN KEY (`requested_by_captain_id`) REFERENCES `team_captains` (`captain_id`) ON DELETE SET NULL,
   CONSTRAINT `player_requests_admin_fk` FOREIGN KEY (`reviewed_by_admin_id`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- ---------------------------------------------------------------------
+-- NEW: League announcements posted by admins and shown on index.html.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE `announcements` (
+  `announcement_id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(200) NOT NULL,
+  `body` text NOT NULL,
+  `created_by_admin_id` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`announcement_id`),
+  KEY `idx_announcements_created` (`created_at`),
+  KEY `idx_announcements_admin` (`created_by_admin_id`),
+  CONSTRAINT `announcements_admin_fk` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- ---------------------------------------------------------------------

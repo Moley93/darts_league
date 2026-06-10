@@ -196,6 +196,7 @@
                 <button class="admin-tab" data-pane="panePlayers">Players</button>
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
+                <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
                 <button class="admin-tab" data-pane="panePassword">Change Password</button>
                 <button class="admin-tab" data-pane="paneDanger" style="background:#ffebee;color:#c62828;">Season Reset</button>
             </div>
@@ -292,6 +293,29 @@
                 <p class="small-note">Delete removes the match and all its results, 180s, and high finishes (cascade).</p>
                 <table class="data-table" id="matchesTable">
                     <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Announcements pane -->
+            <div id="paneAnnouncements" class="admin-pane">
+                <h3>Post a League Announcement</h3>
+                <p class="small-note">Announcements appear on the home page in the "League Announcements" section in newest-first order.</p>
+                <form id="announcementForm" style="max-width:720px;">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input name="title" type="text" maxlength="200" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea name="body" rows="5" required style="width:100%;padding:8px;border:1px solid var(--medium-gray);border-radius:4px;font-family:inherit;font-size:1rem;"></textarea>
+                    </div>
+                    <button type="submit" class="btn">Post Announcement</button>
+                </form>
+
+                <h3 style="margin-top:25px;">Posted Announcements</h3>
+                <table class="data-table" id="announcementsTable">
+                    <thead><tr><th>Posted (date &amp; time)</th><th>Title</th><th>Message</th><th>Action</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -467,7 +491,7 @@ document.querySelectorAll('.admin-tab').forEach(btn => {
 let _teamsCache = [];
 
 async function loadAllDashboardData() {
-    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches()]);
+    await Promise.all([loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements()]);
 }
 
 // ----- teams -----
@@ -752,6 +776,47 @@ editPlayerForm().addEventListener('submit', async (e) => {
         modalMsg().className = 'auth-msg error';
     }
 });
+
+// ============== Announcements ==============
+
+async function loadAnnouncements() {
+    const res = await apiCall('announcements');
+    const tbody = document.querySelector('#announcementsTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+    (res.announcements || []).forEach(a => {
+        const tr = document.createElement('tr');
+        const bodyPreview = a.body && a.body.length > 120 ? a.body.slice(0, 120) + '...' : (a.body || '');
+        tr.innerHTML = `<td>${escapeHtml(fmtDateTime(a.created_at))}</td>
+                        <td>${escapeHtml(a.title)}</td>
+                        <td style="white-space:pre-wrap;">${escapeHtml(bodyPreview)}</td>
+                        <td><button class="btn-sm btn-delete" data-id="${a.announcement_id}">Delete</button></td>`;
+        tbody.appendChild(tr);
+    });
+    tbody.querySelectorAll('button.btn-delete').forEach(b => b.addEventListener('click', () => deleteAnnouncement(b.dataset.id)));
+}
+
+document.getElementById('announcementForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const body = JSON.stringify({ title: fd.get('title'), body: fd.get('body') });
+    const res = await apiCall('add-announcement', { method: 'POST', body });
+    if (res.success) {
+        showMsg('dashMsg', 'Announcement posted.', 'success');
+        e.target.reset();
+        loadAnnouncements();
+    } else {
+        showMsg('dashMsg', res.error || 'Failed to post announcement', 'error');
+    }
+});
+
+async function deleteAnnouncement(id) {
+    if (!confirm('Delete this announcement?')) return;
+    const res = await apiCall('delete-announcement', { method: 'POST', body: JSON.stringify({ announcement_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Announcement deleted.', 'success'); loadAnnouncements(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
 
 // ============== Match Edit Modal ==============
 
