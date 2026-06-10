@@ -1505,6 +1505,28 @@ function requireCaptain() {
     return (int)$_SESSION['captain_id'];
 }
 
+// Recompute the league_standings cache after any match changes. The
+// individual stat tables (singles_results, doubles_results, 180s, finishes)
+// are queried live, so they reflect changes automatically as soon as the
+// CASCADE deletes (or update rebuilds) finish. league_standings is the only
+// denormalised table and must be refreshed explicitly via the stored
+// procedure that the fresh schema defines. Failures are logged but never
+// propagated — a stale standings cache is recoverable on the next match
+// submission, whereas a failing API call is not.
+function refreshLeagueStandings() {
+    global $pdo;
+    try {
+        $stmt = $pdo->query("SHOW PROCEDURE STATUS WHERE Db = DATABASE() AND Name = 'update_league_standings'");
+        if ($stmt && $stmt->rowCount() > 0) {
+            $pdo->exec('CALL update_league_standings()');
+        } else {
+            error_log("Stored procedure 'update_league_standings' not found");
+        }
+    } catch (Exception $e) {
+        error_log('refreshLeagueStandings failed: ' . $e->getMessage());
+    }
+}
+
 // ---------------------- Admin auth ----------------------
 
 function adminLogin() {
@@ -1843,8 +1865,12 @@ function adminDeleteMatch() {
     $matchId = isset($d['match_id']) ? (int)$d['match_id'] : 0;
     if ($matchId <= 0) returnJson(['success' => false, 'error' => 'match_id required']);
     try {
-        // FKs are ON DELETE CASCADE for child stat tables in the fresh schema.
+        // FKs are ON DELETE CASCADE for child stat tables in the fresh schema,
+        // so singles_results/doubles_results/180s/high_finishes are tidied
+        // automatically. league_standings is a denormalised cache and must be
+        // refreshed explicitly via the stored procedure.
         $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
+        refreshLeagueStandings();
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
@@ -2007,7 +2033,10 @@ function teamDeleteMatch() {
                 || ((int)$row['home_team_id'] === $teamId)
                 || ((int)$row['away_team_id'] === $teamId);
         if (!$allowed) returnJson(['success' => false, 'error' => 'Not allowed to delete this match']);
+        // Stats cascade automatically via FKs; standings need an explicit
+        // refresh so leaguetable.html reflects the deletion immediately.
         $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
+        refreshLeagueStandings();
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
