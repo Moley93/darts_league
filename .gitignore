@@ -1,1 +1,7 @@
 .claude/
+
+# Random PDFs that end up in db/ (purchase orders, quotations, picking
+# lists, etc.) are unrelated to the project — block them so they can't
+# be staged by accident. Use !db/somefile.pdf below to allow specific
+# PDFs back in if you ever need one tracked.
+db/*.pdf
