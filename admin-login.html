@@ -84,14 +84,35 @@
         .btn-secondary { background: var(--medium-gray); color: var(--primary); padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
         .btn-secondary:hover { background: #d0d0d0; }
 
-        /* Basic dropdown styling (shared with other pages) */
-        .nav .dropdown { position: relative; }
-        .nav .dropdown-toggle { cursor: pointer; }
-        .nav .dropdown-menu { display: none; position: absolute; background: white; min-width: 200px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); z-index: 1000; border-radius: 4px; padding: 10px 0; }
-        .nav .dropdown:hover .dropdown-menu { display: block; }
-        .nav .dropdown-menu li { margin: 0; padding: 0; }
-        .nav .dropdown-menu a { display: block; padding: 10px 20px; color: var(--primary); border-radius: 0; }
-        .nav .dropdown-menu a:hover { background-color: var(--light-gray); }
+        /* Full nav block — matches the inline nav styling on every other
+           page (index, leaguetable, rules, etc.) so admin-login renders
+           with the same chevron arrow, smooth dropdown fade and hover
+           behaviour. */
+        .nav { background-color: white; position: relative; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .nav-menu { list-style: none; padding: 0; margin: 0; display: flex; justify-content: center; flex-wrap: wrap; }
+        .nav-menu > li { position: relative; margin: 0; }
+        .nav-menu > li > a { display: block; padding: 15px; color: var(--primary); text-decoration: none; font-weight: 500; transition: all 0.3s ease; }
+        .nav-menu > li > a:hover { background-color: var(--light-gray); }
+
+        .dropdown { position: relative; }
+        .dropdown-toggle:after { content: "▼"; font-size: 0.7em; margin-left: 5px; vertical-align: middle; }
+        .dropdown-menu {
+            position: absolute; top: 100%; left: 0;
+            background-color: white; min-width: 200px;
+            padding: 5px 0; margin: 0; list-style: none;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border-radius: 0 0 4px 4px;
+            z-index: 100;
+            opacity: 0; visibility: hidden;
+            transform: translateY(10px); transition: all 0.3s ease;
+        }
+        .dropdown:hover .dropdown-menu,
+        .dropdown:focus-within .dropdown-menu,
+        .dropdown-menu:hover {
+            opacity: 1; visibility: visible; transform: translateY(0);
+        }
+        .dropdown-menu li { margin: 0; }
+        .dropdown-menu a { display: block; padding: 10px 15px; color: var(--primary); text-decoration: none; transition: all 0.3s ease; }
+        .dropdown-menu a:hover { background-color: var(--light-gray); }
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
@@ -124,15 +145,25 @@
             .btn-danger { width: 100%; min-height: 44px; }
             .container { padding: 0 12px; }
 
-            .nav-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
-            .nav-menu.active { display: block; }
+            /* Mobile nav: hamburger-style collapse + tap-to-open dropdowns.
+               The desktop block above uses opacity/visibility transitions,
+               so the mobile rules need to reset those properties explicitly
+               (display alone won't override an opacity:0). */
+            .nav-menu { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
+            .nav-menu.active { display: flex; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
             .nav-menu a { padding: 15px 20px; display: block; }
-            .nav .dropdown-menu { position: static; box-shadow: none; background: var(--light-gray); width: 100%; padding: 0; }
-            .nav .dropdown:hover .dropdown-menu { display: none; }
-            .nav .dropdown-toggle::after { content: "+"; margin-left: 5px; }
-            .nav .dropdown.active .dropdown-menu { display: block; }
-            .nav .dropdown.active .dropdown-toggle::after { content: "-"; }
+            .dropdown-menu {
+                position: static; box-shadow: none; background: var(--light-gray);
+                width: 100%; padding: 0; transform: none;
+                opacity: 1; visibility: visible;
+                max-height: 0; overflow: hidden;
+                transition: max-height 0.3s ease;
+            }
+            .dropdown:hover .dropdown-menu { max-height: 0; }
+            .dropdown.active .dropdown-menu { max-height: 500px; }
+            .dropdown-toggle:after { float: right; }
+            .dropdown.active .dropdown-toggle:after { content: "▲"; }
         }
         @media (max-width: 480px) {
             /* Extra-small phones: even more compact text. */
