@@ -95,6 +95,35 @@
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
+
+            /* Tabs: scroll horizontally instead of wrapping awkwardly. */
+            .admin-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
+            .admin-tab { flex-shrink: 0; white-space: nowrap; padding: 9px 12px; font-size: 0.9rem; }
+
+            /* Tables: horizontal scroll on narrow screens so cells don't get crushed. */
+            .data-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+            .data-table th, .data-table td { font-size: 0.88rem; padding: 8px 10px; }
+
+            /* Action buttons inside table rows get larger tap targets. */
+            .data-table .btn-sm { padding: 8px 10px; margin-bottom: 4px; min-height: 38px; }
+
+            /* Header row stacks vertically on mobile. */
+            .admin-header-bar { flex-direction: column; align-items: flex-start; }
+
+            /* Wide modal collapses to fit phone screens; the match-edit
+               game rows fold from multi-column grids into vertical stacks. */
+            .modal-backdrop { padding: 15px 8px; }
+            .modal-card, .modal-card.modal-wide { max-width: 100%; padding: 18px 15px; }
+            .modal-card .match-info { grid-template-columns: 1fr 1fr; }
+            .match-edit-game .game-row { grid-template-columns: 1fr; gap: 8px; }
+            .match-edit-game.singles .game-row { grid-template-columns: 1fr; }
+            .modal-actions { flex-wrap: wrap; }
+            .modal-actions button { flex: 1 1 auto; min-height: 44px; }
+
+            /* Standard touch targets and tighter container padding. */
+            .btn-danger { width: 100%; min-height: 44px; }
+            .container { padding: 0 12px; }
+
             .nav-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
             .nav-menu.active { display: block; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
@@ -104,6 +133,14 @@
             .nav .dropdown-toggle::after { content: "+"; margin-left: 5px; }
             .nav .dropdown.active .dropdown-menu { display: block; }
             .nav .dropdown.active .dropdown-toggle::after { content: "-"; }
+        }
+        @media (max-width: 480px) {
+            /* Extra-small phones: even more compact text. */
+            .admin-tab { padding: 8px 10px; font-size: 0.85rem; }
+            .auth-card { padding: 18px 15px; margin: 15px auto; }
+            .auth-card h2 { font-size: 1.3rem; }
+            .modal-card .match-info { grid-template-columns: 1fr; }
+            .data-table th, .data-table td { font-size: 0.82rem; padding: 7px 8px; }
         }
 </style>
 </head>

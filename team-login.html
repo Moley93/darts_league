@@ -89,6 +89,39 @@
             .form-row { grid-template-columns: 1fr; }
             .doubles-players, .singles-players { flex-direction: column; }
             .score-select { width: 100%; max-width: none; }
+
+            /* Tabs: horizontal scroll instead of wrapping. */
+            .team-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
+            .team-tab { flex-shrink: 0; white-space: nowrap; padding: 9px 12px; font-size: 0.9rem; }
+
+            /* Tables: horizontal scroll on narrow screens. */
+            .data-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+            .data-table th, .data-table td { font-size: 0.88rem; padding: 8px 10px; }
+            .data-table .btn-sm { padding: 8px 10px; margin-bottom: 4px; min-height: 38px; }
+
+            /* Header row stacks vertically on mobile so the logout button
+               sits below the team title instead of being squashed. */
+            .team-header-bar { flex-direction: column; align-items: flex-start; gap: 6px; }
+
+            /* Match form: doubles game blocks already stack via the rules
+               above; tighten the per-side player select padding for fingers. */
+            .player-select { padding: 10px; min-height: 40px; }
+
+            /* Stat rows on 180s / high finishes drop side-by-side layout. */
+            .stats-row { flex-direction: column; align-items: stretch; }
+            .stats-row select, .stats-row input[type="number"] { flex: 1 1 auto; width: 100%; }
+            .remove-stat-btn { width: 100%; min-height: 40px; }
+            .add-stat-btn { width: 100%; min-height: 44px; }
+
+            /* Submit-mode banner stacks; quick-stat row scrolls. */
+            .submit-mode-banner { flex-direction: column; align-items: stretch; }
+            .submit-mode-banner button { width: 100%; min-height: 40px; }
+            .quick-actions { grid-template-columns: 1fr; }
+            .quick-stat { min-width: auto; flex: 1 1 calc(50% - 16px); }
+
+            .container { padding: 0 12px; }
+            .auth-card { padding: 20px 18px; }
+
             .nav-menu { display: none; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
             .nav-menu.active { display: block; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
@@ -98,6 +131,14 @@
             .nav .dropdown-toggle::after { content: "+"; margin-left: 5px; }
             .nav .dropdown.active .dropdown-menu { display: block; }
             .nav .dropdown.active .dropdown-toggle::after { content: "-"; }
+        }
+        @media (max-width: 480px) {
+            .team-tab { padding: 8px 10px; font-size: 0.85rem; }
+            .auth-card { padding: 18px 15px; margin: 15px auto; }
+            .auth-card h2 { font-size: 1.3rem; }
+            .data-table th, .data-table td { font-size: 0.82rem; padding: 7px 8px; }
+            .quick-stat { flex: 1 1 100%; }
+            .quick-stat .v { font-size: 1.4rem; }
         }
 </style>
 </head>
