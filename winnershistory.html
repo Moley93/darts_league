@@ -196,8 +196,29 @@
             background-color: var(--light-gray);
         }
 
+        /* Mobile hamburger button. Hidden on desktop, shown by the mobile
+           @media block below. The HTML for it (.mobile-toggle with 3
+           .bar spans) is already in the header markup. */
+        .mobile-toggle {
+            display: none;
+            background: transparent; border: none; cursor: pointer;
+            padding: 10px;
+            position: absolute; left: 20px; top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .mobile-toggle .bar {
+            display: block;
+            width: 25px; height: 3px;
+            margin: 5px auto;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
         /* Mobile nav (shared with other pages) */
         @media (max-width: 768px) {
+            /* Show the hamburger button on mobile. */
+            .mobile-toggle { display: block; }
             .nav-menu {
                 display: none;
                 position: absolute;

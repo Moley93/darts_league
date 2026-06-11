@@ -106,10 +106,31 @@
         .dropdown-menu a { display: block; padding: 10px 15px; color: var(--primary); text-decoration: none; transition: all 0.3s ease; }
         .dropdown-menu a:hover { background-color: var(--light-gray); }
 
+        /* Mobile hamburger button. Hidden on desktop, shown by the mobile
+           @media block below. The HTML for it (.mobile-toggle with 3
+           .bar spans) is already in the header markup. */
+        .mobile-toggle {
+            display: none;
+            background: transparent; border: none; cursor: pointer;
+            padding: 10px;
+            position: absolute; left: 20px; top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+        .mobile-toggle .bar {
+            display: block;
+            width: 25px; height: 3px;
+            margin: 5px auto;
+            background-color: white;
+            transition: all 0.3s ease;
+        }
+
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
             .doubles-players, .singles-players { flex-direction: column; }
             .score-select { width: 100%; max-width: none; }
+            /* Show the hamburger button on mobile. */
+            .mobile-toggle { display: block; }
 
             /* Tabs: horizontal scroll instead of wrapping. */
             .team-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
