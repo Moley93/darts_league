@@ -32,7 +32,7 @@ set_exception_handler(function($e) use ($emitJsonError) {
 
 // Fatal errors (parse errors, out-of-memory, undefined function calls in
 // PHP 8) cannot be caught by set_error_handler / set_exception_handler.
-// They show up here as the *last error* during shutdown — surface them
+// They show up here as the *last error* during shutdown – surface them
 // to the client as JSON so a 500 with an empty body is impossible.
 register_shutdown_function(function() use ($emitJsonError) {
     $err = error_get_last();
@@ -843,7 +843,7 @@ function handleLogin() {
             $_SESSION['team_id']    = (int)$captain['team_id'];
             $_SESSION['team_name']  = $captain['team_name'];
             $_SESSION['division']   = $captain['division'];
-            // Clear any admin session — a captain is logging in.
+            // Clear any admin session – a captain is logging in.
             unset($_SESSION['admin_id'], $_SESSION['admin_username']);
             returnJson(['success' => true, 'captain' => $captain]);
         } else {
@@ -1207,7 +1207,7 @@ function updateMatch() {
         // No session at all is rejected.
         $matchIdForAuth = (int)$data['matchId'];
         if (!empty($_SESSION['admin_id'])) {
-            // admin — allow
+            // admin – allow
         } elseif (!empty($_SESSION['captain_id'])) {
             $captainId = (int)$_SESSION['captain_id'];
             $teamId    = (int)($_SESSION['team_id'] ?? 0);
@@ -1539,7 +1539,7 @@ function requireCaptain() {
 // CASCADE deletes (or update rebuilds) finish. league_standings is the only
 // denormalised table and must be refreshed explicitly via the stored
 // procedure that the fresh schema defines. Failures are logged but never
-// propagated — a stale standings cache is recoverable on the next match
+// propagated – a stale standings cache is recoverable on the next match
 // submission, whereas a failing API call is not.
 function refreshLeagueStandings() {
     global $pdo;
@@ -1773,7 +1773,7 @@ function adminDeleteTeam() {
     if ($teamId <= 0) returnJson(['success' => false, 'error' => 'team_id required']);
     try {
         // Cascade via FKs on team_captains, player_requests, league_standings.
-        // Matches reference teams without ON DELETE — block delete if any matches exist.
+        // Matches reference teams without ON DELETE – block delete if any matches exist.
         $stmt = $pdo->prepare('SELECT COUNT(*) FROM matches WHERE home_team_id = ? OR away_team_id = ?');
         $stmt->execute([$teamId, $teamId]);
         if ((int)$stmt->fetchColumn() > 0) {
@@ -1942,7 +1942,7 @@ function listSettings() {
         }
         returnJson(['success' => true, 'settings' => $out]);
     } catch (Exception $e) {
-        // Table missing on a not-yet-migrated DB — return empty so the
+        // Table missing on a not-yet-migrated DB – return empty so the
         // public pages fall back to their static content rather than 500.
         returnJson(['success' => true, 'settings' => new stdClass()]);
     }
@@ -2028,7 +2028,7 @@ function adminDeleteVenue() {
     }
 }
 
-// Combined feed for contactinfo.html — venues + teams with their
+// Combined feed for contactinfo.html – venues + teams with their
 // contact info. Phone is only returned when the request is from an
 // authenticated session (admin OR captain) per the existing GDPR
 // model the page implements client-side. Anonymous callers still get
@@ -2076,7 +2076,7 @@ function cupBracketLayout($teamCount) {
     return [$size, $layouts[$size]];
 }
 
-// Preview the draw — no DB writes. Tells the admin what the bracket
+// Preview the draw – no DB writes. Tells the admin what the bracket
 // will look like (size, rounds, how many byes there will be) so they
 // can confirm the team list is complete before committing.
 function adminCupDrawPreview() {
@@ -2141,8 +2141,8 @@ function adminCupDrawPreview() {
 
 // Returns the full cup bracket for a division (all rounds, current
 // statuses, both team names). Named getBracket() not getCupBracket()
-// because the legacy getcupbracket() — used by the cup-fixtures
-// endpoint — already exists, and PHP function names are
+// because the legacy getcupbracket() – used by the cup-fixtures
+// endpoint – already exists, and PHP function names are
 // case-insensitive so the two would collide as a fatal
 // "Cannot redeclare" at parse time.
 function getBracket() {
@@ -2280,7 +2280,7 @@ function adminCupDraw() {
             $aBye = $isByeTeam($a);
 
             if ($hBye && $aBye) {
-                // Both sides empty — degenerate, mark completed 0-0 with no winner.
+                // Both sides empty – degenerate, mark completed 0-0 with no winner.
                 $insertCompleted->execute([$hId, $aId, $dates[0], $division, $rounds[0], 0, 0]);
             } elseif ($hBye) {
                 // Away advances
@@ -2376,7 +2376,7 @@ function adminSeasonReset() {
     global $pdo;
     requireAdmin();
     $tables = [
-        // Child tables first (defensive — FK checks off anyway).
+        // Child tables first (defensive – FK checks off anyway).
         'doubles_results',
         'singles_results',
         'high_finishes',

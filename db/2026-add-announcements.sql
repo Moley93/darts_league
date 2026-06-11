@@ -2,7 +2,7 @@
 -- Migration: add the announcements table
 -- Apply this in phpMyAdmin AFTER you have already imported fresh-schema.sql
 -- on a previous occasion. If you are about to re-import fresh-schema.sql
--- from scratch you can skip this — the fresh schema now includes the
+-- from scratch you can skip this – the fresh schema now includes the
 -- `announcements` table directly.
 -- =====================================================================
 

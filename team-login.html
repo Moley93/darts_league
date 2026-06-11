@@ -189,7 +189,7 @@
             <!-- Submit Score pane -->
             <div id="paneSubmit" class="team-pane active">
                 <div id="editModeBanner" class="submit-mode-banner">
-                    <span><strong>Editing match #<span id="editMatchIdLabel"></span></strong> — submitting will overwrite the existing result.</span>
+                    <span><strong>Editing match #<span id="editMatchIdLabel"></span></strong> – submitting will overwrite the existing result.</span>
                     <button type="button" id="cancelEditBtn">Cancel Edit</button>
                 </div>
 
@@ -348,7 +348,7 @@ function setSelectValue(sel, val) {
 
 // Format a MariaDB timestamp ("2026-06-09 14:30:15") as "09 Jun 2026, 14:30".
 function fmtDateTime(s) {
-    if (!s) return '—';
+    if (!s) return '–';
     const d = new Date(String(s).replace(' ', 'T'));
     if (isNaN(d.getTime())) return String(s);
     return d.toLocaleString('en-GB', {
@@ -363,7 +363,7 @@ async function init() {
     if (res.success && res.captain) {
         me = res.captain;
         document.getElementById('loggedTeam').textContent = me.team_name + ' (' + (me.division === 'premier' ? 'Premier' : 'A') + ')';
-        document.getElementById('dashTitle').textContent = me.team_name + ' — Team Dashboard';
+        document.getElementById('dashTitle').textContent = me.team_name + ' – Team Dashboard';
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboardView').style.display = '';
 
@@ -750,7 +750,7 @@ async function editMatch(matchId) {
     document.getElementById('editModeBanner').classList.add('visible');
 
     // Use setSelectValue so the value sticks even if the option list is
-    // still loading async — this was the bug where match type, away team
+    // still loading async – this was the bug where match type, away team
     // and (consequently) every away-player dropdown silently failed to
     // pre-fill because their target options didn't exist yet.
     setSelectValue(document.getElementById('matchType'), detail.match_type);
@@ -763,7 +763,7 @@ async function editMatch(matchId) {
     // clicked Edit before init finished), we want to be defensive.
     if (!_teamsCache.length) await loadAwayTeams();
 
-    // Set away team (it may be our team if we were the away side — handle either).
+    // Set away team (it may be our team if we were the away side – handle either).
     const ourAway = detail.away_team === me.team_name;
     const otherTeam = ourAway ? detail.home_team : detail.away_team;
     setSelectValue(document.getElementById('awayTeam'), otherTeam);
@@ -831,7 +831,7 @@ async function loadMyMatches() {
     (res.matches || []).forEach(m => {
         // A team can only edit/delete matches it submitted itself (i.e. the
         // logged-in captain is the submitter). Matches where we were the
-        // away side and the other team submitted are read-only here — ask
+        // away side and the other team submitted are read-only here – ask
         // that team's captain (or an admin) to amend it.
         const weSubmitted = String(m.submitted_by_captain_id || '') === String(me.captain_id);
         const actions = weSubmitted
@@ -841,9 +841,9 @@ async function loadMyMatches() {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
                         <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
-                        <td>${escapeHtml(m.home_team_name || '—')}</td>
+                        <td>${escapeHtml(m.home_team_name || '–')}</td>
                         <td>${m.home_score} - ${m.away_score}</td>
-                        <td>${escapeHtml(m.away_team_name || '—')}</td>
+                        <td>${escapeHtml(m.away_team_name || '–')}</td>
                         <td>${actions}</td>`;
         tbody.appendChild(tr);
     });

@@ -1,10 +1,10 @@
 -- =====================================================================
--- Crawley Darts League — Fresh Schema
+-- Crawley Darts League – Fresh Schema
 -- Importable via phpMyAdmin into an existing `darts_league` database.
 -- Drops all existing tables/procedures, recreates the schema with
 -- empty data, and adds two new tables:
---   * admins           — admin login accounts
---   * player_requests  — pending player additions awaiting admin approval
+--   * admins           – admin login accounts
+--   * player_requests  – pending player additions awaiting admin approval
 --
 -- After importing, visit /setup-admin.php ONCE in your browser to seed
 -- the initial admin account, then delete setup-admin.php from the host.

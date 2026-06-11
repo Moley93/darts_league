@@ -282,7 +282,7 @@
             <!-- Matches pane -->
             <div id="paneMatches" class="admin-pane">
                 <h3>Submitted Matches</h3>
-                <p class="small-note">Delete removes the match and every related stat — all singles &amp; doubles game outcomes, 180s, high finishes, the player ranking points those games contributed (rankings are recomputed live, not stored), and the team's points/standings (refreshed automatically). The action cascades end-to-end; there is no undo.</p>
+                <p class="small-note">Delete removes the match and every related stat – all singles &amp; doubles game outcomes, 180s, high finishes, the player ranking points those games contributed (rankings are recomputed live, not stored), and the team's points/standings (refreshed automatically). The action cascades end-to-end; there is no undo.</p>
                 <table class="data-table" id="matchesTable">
                     <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
                     <tbody></tbody>
@@ -292,7 +292,7 @@
             <!-- Cup Draw pane -->
             <div id="paneCupDraw" class="admin-pane">
                 <h3>Knockout Cup Draw</h3>
-                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64) — leftover slots become first-round byes that auto-advance their opponent.</p>
+                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64) – leftover slots become first-round byes that auto-advance their opponent.</p>
 
                 <div class="form-row" style="max-width:720px;">
                     <div class="form-group" style="text-align:left;">
@@ -338,7 +338,7 @@
             <!-- Pages pane: admin-editable URLs that drive public pages -->
             <div id="panePages" class="admin-pane">
                 <h3>Page Source URLs</h3>
-                <p class="small-note">Replace the embedded content on the public site without touching the codebase. For Google Sheets, use the "Publish to web" iframe URL (Sheets &rarr; File &rarr; Share &rarr; Publish to web). For Google Docs, use a <code>/preview</code> link (replace <code>/edit</code> with <code>/preview</code> at the end of the share URL). Save each field independently — blank to fall back to the page's static content.</p>
+                <p class="small-note">Replace the embedded content on the public site without touching the codebase. For Google Sheets, use the "Publish to web" iframe URL (Sheets &rarr; File &rarr; Share &rarr; Publish to web). For Google Docs, use a <code>/preview</code> link (replace <code>/edit</code> with <code>/preview</code> at the end of the share URL). Save each field independently – blank to fall back to the page's static content.</p>
 
                 <form id="settingsForm" style="max-width:780px;">
                     <div class="form-group">
@@ -773,9 +773,9 @@ async function loadMatches() {
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
                         <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
-                        <td>${escapeHtml(m.home_team_name || '—')}</td>
+                        <td>${escapeHtml(m.home_team_name || '–')}</td>
                         <td>${m.home_score} - ${m.away_score}</td>
-                        <td>${escapeHtml(m.away_team_name || '—')}</td>
+                        <td>${escapeHtml(m.away_team_name || '–')}</td>
                         <td>
                             <button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
                             <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>
@@ -813,7 +813,7 @@ function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c
 // Format a MySQL/MariaDB timestamp (e.g. "2026-06-09 14:30:15") as a
 // readable "09 Jun 2026, 14:30" string. Returns an em-dash for null/blank.
 function fmtDateTime(s) {
-    if (!s) return '—';
+    if (!s) return '–';
     const d = new Date(String(s).replace(' ', 'T'));
     if (isNaN(d.getTime())) return String(s);
     return d.toLocaleString('en-GB', {
@@ -865,7 +865,7 @@ function openTeamModal(teamId) {
     f.elements['secretary_phone'].value  = t.secretary_phone || '';
     f.elements['captain_username'].value = t.captain_username || '';
     f.elements['captain_password'].value = '';
-    openModal('team', `Edit Team — ${t.team_name}`);
+    openModal('team', `Edit Team – ${t.team_name}`);
 }
 
 editTeamForm().addEventListener('submit', async (e) => {
@@ -900,7 +900,7 @@ function openPlayerModal(playerId) {
     f.elements['player_id'].value   = p.player_id;
     f.elements['player_name'].value = p.player_name || '';
     f.elements['team_id'].value     = p.team_id || '';
-    openModal('player', `Edit Player — ${p.player_name}`);
+    openModal('player', `Edit Player – ${p.player_name}`);
 }
 
 editPlayerForm().addEventListener('submit', async (e) => {
@@ -1007,7 +1007,7 @@ function openVenueModal(venueId) {
     f.elements['venue_name'].value = v.venue_name || '';
     f.elements['address'].value    = v.address || '';
     f.elements['phone'].value      = v.phone || '';
-    openModal('venue', `Edit Venue — ${v.venue_name}`);
+    openModal('venue', `Edit Venue – ${v.venue_name}`);
 }
 
 document.getElementById('editVenueForm').addEventListener('submit', async (e) => {
@@ -1065,8 +1065,8 @@ async function loadBracketStatus(division) {
     }
 }
 
-// Show a live preview of what a draw on this division will produce —
-// the bracket size, the round names, and how many byes there will be —
+// Show a live preview of what a draw on this division will produce –
+// the bracket size, the round names, and how many byes there will be –
 // without committing anything. Updated whenever the dashboard loads or
 // teams change, and re-run after each draw.
 async function loadDrawPreview(division) {
@@ -1077,7 +1077,7 @@ async function loadDrawPreview(division) {
         const res = await apiCall(`cup-draw-preview&division=${encodeURIComponent(division)}`);
         if (!res.success) { previewEl.textContent = res.error || 'Preview unavailable.'; previewEl.style.color = '#c62828'; return; }
         if (!res.supported) {
-            previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> — ${escapeHtml(res.message)}`;
+            previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> – ${escapeHtml(res.message)}`;
             previewEl.style.color = '#c62828';
             if (buttonEl) buttonEl.disabled = true;
             return;
@@ -1096,13 +1096,13 @@ async function loadDrawPreview(division) {
 
 async function performDraw(division) {
     const label = division === 'premier' ? 'Premier' : 'A';
-    if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket — every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
+    if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket – every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
     const statusEl = document.getElementById(division === 'premier' ? 'drawPremierStatus' : 'drawAStatus');
     statusEl.style.color = ''; statusEl.textContent = 'Drawing...';
     const res = await apiCall('admin-cup-draw', { method: 'POST', body: JSON.stringify({ division }) });
     if (res.success) {
         statusEl.style.color = '#2e7d32';
-        statusEl.textContent = `Draw complete — ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
+        statusEl.textContent = `Draw complete – ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
         loadBracketStatus(division);
         loadDrawPreview(division);
         loadMatches();
@@ -1225,8 +1225,8 @@ async function openMatchEditModal(matchId) {
 
     let html = '';
     html += `<div class="match-info">
-        <div><div class="label">Date</div><div class="val">${escapeHtml(detail.match_date || '—')}</div></div>
-        <div><div class="label">Type</div><div class="val">${escapeHtml(detail.match_type)}${detail.cup_round ? ' — ' + escapeHtml(detail.cup_round) : ''}</div></div>
+        <div><div class="label">Date</div><div class="val">${escapeHtml(detail.match_date || '–')}</div></div>
+        <div><div class="label">Type</div><div class="val">${escapeHtml(detail.match_type)}${detail.cup_round ? ' – ' + escapeHtml(detail.cup_round) : ''}</div></div>
         <div><div class="label">Division</div><div class="val">${div === 'premier' ? 'Premier' : 'A'}</div></div>
         <div><div class="label">Home</div><div class="val">${escapeHtml(detail.home_team)}</div></div>
         <div><div class="label">Away</div><div class="val">${escapeHtml(detail.away_team)}</div></div>
@@ -1425,7 +1425,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
     // Second confirmation with typed phrase
     const typed = prompt('FINAL WARNING TWO OF TWO\n\nType the word RESET (in capitals) to confirm.');
     if (typed !== 'RESET') {
-        alert('Reset cancelled — confirmation text did not match.');
+        alert('Reset cancelled – confirmation text did not match.');
         return;
     }
     // Disable button and call endpoint
@@ -1435,7 +1435,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
     btn.disabled = false; btn.textContent = orig;
     if (res.success) {
         showMsg('dashMsg', 'Season reset complete. All teams, players, league matches, the cup bracket, stats and player requests have been wiped.', 'success');
-        // Refresh every dashboard view that depends on this data — including
+        // Refresh every dashboard view that depends on this data – including
         // the cup bracket status and the per-division draw preview, both of
         // which were silently stale before this commit.
         loadTeams();

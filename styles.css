@@ -606,7 +606,7 @@ tr:hover {
 /* Logo size is intentionally 60x58 to match the inline overrides on
    every page-specific stylesheet. admin-login.html, team-login.html
    and winnershistory.html don't have their own override and used to
-   inherit the previous 113x107 default — which made the logo look
+   inherit the previous 113x107 default – which made the logo look
    noticeably bigger than on every other page. Keeping the base here
    in sync keeps the header consistent across the whole site. */
 .logo {

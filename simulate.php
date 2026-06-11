@@ -1,6 +1,6 @@
 <?php
 // =====================================================================
-// simulate.php — populate the DB with placeholder test data
+// simulate.php – populate the DB with placeholder test data
 //
 // Visit ?confirm=YES to run. Wipes every team/player/match/result then
 // generates:
@@ -15,7 +15,7 @@
 // Captain logins are username "prem1".."prem8" and "adiv1".."adiv7",
 // password "test1234" for all of them.
 //
-// Designed for QA. Delete this file from the host after use — it
+// Designed for QA. Delete this file from the host after use – it
 // exposes the DB credentials.
 // =====================================================================
 
@@ -28,14 +28,14 @@ $db_name = 'darts_league';
 $db_user = 'darts_league';
 $db_pass = 'M0l3y1993#cdl';
 
-echo '<!doctype html><html><head><meta charset="utf-8"><title>CDL — Simulation</title>';
+echo '<!doctype html><html><head><meta charset="utf-8"><title>CDL – Simulation</title>';
 echo '<style>body{font-family:Segoe UI,Tahoma,sans-serif;max-width:960px;margin:20px auto;padding:0 20px;color:#222;line-height:1.5}';
 echo 'h1,h2{color:#1a237e}.ok{color:#2e7d32}.err{color:#c62828}.note{color:#757575}';
 echo '.box{background:#f5f5f5;padding:15px 20px;border-left:4px solid #1a237e;border-radius:4px;margin:15px 0}';
 echo '.warn{background:#fff3e0;border-left-color:#e65100}.bad{background:#ffebee;border-left-color:#c62828}';
 echo 'code{background:#fff;padding:2px 6px;border-radius:3px;border:1px solid #ddd}pre{background:#fff;padding:10px;border-radius:4px;overflow:auto}';
 echo 'table{border-collapse:collapse;margin:10px 0}th,td{padding:6px 12px;border:1px solid #ccc;text-align:left}th{background:#1a237e;color:white}</style>';
-echo '</head><body><h1>Darts League — Test Data Simulation</h1>';
+echo '</head><body><h1>Darts League – Test Data Simulation</h1>';
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
@@ -53,7 +53,7 @@ if (!isset($_GET['confirm']) || $_GET['confirm'] !== 'YES') {
     echo '<li>Wipe every team, captain login, player, match, singles/doubles result, 180, high finish, league standing, player request and cup bracket.</li>';
     echo '<li>Create 8 Premier and 7 A Division placeholder teams.</li>';
     echo '<li>Create 6 randomly-named players per team (90 total).</li>';
-    echo '<li>Play a complete round-robin season — every team plays every other team in its division once.</li>';
+    echo '<li>Play a complete round-robin season – every team plays every other team in its division once.</li>';
     echo '<li>Draw and play a full knockout cup for both divisions.</li>';
     echo '</ol>';
     echo '<p><strong>If you actually have live season data, do NOT run this.</strong> There is no undo.</p>';
@@ -178,7 +178,7 @@ function simulateMatchInsert($pdo, $homeId, $awayId, $homePlayers, $awayPlayers,
         if ($hs > $as) $homeScore++; else $awayScore++;
     }
 
-    // 6 singles games — each player ideally plays once
+    // 6 singles games – each player ideally plays once
     $hSinglesPool = $homePlayers; shuffle($hSinglesPool);
     $aSinglesPool = $awayPlayers; shuffle($aSinglesPool);
     for ($g = 0; $g < 6; $g++) {
@@ -189,7 +189,7 @@ function simulateMatchInsert($pdo, $homeId, $awayId, $homePlayers, $awayPlayers,
         if ($hs > $as) $homeScore++; else $awayScore++;
     }
 
-    // 180s — ~40% of matches have 1, ~15% have 2
+    // 180s – ~40% of matches have 1, ~15% have 2
     $insert180 = $pdo->prepare('INSERT INTO one_eighties (match_id, player_id, count) VALUES (?, ?, ?)');
     $r = mt_rand(0, 100);
     $numHundredEighties = $r < 40 ? 1 : ($r < 55 ? 2 : 0);
@@ -200,7 +200,7 @@ function simulateMatchInsert($pdo, $homeId, $awayId, $homePlayers, $awayPlayers,
         $insert180->execute([$matchId, $p['id'], 1]);
     }
 
-    // High finishes — ~12% of matches have 1
+    // High finishes – ~12% of matches have 1
     if (mt_rand(0, 100) < 12) {
         $insertHF = $pdo->prepare('INSERT INTO high_finishes (match_id, player_id, finish_value) VALUES (?, ?, ?)');
         $fromHome = mt_rand(0, 1) === 1;
@@ -259,7 +259,7 @@ try { $pdo->exec('CALL update_league_standings()'); echo '<p class="ok">&#10003;
 catch (Exception $e) { echo '<p class="err">&#10007; Standings refresh failed: ' . htmlspecialchars($e->getMessage()) . '</p>'; }
 
 // =====================================================================
-// 5. CUP — draw + simulate
+// 5. CUP – draw + simulate
 // =====================================================================
 echo '<h2>5. Knockout cup draw + simulation</h2>';
 
@@ -464,15 +464,15 @@ echo '<h3>Cup match status breakdown</h3><table><tr><th>Round</th><th>Status</th
 foreach ($cupStats as $r) echo '<tr><td>' . htmlspecialchars($r['cup_round']) . '</td><td>' . htmlspecialchars($r['status']) . '</td><td>' . $r['c'] . '</td></tr>';
 echo '</table>';
 
-echo '<div class="box bad"><strong>Reminder:</strong> delete <code>simulate.php</code> from your host now — it contains the DB password in source.</div>';
+echo '<div class="box bad"><strong>Reminder:</strong> delete <code>simulate.php</code> from your host now – it contains the DB password in source.</div>';
 
 echo '<h2>What to verify in the browser</h2><ul>';
-echo '<li><a href="leaguetable.html">leaguetable.html</a> — both division standings should reflect the simulated results.</li>';
-echo '<li><a href="leagueresults.html">leagueresults.html</a> — 49 league matches across both divisions.</li>';
-echo '<li><a href="playerrankings.html">playerrankings.html</a> — every player should appear; played &gt; 0 for those who featured.</li>';
-echo '<li><a href="180sfinishes.html">180sfinishes.html</a> — should list 180 and high finish counts including cup contributions.</li>';
-echo '<li><a href="knockoutcup.html">knockoutcup.html</a> — both brackets fully populated with completed matches; click a completed one to see games inside.</li>';
-echo '<li><a href="admin-login.html">admin-login.html</a> &rarr; Cup Draw tab — bracket status should show 0 pending in both divisions.</li>';
+echo '<li><a href="leaguetable.html">leaguetable.html</a> – both division standings should reflect the simulated results.</li>';
+echo '<li><a href="leagueresults.html">leagueresults.html</a> – 49 league matches across both divisions.</li>';
+echo '<li><a href="playerrankings.html">playerrankings.html</a> – every player should appear; played &gt; 0 for those who featured.</li>';
+echo '<li><a href="180sfinishes.html">180sfinishes.html</a> – should list 180 and high finish counts including cup contributions.</li>';
+echo '<li><a href="knockoutcup.html">knockoutcup.html</a> – both brackets fully populated with completed matches; click a completed one to see games inside.</li>';
+echo '<li><a href="admin-login.html">admin-login.html</a> &rarr; Cup Draw tab – bracket status should show 0 pending in both divisions.</li>';
 echo '</ul>';
 
 echo '</body></html>';

@@ -15,7 +15,7 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// Database configuration — must match api.php
+// Database configuration – must match api.php
 $db_host = 'localhost';
 $db_name = 'darts_league';
 $db_user = 'darts_league';
@@ -32,7 +32,7 @@ echo 'h1{color:#1a237e}.box{background:#f5f5f5;border-left:4px solid #1a237e;pad
 echo '.ok{border-left-color:#2e7d32;background:#e8f5e9}.warn{border-left-color:#c79100;background:#fffaf0}';
 echo '.err{border-left-color:#c62828;background:#ffebee}code{background:#fff;padding:2px 6px;border-radius:3px;border:1px solid #ddd}';
 echo '</style></head><body>';
-echo '<h1>Crawley Darts League — Admin Setup</h1>';
+echo '<h1>Crawley Darts League – Admin Setup</h1>';
 
 try {
     $pdo = new PDO("mysql:host=$db_host;dbname=$db_name;charset=utf8mb4", $db_user, $db_pass, [
