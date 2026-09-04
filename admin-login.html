@@ -133,10 +133,24 @@
             transition: all 0.3s ease;
         }
 
+        /* Header sizing to match every other page: tighter padding and
+           progressively smaller title / logo on smaller screens. Without
+           these the header renders ~20px taller with a 24px title while
+           index/leaguetable/etc. shrink to 1.3rem/1.1rem. */
+        .header { padding: 15px 20px; }
+        .header h1 { font-size: 1.5rem; }
+
+        @media (max-width: 992px) {
+            .nav-menu { justify-content: flex-start; }
+            .nav-menu > li > a { padding: 15px 10px; font-size: 0.9rem; }
+        }
+
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
-            /* Show the hamburger button on mobile. */
+            /* Show the hamburger button on mobile; shrink the title the
+               same way the standard pages do. */
             .mobile-toggle { display: block; }
+            .header h1 { font-size: 1.3rem; }
 
             /* Tabs: scroll horizontally instead of wrapping awkwardly. */
             .admin-tabs { flex-wrap: nowrap; overflow-x: auto; -webkit-overflow-scrolling: touch; gap: 4px; }
@@ -193,6 +207,8 @@
         }
         @media (max-width: 480px) {
             /* Extra-small phones: even more compact text. */
+            .header h1 { font-size: 1.1rem; }
+            .logo { width: 50px; height: 48px; }
             .admin-tab { padding: 8px 10px; font-size: 0.85rem; }
             .auth-card { padding: 18px 15px; margin: 15px auto; }
             .auth-card h2 { font-size: 1.3rem; }

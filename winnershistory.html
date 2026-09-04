@@ -226,10 +226,24 @@
             transition: all 0.3s ease;
         }
 
+        /* Header sizing to match every other page: tighter padding and
+           progressively smaller title / logo on smaller screens. Without
+           these the header renders ~20px taller with a 24px title while
+           index/leaguetable/etc. shrink to 1.3rem/1.1rem. */
+        .header { padding: 15px 20px; }
+        .header h1 { font-size: 1.5rem; }
+
+        @media (max-width: 992px) {
+            .nav-menu { justify-content: flex-start; }
+            .nav-menu > li > a { padding: 15px 10px; font-size: 0.9rem; }
+        }
+
         /* Mobile nav (shared with other pages) */
         @media (max-width: 768px) {
-            /* Show the hamburger button on mobile. */
+            /* Show the hamburger button on mobile; shrink the title the
+               same way the standard pages do. */
             .mobile-toggle { display: block; }
+            .header h1 { font-size: 1.3rem; }
 
             /* Collapse the menu with max-height rather than display:none.
                styles.css declares `.nav ul { display: flex }` at higher
@@ -302,6 +316,15 @@
             .dropdown.active .dropdown-toggle:after {
                 content: "▲";
             }
+        }
+
+        /* Extra-small phones. Must come AFTER the 768px block: both
+           media queries match at ≤480px and the h1 rules tie on
+           specificity, so source order decides — same ordering the
+           standard pages use. */
+        @media (max-width: 480px) {
+            .header h1 { font-size: 1.1rem; }
+            .logo { width: 50px; height: 48px; }
         }
 </style>
 </head>
