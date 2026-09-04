@@ -190,20 +190,30 @@
                menu visible on phones. max-height has no competing rule, so
                the collapse always wins. Same mechanism as every other page. */
             .nav-menu { flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
-            .nav-menu.active { max-height: 1000px; }
+            /* display:block when open is essential: at (0,2,0) it beats
+               styles.css's `.nav ul { display:flex; align-items:center }`
+               (0,1,1) which otherwise centers and shrink-wraps every
+               menu item. Block layout = full-width left-aligned rows,
+               exactly like the home page's open menu. */
+            .nav-menu.active { max-height: 1000px; display: block; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
             .nav-menu a { padding: 15px 20px; display: block; }
-            .dropdown-menu {
+            /* .nav prefix (0,2,0) so display:block beats styles.css's
+               `.nav ul` flex — submenu items render as full-width rows
+               like the home page, not centered flex items. */
+            .nav .dropdown-menu {
+                display: block;
                 position: static; box-shadow: none; background: var(--light-gray);
                 width: 100%; padding: 0; transform: none;
                 opacity: 1; visibility: visible;
                 max-height: 0; overflow: hidden;
                 transition: max-height 0.3s ease;
             }
-            .dropdown:hover .dropdown-menu { max-height: 0; }
-            .dropdown.active .dropdown-menu { max-height: 500px; }
-            .dropdown-toggle:after { float: right; }
-            .dropdown.active .dropdown-toggle:after { content: "▲"; }
+            .nav .dropdown:hover .dropdown-menu { max-height: 0; }
+            .nav .dropdown.active .dropdown-menu { max-height: 500px; }
+            /* +/- indicators, floated right — same as the home page. */
+            .nav .dropdown-toggle::after { content: "+"; margin-left: 5px; float: right; }
+            .nav .dropdown.active .dropdown-toggle::after { content: "-"; }
         }
         @media (max-width: 480px) {
             /* Extra-small phones: even more compact text. */

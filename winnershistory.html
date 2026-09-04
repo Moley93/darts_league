@@ -268,8 +268,14 @@
                 margin: 0;
             }
 
+            /* display:block when open is essential: at (0,2,0) it beats
+               styles.css's `.nav ul { display:flex; align-items:center }`
+               (0,1,1) which otherwise centers and shrink-wraps every
+               menu item. Block layout = full-width left-aligned rows,
+               exactly like the home page's open menu. */
             .nav-menu.active {
                 max-height: 1000px;
+                display: block;
             }
 
             .nav-menu li {
@@ -309,12 +315,15 @@
                 max-height: 500px;
             }
 
-            .dropdown-toggle:after {
+            /* +/- indicators, floated right — same as the home page. */
+            .nav .dropdown-toggle::after {
+                content: "+";
+                margin-left: 5px;
                 float: right;
             }
 
-            .dropdown.active .dropdown-toggle:after {
-                content: "▲";
+            .nav .dropdown.active .dropdown-toggle::after {
+                content: "-";
             }
         }
 
