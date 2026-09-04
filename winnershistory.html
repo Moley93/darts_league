@@ -196,6 +196,17 @@
             background-color: var(--light-gray);
         }
 
+        /* Chevron + transition block — same as every other page. The
+           display toggling above (higher specificity) still controls
+           visibility; this adds the ▼ indicator and hover affordances
+           so the nav looks identical to index/leaguetable/etc. */
+        .dropdown-toggle:after {
+            content: "▼";
+            font-size: 0.7em;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
         /* Mobile hamburger button. Hidden on desktop, shown by the mobile
            @media block below. The HTML for it (.mobile-toggle with 3
            .bar spans) is already in the header markup. */
@@ -219,21 +230,32 @@
         @media (max-width: 768px) {
             /* Show the hamburger button on mobile. */
             .mobile-toggle { display: block; }
+
+            /* Collapse the menu with max-height rather than display:none.
+               styles.css declares `.nav ul { display: flex }` at higher
+               specificity (0,1,1 beats our 0,1,0), which silently defeats
+               any display:none we set here — the menu stayed visible on
+               phones. max-height has no competing rule anywhere, so the
+               collapse always wins. This is the exact mechanism every
+               other page (index, leaguetable, rules...) relies on. */
             .nav-menu {
-                display: none;
+                flex-direction: column;
                 position: absolute;
                 top: 100%;
                 left: 0;
                 width: 100%;
-                background: white;
-                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+                background-color: white;
+                box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.5s ease;
                 z-index: 1000;
                 padding: 0;
                 margin: 0;
             }
 
             .nav-menu.active {
-                display: block;
+                max-height: 1000px;
             }
 
             .nav-menu li {
@@ -248,33 +270,37 @@
                 display: block;
             }
 
+            /* Dropdowns inside the mobile menu use the same max-height
+               trick. display:block overrides the desktop display:none so
+               max-height alone controls visibility; hover is neutralised
+               because tapping (which toggles .active via JS) is the only
+               thing that raises max-height. */
             .nav .dropdown-menu {
+                display: block;
                 position: static;
                 box-shadow: none;
                 background: var(--light-gray);
                 width: 100%;
                 padding: 0;
+                max-height: 0;
+                overflow: hidden;
+                transition: max-height 0.3s ease;
             }
 
             .nav .dropdown-menu li:first-child {
                 border-top: 1px solid var(--medium-gray);
             }
 
-            .nav .dropdown:hover .dropdown-menu {
-                display: none; /* Don't show on hover on mobile */
-            }
-
-            .nav .dropdown-toggle::after {
-                content: "+";
-                margin-left: 5px;
-            }
-
             .nav .dropdown.active .dropdown-menu {
-                display: block;
+                max-height: 500px;
             }
 
-            .nav .dropdown.active .dropdown-toggle::after {
-                content: "-";
+            .dropdown-toggle:after {
+                float: right;
+            }
+
+            .dropdown.active .dropdown-toggle:after {
+                content: "▲";
             }
         }
 </style>

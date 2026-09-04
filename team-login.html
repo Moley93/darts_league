@@ -168,8 +168,13 @@
                The desktop block above uses opacity/visibility transitions,
                so the mobile rules need to reset those properties explicitly
                (display alone won't override an opacity:0). */
-            .nav-menu { display: none; flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; }
-            .nav-menu.active { display: flex; }
+            /* max-height collapse, NOT display:none — styles.css declares
+               `.nav ul { display: flex }` at higher specificity (0,1,1 vs
+               our 0,1,0), which silently defeats display:none and left the
+               menu visible on phones. max-height has no competing rule, so
+               the collapse always wins. Same mechanism as every other page. */
+            .nav-menu { flex-direction: column; position: absolute; top: 100%; left: 0; width: 100%; background: white; box-shadow: 0 5px 10px rgba(0,0,0,0.1); z-index: 1000; padding: 0; margin: 0; max-height: 0; overflow: hidden; transition: max-height 0.5s ease; }
+            .nav-menu.active { max-height: 1000px; }
             .nav-menu li { margin: 0; padding: 0; display: block; border-bottom: 1px solid var(--light-gray); }
             .nav-menu a { padding: 15px 20px; display: block; }
             .dropdown-menu {
