@@ -669,8 +669,13 @@
 <script>
 const API = 'api.php';
 
-async function apiCall(endpoint, opts = {}) {
-    const url = `${API}?endpoint=${encodeURIComponent(endpoint)}`;
+// `params` is an optional object of extra query-string args. They MUST be
+// passed here rather than baked into `endpoint` — the endpoint is
+// percent-encoded, so an inline "&status=pending" would arrive at PHP as
+// part of the endpoint name and fall through to "Invalid endpoint".
+async function apiCall(endpoint, opts = {}, params = {}) {
+    const qs = new URLSearchParams(params).toString();
+    const url = `${API}?endpoint=${encodeURIComponent(endpoint)}${qs ? '&' + qs : ''}`;
     const res = await fetch(url, Object.assign({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }, opts));
     let json;
     try { json = await res.json(); } catch (e) { return { success: false, error: 'Invalid server response' }; }
@@ -855,7 +860,7 @@ document.getElementById('reqFilter').addEventListener('change', loadRequests);
 
 async function loadRequests() {
     const status = document.getElementById('reqFilter').value;
-    const res = await apiCall(`pending-requests&status=${encodeURIComponent(status)}`);
+    const res = await apiCall('pending-requests', {}, { status });
     const tbody = document.querySelector('#requestsTable tbody');
     tbody.innerHTML = '';
     let pending = 0;
@@ -1194,7 +1199,7 @@ async function loadDrawPreview(division) {
     const buttonEl  = document.getElementById(division === 'premier' ? 'drawPremierBtn'     : 'drawABtn');
     if (!previewEl) return;
     try {
-        const res = await apiCall(`cup-draw-preview&division=${encodeURIComponent(division)}`);
+        const res = await apiCall('cup-draw-preview', {}, { division });
         if (!res.success) { previewEl.textContent = res.error || 'Preview unavailable.'; previewEl.style.color = '#c62828'; return; }
         if (!res.supported) {
             previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> – ${escapeHtml(res.message)}`;
