@@ -984,7 +984,17 @@ function submitMatch() {
         if (!$awayTeamId) {
             throw new Exception('Away team not found: ' . $data['awayTeam']);
         }
-        
+
+        // A captain may only submit a new match their own team played in.
+        // Admins may submit any match; resets (matchId given) were checked
+        // against the stored match above.
+        if (empty($data['matchId']) && empty($_SESSION['admin_id'])) {
+            $teamId = (int)($_SESSION['team_id'] ?? 0);
+            if ((int)$homeTeamId !== $teamId && (int)$awayTeamId !== $teamId) {
+                throw new Exception('You can only submit matches your own team played in');
+            }
+        }
+
         // Create or update match
         $matchId = isset($data['matchId']) ? $data['matchId'] : null;
         
