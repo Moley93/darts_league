@@ -187,6 +187,11 @@ switch ($endpoint) {
     case 'admin-delete-match': requirePost(); adminDeleteMatch(); break;
     case 'admin-season-reset': requirePost(); adminSeasonReset(); break;
 
+    case 'points-adjustments':      listPointsAdjustments(); break;
+    case 'admin-add-adjustment':    requirePost(); adminAddAdjustment(); break;
+    case 'admin-delete-adjustment': requirePost(); adminDeleteAdjustment(); break;
+    case 'admin-record-walkover':   requirePost(); adminRecordWalkover(); break;
+
     case 'announcements':         listAnnouncements(); break;
     case 'add-announcement':      requirePost(); adminAddAnnouncement(); break;
     case 'delete-announcement':   requirePost(); adminDeleteAnnouncement(); break;
@@ -262,6 +267,17 @@ function getLeagueTable() {
         // that have just been added but have no standings row yet still show
         // up in the table with zeros for played / won / lost / points. The
         // previous INNER JOIN hid any team that hadn't had a match recorded.
+        // Points shown = points earned on the oche (league_standings,
+        // rebuilt from match scores on every submission) PLUS any
+        // season-long adjustments. Adjustments live in their own table
+        // that the rebuild never touches, which is why a deduction
+        // survives every later score entry. Skipped gracefully if the
+        // forfeits migration hasn't been run yet.
+        $hasAdj  = schemaHas('points_adjustments');
+        $adjJoin = $hasAdj
+            ? 'LEFT JOIN (SELECT team_id, SUM(points) AS total FROM points_adjustments GROUP BY team_id) adj ON adj.team_id = t.team_id'
+            : '';
+        $adjExpr = $hasAdj ? 'COALESCE(adj.total, 0)' : '0';
         $stmt = $pdo->prepare("
             SELECT
                 t.team_name,
@@ -272,9 +288,12 @@ function getLeagueTable() {
                 COALESCE(ls.games_for, 0)      AS games_for,
                 COALESCE(ls.games_against, 0)  AS games_against,
                 (COALESCE(ls.games_for, 0) - COALESCE(ls.games_against, 0)) AS goal_diff,
-                COALESCE(ls.points, 0)         AS points
+                COALESCE(ls.points, 0)         AS points_earned,
+                $adjExpr                       AS points_adjustment,
+                (COALESCE(ls.points, 0) + $adjExpr) AS points
             FROM teams t
             LEFT JOIN league_standings ls ON ls.team_id = t.team_id
+            $adjJoin
             WHERE t.division = ?
             ORDER BY points DESC, goal_diff DESC, games_for DESC, t.team_name ASC
         ");
@@ -489,6 +508,10 @@ function getLeagueFixtures() {
 function getLeagueResults() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
+    // Walkover flag + forfeiting team, when the forfeits migration exists.
+    $hasWo  = schemaHas('matches', 'is_walkover');
+    $woCols = $hasWo ? ', m.is_walkover, ft.team_name AS forfeit_team' : ', 0 AS is_walkover, NULL AS forfeit_team';
+    $woJoin = $hasWo ? 'LEFT JOIN teams ft ON m.forfeit_team_id = ft.team_id' : '';
     
     try {
         $stmt = $pdo->prepare("
@@ -500,9 +523,11 @@ function getLeagueResults() {
                 m.home_score,
                 m.away_score,
                 m.status
+                $woCols
             FROM matches m
             LEFT JOIN teams ht ON m.home_team_id = ht.team_id
             LEFT JOIN teams at ON m.away_team_id = at.team_id
+            $woJoin
             WHERE m.division = ? AND m.match_type = 'league' AND m.status = 'completed'
             ORDER BY m.match_date DESC
         ");
@@ -882,6 +907,10 @@ function submitMatch() {
             returnJson(['success' => false, 'error' => 'Missing required fields: homeTeam or awayTeam']);
             return;
         }
+        if (!empty($data['matchId']) && isWalkoverMatch((int)$data['matchId'])) {
+            returnJson(['success' => false, 'error' => walkoverLockedMsg()]);
+            return;
+        }
         
         // Start transaction
         if (!$pdo->inTransaction()) {
@@ -1199,6 +1228,10 @@ function updateMatch() {
         // Validate required fields
         if (!isset($data['matchId']) || !isset($data['homeTeam']) || !isset($data['awayTeam'])) {
             returnJson(['success' => false, 'error' => 'Missing required fields: matchId, homeTeam or awayTeam']);
+            return;
+        }
+        if (isWalkoverMatch((int)$data['matchId'])) {
+            returnJson(['success' => false, 'error' => walkoverLockedMsg()]);
             return;
         }
 
@@ -1541,6 +1574,54 @@ function requireCaptain() {
 // procedure that the fresh schema defines. Failures are logged but never
 // propagated – a stale standings cache is recoverable on the next match
 // submission, whereas a failing API call is not.
+// True if $table (and optionally $column) exists in the current database.
+// Cached per request. New features use this to degrade gracefully on the
+// live site in the window between deploying code and running its
+// migration in phpMyAdmin, instead of breaking public pages.
+function schemaHas($table, $column = null) {
+    global $pdo;
+    static $cache = [];
+    $key = $table . '.' . ($column ?? '');
+    if (array_key_exists($key, $cache)) return $cache[$key];
+    try {
+        if ($column === null) {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?');
+            $stmt->execute([$table]);
+        } else {
+            $stmt = $pdo->prepare('SELECT COUNT(*) FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME = ?');
+            $stmt->execute([$table, $column]);
+        }
+        $cache[$key] = ((int)$stmt->fetchColumn()) > 0;
+    } catch (Exception $e) {
+        $cache[$key] = false;
+    }
+    return $cache[$key];
+}
+
+// A function, not a top-level const: api.php exits from the router at the
+// top of the file before execution would ever reach a const statement here.
+function walkoverLockedMsg() {
+    return 'This result is a forfeit (walkover) and cannot be edited. An admin can delete it from Match Results and record it again under Forfeits & Deductions.';
+}
+
+// Trim a reason to the 255-char column without depending on mbstring
+// being installed on the host.
+function clipReason($s) {
+    if (function_exists('mb_substr')) return mb_substr($s, 0, 255, 'UTF-8');
+    return preg_match('/^.{0,255}/su', $s, $m) ? $m[0] : substr($s, 0, 255);
+}
+
+// A walkover carries its score directly with no game rows. Running it
+// through the normal submit/update flow would re-total it from games
+// (giving 0-0), so every edit path refuses walkovers.
+function isWalkoverMatch($matchId) {
+    global $pdo;
+    if ($matchId <= 0 || !schemaHas('matches', 'is_walkover')) return false;
+    $stmt = $pdo->prepare('SELECT is_walkover FROM matches WHERE match_id = ?');
+    $stmt->execute([$matchId]);
+    return ((int)$stmt->fetchColumn()) === 1;
+}
+
 function refreshLeagueStandings() {
     global $pdo;
     try {
@@ -1902,10 +1983,13 @@ function adminDenyRequest() {
 function adminListMatches() {
     global $pdo;
     requireAdmin();
-    $sql = 'SELECT m.*, ht.team_name AS home_team_name, at.team_name AS away_team_name
+    $hasWo = schemaHas('matches', 'forfeit_team_id');
+    $sql = 'SELECT m.*, ht.team_name AS home_team_name, at.team_name AS away_team_name'
+         . ($hasWo ? ', ft.team_name AS forfeit_team_name' : '') . '
             FROM matches m
             LEFT JOIN teams ht ON m.home_team_id = ht.team_id
-            LEFT JOIN teams at ON m.away_team_id = at.team_id
+            LEFT JOIN teams at ON m.away_team_id = at.team_id '
+         . ($hasWo ? 'LEFT JOIN teams ft ON m.forfeit_team_id = ft.team_id ' : '') . '
             ORDER BY m.match_date DESC, m.match_id DESC';
     $stmt = $pdo->query($sql);
     returnJson(['success' => true, 'matches' => $stmt->fetchAll()]);
@@ -2389,6 +2473,9 @@ function adminSeasonReset() {
         'players',
         'teams',
     ];
+    // Tables from later migrations: only truncate when present, so a reset
+    // still works on a database that hasn't been upgraded.
+    if (schemaHas('points_adjustments')) array_unshift($tables, 'points_adjustments');
     $cleared = [];
     try {
         $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
@@ -2482,6 +2569,9 @@ function teamDeleteMatch() {
                 || ((int)$row['home_team_id'] === $teamId)
                 || ((int)$row['away_team_id'] === $teamId);
         if (!$allowed) returnJson(['success' => false, 'error' => 'Not allowed to delete this match']);
+        if (isWalkoverMatch($matchId)) {
+            returnJson(['success' => false, 'error' => 'This result is an admin-recorded forfeit and can only be removed by a league admin.']);
+        }
         // Stats cascade automatically via FKs; standings need an explicit
         // refresh so leaguetable.html reflects the deletion immediately.
         $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
@@ -2490,5 +2580,135 @@ function teamDeleteMatch() {
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
     }
+}
+
+// ---------------------- Forfeits & points adjustments ----------------------
+
+function requireForfeitSchema() {
+    if (!schemaHas('points_adjustments') || !schemaHas('matches', 'is_walkover')) {
+        returnJson(['success' => false, 'error' => 'Database not upgraded yet: run db/2026-add-forfeits-adjustments.sql in phpMyAdmin first.']);
+    }
+}
+
+// Public: adjustments for the league table footnotes, newest first.
+function listPointsAdjustments() {
+    global $pdo;
+    if (!schemaHas('points_adjustments')) returnJson(['success' => true, 'adjustments' => []]);
+    $division = isset($_GET['division']) ? $_GET['division'] : '';
+    $sql = 'SELECT pa.adjustment_id, pa.team_id, t.team_name, t.division, pa.points, pa.reason,
+                   pa.match_id, pa.created_at
+            FROM points_adjustments pa
+            JOIN teams t ON t.team_id = pa.team_id';
+    $params = [];
+    if (in_array($division, ['premier', 'a'], true)) { $sql .= ' WHERE t.division = ?'; $params[] = $division; }
+    $sql .= ' ORDER BY pa.created_at DESC, pa.adjustment_id DESC';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute($params);
+    returnJson(['success' => true, 'adjustments' => $stmt->fetchAll()]);
+}
+
+function adminAddAdjustment() {
+    global $pdo;
+    $adminId = requireAdmin();
+    requireForfeitSchema();
+    $d = readJsonBody();
+    $teamId = (int)($d['team_id'] ?? 0);
+    $points = (int)($d['points'] ?? 0);
+    $reason = trim((string)($d['reason'] ?? ''));
+    if ($teamId <= 0) returnJson(['success' => false, 'error' => 'Choose a team.']);
+    if ($points === 0 || $points < -100 || $points > 100) returnJson(['success' => false, 'error' => 'Points must be a non-zero whole number between -100 and 100 (negative = deduction).']);
+    if ($reason === '') returnJson(['success' => false, 'error' => 'A reason is required – it is shown under the league table.']);
+    $exists = $pdo->prepare('SELECT COUNT(*) FROM teams WHERE team_id = ?');
+    $exists->execute([$teamId]);
+    if (!(int)$exists->fetchColumn()) returnJson(['success' => false, 'error' => 'Team not found.']);
+    $pdo->prepare('INSERT INTO points_adjustments (team_id, points, reason, created_by_admin_id) VALUES (?, ?, ?, ?)')
+        ->execute([$teamId, $points, clipReason($reason), $adminId]);
+    returnJson(['success' => true, 'adjustment_id' => (int)$pdo->lastInsertId()]);
+}
+
+function adminDeleteAdjustment() {
+    global $pdo;
+    requireAdmin();
+    requireForfeitSchema();
+    $d = readJsonBody();
+    $id = (int)($d['adjustment_id'] ?? 0);
+    if ($id <= 0) returnJson(['success' => false, 'error' => 'adjustment_id required']);
+    $pdo->prepare('DELETE FROM points_adjustments WHERE adjustment_id = ?')->execute([$id]);
+    returnJson(['success' => true]);
+}
+
+// Record a forfeited league fixture. The match is stored completed with
+// the awarded score (default 9-0) and NO singles/doubles/180/finish rows:
+// the standings procedure turns the score into team points, while player
+// rankings - built from singles_results - credit nobody. The forfeiting
+// team's deduction (default 5) goes into points_adjustments, linked to
+// this match, so it persists through every later standings rebuild.
+function adminRecordWalkover() {
+    global $pdo;
+    $adminId = requireAdmin();
+    requireForfeitSchema();
+    $d = readJsonBody();
+    $homeId    = (int)($d['home_team_id'] ?? 0);
+    $awayId    = (int)($d['away_team_id'] ?? 0);
+    $forfeitId = (int)($d['forfeit_team_id'] ?? 0);
+    $date      = trim((string)($d['match_date'] ?? ''));
+    $awarded   = isset($d['points_awarded']) ? (int)$d['points_awarded'] : 9;
+    $deduction = isset($d['deduction']) ? (int)$d['deduction'] : 5;
+    $note      = trim((string)($d['note'] ?? ''));
+
+    if ($homeId <= 0 || $awayId <= 0 || $homeId === $awayId) returnJson(['success' => false, 'error' => 'Pick two different teams.']);
+    if ($forfeitId !== $homeId && $forfeitId !== $awayId) returnJson(['success' => false, 'error' => 'The forfeiting team must be one of the two teams.']);
+    if (!preg_match('/^(\d{4})-(\d{2})-(\d{2})$/', $date, $mm) || !checkdate((int)$mm[2], (int)$mm[3], (int)$mm[1])) {
+        returnJson(['success' => false, 'error' => 'Enter a valid match date.']);
+    }
+    if ($awarded < 1 || $awarded > 20) returnJson(['success' => false, 'error' => 'Points awarded must be between 1 and 20.']);
+    if ($deduction < 0 || $deduction > 50) returnJson(['success' => false, 'error' => 'Deduction must be between 0 and 50.']);
+
+    $t = $pdo->prepare('SELECT team_id, team_name, division FROM teams WHERE team_id IN (?, ?)');
+    $t->execute([$homeId, $awayId]);
+    $teams = [];
+    foreach ($t->fetchAll() as $row) $teams[(int)$row['team_id']] = $row;
+    if (count($teams) !== 2) returnJson(['success' => false, 'error' => 'One or both teams were not found.']);
+    if ($teams[$homeId]['division'] !== $teams[$awayId]['division']) returnJson(['success' => false, 'error' => 'Both teams must be in the same division.']);
+    $division = $teams[$homeId]['division'];
+
+    // Refuse a second result for the same fixture. Captain cards are dated
+    // the day they were submitted, not the fixture date, so look a week
+    // either side rather than at the exact date.
+    $dup = $pdo->prepare("SELECT match_date, home_score, away_score FROM matches
+        WHERE match_type = 'league' AND ABS(DATEDIFF(match_date, ?)) <= 7
+          AND ((home_team_id = ? AND away_team_id = ?) OR (home_team_id = ? AND away_team_id = ?))
+        ORDER BY match_date LIMIT 1");
+    $dup->execute([$date, $homeId, $awayId, $awayId, $homeId]);
+    if ($existing = $dup->fetch()) {
+        returnJson(['success' => false, 'error' => 'A league result between these teams already exists dated '
+            . date('j M Y', strtotime($existing['match_date'])) . ' (' . $existing['home_score'] . '-' . $existing['away_score']
+            . '). Delete it first from Match Results if it is wrong.']);
+    }
+
+    $homeScore = ($forfeitId === $awayId) ? $awarded : 0;
+    $awayScore = ($forfeitId === $homeId) ? $awarded : 0;
+    $opponent  = $teams[$forfeitId === $homeId ? $awayId : $homeId]['team_name'];
+
+    try {
+        $pdo->beginTransaction();
+        $pdo->prepare("INSERT INTO matches (home_team_id, away_team_id, match_date, match_type, division,
+                                            home_score, away_score, status, is_walkover, forfeit_team_id)
+                       VALUES (?, ?, ?, 'league', ?, ?, ?, 'completed', 1, ?)")
+            ->execute([$homeId, $awayId, $date, $division, $homeScore, $awayScore, $forfeitId]);
+        $matchId = (int)$pdo->lastInsertId();
+        if ($deduction > 0) {
+            $reason = 'Forfeited league match vs ' . $opponent . ' (' . date('j M Y', strtotime($date)) . ')'
+                    . ($note !== '' ? ' – ' . $note : '');
+            $pdo->prepare('INSERT INTO points_adjustments (team_id, points, reason, match_id, created_by_admin_id) VALUES (?, ?, ?, ?, ?)')
+                ->execute([$forfeitId, -$deduction, clipReason($reason), $matchId, $adminId]);
+        }
+        $pdo->commit();
+    } catch (Throwable $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        returnJson(['success' => false, 'error' => 'Failed to record forfeit: ' . $e->getMessage()]);
+    }
+    refreshLeagueStandings();
+    returnJson(['success' => true, 'match_id' => $matchId]);
 }
 ?>

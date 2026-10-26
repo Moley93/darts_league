@@ -961,7 +961,9 @@ async function loadMyMatches() {
         const actions = weSubmitted
             ? `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
                <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>`
-            : `<span class="small-note" title="Submitted by the other team">read-only</span>`;
+            : (Number(m.is_walkover) === 1
+                ? `<span class="small-note" title="Recorded by the league admin">forfeit (W/O)</span>`
+                : `<span class="small-note" title="Submitted by the other team">read-only</span>`);
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
                         <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>

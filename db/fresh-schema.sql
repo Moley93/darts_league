@@ -27,6 +27,7 @@ DROP PROCEDURE IF EXISTS `advance_cup_winner`;
 DROP PROCEDURE IF EXISTS `calculate_player_rankings`;
 DROP PROCEDURE IF EXISTS `update_league_standings`;
 
+DROP TABLE IF EXISTS `points_adjustments`;
 DROP TABLE IF EXISTS `venues`;
 DROP TABLE IF EXISTS `site_settings`;
 DROP TABLE IF EXISTS `announcements`;
@@ -227,6 +228,11 @@ CREATE TABLE `matches` (
   -- Both are NULL for league matches and for the final round.
   `next_match_id` int(11) DEFAULT NULL,
   `next_match_slot` enum('home','away') DEFAULT NULL,
+  -- Forfeits: a walkover is a completed league match that carries a
+  -- score but has no singles/doubles/180/finish rows, so it awards
+  -- team points without crediting any player statistics.
+  `is_walkover` tinyint(1) NOT NULL DEFAULT 0,
+  `forfeit_team_id` int(11) DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`match_id`),
   KEY `home_team_id` (`home_team_id`),
@@ -238,7 +244,8 @@ CREATE TABLE `matches` (
   CONSTRAINT `matches_ibfk_1` FOREIGN KEY (`home_team_id`) REFERENCES `teams` (`team_id`),
   CONSTRAINT `matches_ibfk_2` FOREIGN KEY (`away_team_id`) REFERENCES `teams` (`team_id`),
   CONSTRAINT `matches_ibfk_3` FOREIGN KEY (`submitted_by_captain_id`) REFERENCES `team_captains` (`captain_id`) ON DELETE SET NULL,
-  CONSTRAINT `matches_next_fk` FOREIGN KEY (`next_match_id`) REFERENCES `matches` (`match_id`) ON DELETE SET NULL
+  CONSTRAINT `matches_next_fk` FOREIGN KEY (`next_match_id`) REFERENCES `matches` (`match_id`) ON DELETE SET NULL,
+  CONSTRAINT `matches_forfeit_fk` FOREIGN KEY (`forfeit_team_id`) REFERENCES `teams` (`team_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 CREATE TABLE `singles_results` (
@@ -398,6 +405,29 @@ CREATE TABLE `announcements` (
   KEY `idx_announcements_created` (`created_at`),
   KEY `idx_announcements_admin` (`created_by_admin_id`),
   CONSTRAINT `announcements_admin_fk` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- ---------------------------------------------------------------------
+-- Season-long bonus / penalty points, added to earned points when the
+-- league table is read. update_league_standings() never touches this
+-- table, so deductions survive every score submission. Linked to a
+-- walkover via match_id: deleting the walkover removes its deduction.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE `points_adjustments` (
+  `adjustment_id` int(11) NOT NULL AUTO_INCREMENT,
+  `team_id` int(11) NOT NULL,
+  `points` int(11) NOT NULL,
+  `reason` varchar(255) NOT NULL,
+  `match_id` int(11) DEFAULT NULL,
+  `created_by_admin_id` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`adjustment_id`),
+  KEY `idx_adj_team` (`team_id`),
+  KEY `idx_adj_match` (`match_id`),
+  CONSTRAINT `points_adjustments_team_fk` FOREIGN KEY (`team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE,
+  CONSTRAINT `points_adjustments_match_fk` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE,
+  CONSTRAINT `points_adjustments_admin_fk` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- ---------------------------------------------------------------------

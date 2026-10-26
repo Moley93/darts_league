@@ -819,7 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     resultCard.dataset.matchId = result.match_id;
                     resultCard.innerHTML = `
                         <div class="team-name home">${result.home_team}</div>
-                        <div class="score">${result.home_score} - ${result.away_score}</div>
+                        <div class="score">${result.home_score} - ${result.away_score}${Number(result.is_walkover) === 1 ? '<br><span style="font-size:0.7em;font-weight:600;color:#c62828;">W/O</span>' : ''}</div>
                         <div class="team-name away">${result.away_team}</div>
                         <div class="expand-icon">&#9660;</div>
                     `;
@@ -834,6 +834,17 @@ document.addEventListener('DOMContentLoaded', function() {
                             <div class="loading-indicator">Loading match details...</div>
                         </div>
                     `;
+                    // A forfeit has no games to break down: show why instead of
+                    // fetching an empty match-details payload.
+                    if (Number(result.is_walkover) === 1) {
+                        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+                        detailsSection.querySelector('.match-details-content').innerHTML = `
+                            <p style="text-align:center;margin:10px 0;">
+                                <strong>Walkover</strong> &ndash; ${esc(result.forfeit_team || 'A team')} forfeited this fixture.<br>
+                                <span style="color:var(--dark-gray);font-size:0.9em;">No games were played, so no player statistics were recorded.</span>
+                            </p>`;
+                        loadedMatchDetails[result.match_id] = true;
+                    }
                     resultsList.appendChild(detailsSection);
                     
                     // Add click event to toggle details

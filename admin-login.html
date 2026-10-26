@@ -305,6 +305,7 @@
                 <button class="admin-tab" data-pane="panePlayers">Players</button>
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
+                <button class="admin-tab" data-pane="paneForfeits">Forfeits &amp; Deductions</button>
                 <button class="admin-tab" data-pane="paneCupDraw">Cup Draw</button>
                 <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
                 <button class="admin-tab" data-pane="panePages">Pages (URLs)</button>
@@ -405,6 +406,87 @@
                 <p class="small-note">Delete removes the match and every related stat – all singles &amp; doubles game outcomes, 180s, high finishes, the player ranking points those games contributed (rankings are recomputed live, not stored), and the team's points/standings (refreshed automatically). The action cascades end-to-end; there is no undo.</p>
                 <table class="data-table" id="matchesTable">
                     <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- Forfeits & Deductions pane -->
+            <div id="paneForfeits" class="admin-pane">
+                <h3>Record a Forfeit (Walkover)</h3>
+                <p class="small-note">Use this when a team cancels a league fixture. The opponent is awarded the points as a completed result (e.g. 9-0) with <strong>no individual games recorded</strong> &ndash; so nobody's singles, doubles, 180s or finishes are credited and Player Rankings are unaffected. The forfeiting team's deduction is stored separately and stays in place for the whole season, no matter how many scores are entered afterwards.</p>
+                <form id="walkoverForm" style="max-width:780px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Division</label>
+                            <select name="division" id="woDivision">
+                                <option value="premier">Premier</option>
+                                <option value="a">A</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Date of the cancelled fixture</label>
+                            <input name="match_date" id="woDate" type="date" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Home team</label>
+                            <select name="home_team_id" id="woHome" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Away team</label>
+                            <select name="away_team_id" id="woAway" required></select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Which team forfeited?</label>
+                            <select name="forfeit_side" id="woSide">
+                                <option value="home">Home team forfeited</option>
+                                <option value="away">Away team forfeited</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Optional note</label>
+                            <input name="note" type="text" maxlength="120" placeholder="e.g. Cancelled on the night">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Points awarded to the opponent</label>
+                            <input name="points_awarded" type="number" min="1" max="20" value="9" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Points deducted from the forfeiting team</label>
+                            <input name="deduction" type="number" min="0" max="50" value="5" required>
+                            <div class="small-note">Set to 0 for no deduction.</div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">Record Forfeit</button>
+                </form>
+
+                <h3 style="margin-top:30px;">Points Adjustments (season-long)</h3>
+                <p class="small-note">Manual bonus or penalty points, added on top of points earned from results. They are shown as a footnote under the league table and are only removed by deleting them here (or by a Season Reset). Deductions created by a forfeit are removed automatically if that forfeit is deleted from Match Results.</p>
+                <form id="adjustmentForm" style="max-width:780px;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Team</label>
+                            <select name="team_id" id="adjTeam" required></select>
+                        </div>
+                        <div class="form-group">
+                            <label>Points (negative = deduction)</label>
+                            <input name="points" type="number" min="-100" max="100" step="1" placeholder="-5" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Reason (shown publicly under the league table)</label>
+                        <input name="reason" type="text" maxlength="255" required placeholder="e.g. Fielded an unregistered player">
+                    </div>
+                    <button type="submit" class="btn">Add Adjustment</button>
+                </form>
+
+                <table class="data-table" id="adjustmentsTable" style="margin-top:15px;">
+                    <thead><tr><th>Added</th><th>Team</th><th>Points</th><th>Reason</th><th>Source</th><th>Action</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -544,6 +626,7 @@
                         <li>All <strong>180s</strong> and <strong>high finishes</strong> (from both league and cup)</li>
                         <li>All <strong>league standings</strong></li>
                         <li>All <strong>player requests</strong> (pending, approved, denied)</li>
+                        <li>All <strong>points adjustments</strong> (forfeit deductions and manual bonuses/penalties)</li>
                     </ul>
                     <p>Your admin account and any league announcements are <em>not</em> affected. You'll have to add every team and player from scratch afterwards, and run a fresh cup draw if you want a new bracket. <strong>There is no undo.</strong></p>
                     <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season &mdash;&nbsp;Delete Everything</button>
@@ -741,7 +824,7 @@ async function loadAllDashboardData() {
     // venue dropdown ready as soon as a row is clicked.
     await Promise.all([loadVenues(), loadSettings()]);
     await Promise.all([
-        loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(),
+        loadTeams(), loadPlayers(), loadRequests(), loadMatches(), loadAnnouncements(), loadAdjustments(),
         loadBracketStatus('premier'), loadBracketStatus('a'),
         loadDrawPreview('premier'), loadDrawPreview('a'),
     ]);
@@ -785,6 +868,7 @@ async function loadTeams() {
         filt.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${escapeHtml(t.team_name)}</option>`);
         if (editPlayerTeamSel) editPlayerTeamSel.insertAdjacentHTML('beforeend', `<option value="${t.team_id}">${label}</option>`);
     });
+    refreshForfeitSelects();
 }
 
 document.getElementById('addTeamForm').addEventListener('submit', async (e) => {
@@ -895,31 +979,157 @@ async function loadMatches() {
     const tbody = document.querySelector('#matchesTable tbody');
     tbody.innerHTML = '';
     (res.matches || []).forEach(m => {
+        // Walkovers carry their score directly (no game rows), so the
+        // game-by-game editor can't represent them: delete + re-record instead.
+        const isWo = Number(m.is_walkover) === 1;
+        const woBadge = isWo
+            ? ` <span class="status-pill status-denied" title="${escapeHtml((m.forfeit_team_name || 'A team') + ' forfeited')}">W/O</span>`
+            : '';
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
-                        <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
+                        <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}${woBadge}</td>
                         <td>${escapeHtml(m.home_team_name || '–')}</td>
                         <td>${m.home_score} - ${m.away_score}</td>
                         <td>${escapeHtml(m.away_team_name || '–')}</td>
                         <td>
-                            <button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
-                            <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>
+                            ${isWo ? '' : `<button class="btn-sm btn-edit" data-id="${m.match_id}" data-act="edit">Edit</button>`}
+                            <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete" data-wo="${isWo ? 1 : 0}">Delete</button>
                         </td>`;
         tbody.appendChild(tr);
     });
     tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.id, act = b.dataset.act;
         if (act === 'edit') openMatchEditModal(id);
-        else if (act === 'delete') deleteMatch(id);
+        else if (act === 'delete') deleteMatch(id, b.dataset.wo === '1');
     }));
 }
 
-async function deleteMatch(id) {
-    if (!confirm('Delete this match and all its results?')) return;
+async function deleteMatch(id, isWalkover) {
+    const msg = isWalkover
+        ? 'Delete this forfeit?\n\nThe awarded points AND the linked points deduction will both be removed.'
+        : 'Delete this match and all its results?';
+    if (!confirm(msg)) return;
     const res = await apiCall('admin-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
-    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMatches(); }
+    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMatches(); loadAdjustments(); }
     else showMsg('dashMsg', res.error || 'Failed', 'error');
 }
+
+// ============== Forfeits & points adjustments ==============
+
+// Team pickers for the forfeit form (filtered by division) and the
+// adjustment form (all teams). Re-run whenever the team list reloads.
+function refreshForfeitSelects() {
+    const div = document.getElementById('woDivision');
+    const home = document.getElementById('woHome');
+    const away = document.getElementById('woAway');
+    const adj = document.getElementById('adjTeam');
+    if (!div || !home || !away || !adj) return;
+    const keepHome = home.value, keepAway = away.value, keepAdj = adj.value;
+    const inDiv = (_teamsCache || []).filter(t => t.division === div.value && !/bye/i.test(t.team_name));
+    const opts = '<option value="">Select team</option>' +
+        inDiv.map(t => `<option value="${t.team_id}">${escapeHtml(t.team_name)}</option>`).join('');
+    home.innerHTML = opts; away.innerHTML = opts;
+    home.value = inDiv.some(t => String(t.team_id) === keepHome) ? keepHome : '';
+    away.value = inDiv.some(t => String(t.team_id) === keepAway) ? keepAway : '';
+    adj.innerHTML = '<option value="">Select team</option>' + (_teamsCache || []).map(t =>
+        `<option value="${t.team_id}">${escapeHtml(t.team_name)} (${t.division === 'premier' ? 'P' : 'A'})</option>`).join('');
+    if ((_teamsCache || []).some(t => String(t.team_id) === keepAdj)) adj.value = keepAdj;
+}
+document.getElementById('woDivision').addEventListener('change', refreshForfeitSelects);
+
+async function loadAdjustments() {
+    const res = await apiCall('points-adjustments');
+    const tbody = document.querySelector('#adjustmentsTable tbody');
+    if (!tbody) return;
+    const rows = (res && res.success && Array.isArray(res.adjustments)) ? res.adjustments : [];
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--dark-gray);font-style:italic;">No adjustments this season.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = rows.map(a => {
+        const pts = Number(a.points);
+        const ptsHtml = `<strong style="color:${pts < 0 ? '#c62828' : '#2e7d32'}">${pts > 0 ? '+' : ''}${pts}</strong>`;
+        return `<tr>
+            <td>${escapeHtml(fmtDateTime(a.created_at))}</td>
+            <td>${escapeHtml(a.team_name)} (${a.division === 'premier' ? 'P' : 'A'})</td>
+            <td>${ptsHtml}</td>
+            <td style="white-space:normal;">${escapeHtml(a.reason)}</td>
+            <td>${a.match_id ? 'Forfeit #' + escapeHtml(a.match_id) : 'Manual'}</td>
+            <td><button class="btn-sm btn-delete" data-adj="${a.adjustment_id}">Delete</button></td>
+        </tr>`;
+    }).join('');
+    tbody.querySelectorAll('button[data-adj]').forEach(b => b.addEventListener('click', () => deleteAdjustment(b.dataset.adj)));
+}
+
+async function deleteAdjustment(id) {
+    if (!confirm('Delete this points adjustment? The league table updates immediately.')) return;
+    const res = await apiCall('admin-delete-adjustment', { method: 'POST', body: JSON.stringify({ adjustment_id: Number(id) }) });
+    if (res.success) { showMsg('dashMsg', 'Adjustment deleted.', 'success'); loadAdjustments(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+document.getElementById('walkoverForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const f = e.target;
+    const homeId = Number(f.home_team_id.value), awayId = Number(f.away_team_id.value);
+    if (!homeId || !awayId || homeId === awayId) { showMsg('dashMsg', 'Pick two different teams.', 'error'); return; }
+    const forfeitId = f.forfeit_side.value === 'home' ? homeId : awayId;
+    const name = id => ((_teamsCache || []).find(t => Number(t.team_id) === id) || {}).team_name || '?';
+    const winnerId = forfeitId === homeId ? awayId : homeId;
+    const awarded = Number(f.points_awarded.value), deduction = Number(f.deduction.value);
+    const summary = `Record this forfeit?\n\n${name(forfeitId)} forfeited vs ${name(winnerId)} on ${f.match_date.value}.\n\n` +
+        `• ${name(winnerId)} awarded ${awarded} points (no player stats credited)\n` +
+        (deduction > 0 ? `• ${name(forfeitId)} deducted ${deduction} points for the season` : `• No deduction`);
+    if (!confirm(summary)) return;
+    const btn = f.querySelector('button[type="submit"]');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    let res;
+    try {
+        res = await apiCall('admin-record-walkover', { method: 'POST', body: JSON.stringify({
+            home_team_id: homeId, away_team_id: awayId, forfeit_team_id: forfeitId,
+            match_date: f.match_date.value, points_awarded: awarded, deduction: deduction, note: f.note.value,
+        }) });
+    } catch (err) {
+        showMsg('dashMsg', 'Network error. Check Match Results to see whether the forfeit was saved before trying again.', 'error');
+        return;
+    } finally {
+        btn.disabled = false;
+    }
+    if (res.success) {
+        showMsg('dashMsg', 'Forfeit recorded. League table updated.', 'success');
+        f.note.value = '';
+        loadMatches(); loadAdjustments();
+    } else showMsg('dashMsg', res.error || 'Failed to record forfeit', 'error');
+});
+
+document.getElementById('adjustmentForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const fd = new FormData(e.target);
+    const btn = e.target.querySelector('button[type="submit"]');
+    if (btn.disabled) return;
+    const teamId = Number(fd.get('team_id')), points = Number(fd.get('points'));
+    if (!points) { showMsg('dashMsg', 'Points must be a non-zero whole number.', 'error'); return; }
+    const teamName = ((_teamsCache || []).find(t => Number(t.team_id) === teamId) || {}).team_name || 'this team';
+    if (!confirm(`${points > 0 ? 'Add' : 'Deduct'} ${Math.abs(points)} point${Math.abs(points) === 1 ? '' : 's'} ${points > 0 ? 'to' : 'from'} ${teamName} for the season?\n\nReason: ${fd.get('reason')}`)) return;
+    btn.disabled = true;
+    let res;
+    try {
+        res = await apiCall('admin-add-adjustment', { method: 'POST', body: JSON.stringify({
+            team_id: teamId, points: points, reason: fd.get('reason'),
+        }) });
+    } catch (err) {
+        showMsg('dashMsg', 'Network error. Check the adjustments list below before trying again.', 'error');
+        loadAdjustments();
+        return;
+    } finally {
+        btn.disabled = false;
+    }
+    if (res.success) { showMsg('dashMsg', 'Adjustment added.', 'success'); e.target.reset(); loadAdjustments(); }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+});
 
 // ----- change password -----
 document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
@@ -1571,6 +1781,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
         loadBracketStatus('a');
         loadDrawPreview('premier');
         loadDrawPreview('a');
+        loadAdjustments();
     } else {
         showMsg('dashMsg', res.error || 'Reset failed', 'error');
     }

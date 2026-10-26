@@ -503,6 +503,8 @@
                         <!-- Dynamic content will be loaded here -->
                     </tbody>
                 </table>
+                <!-- Season-long points adjustments (forfeit deductions etc.) -->
+                <div id="adjustment-notes"></div>
             </div>
         </div>
     </div>
@@ -645,10 +647,36 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${team.lost}</td>
                     <td>${team.games_for}</td>
                     <td>${team.games_against}</td>
-                    <td>${team.points}</td>
+                    <td>${team.points}${Number(team.points_adjustment) ? '<sup title="Includes a points adjustment – see note below the table">*</sup>' : ''}</td>
                 `;
                 tbody.appendChild(row);
             });
+            renderAdjustmentNotes(division);
+        }
+
+        function escTbl(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        }
+
+        // Footnotes explaining any points adjustments in this division, so
+        // a deduction is never a silent mystery on the public table.
+        async function renderAdjustmentNotes(division) {
+            const box = document.getElementById('adjustment-notes');
+            if (!box) return;
+            const res = await fetchApi('points-adjustments', { division });
+            if (division !== getCurrentDivision()) return; // user switched tabs meanwhile
+            const rows = (res && res.success && Array.isArray(res.adjustments)) ? res.adjustments : [];
+            if (!rows.length) { box.innerHTML = ''; return; }
+            box.innerHTML = `
+                <div style="margin-top:15px;padding:10px 14px;background:#fff8e1;border-left:4px solid #ffb300;border-radius:4px;font-size:0.9rem;">
+                    <strong>* Points adjustments</strong>
+                    <ul style="margin:6px 0 0 18px;padding:0;">
+                        ${rows.map(a => {
+                            const p = Number(a.points);
+                            return `<li><strong>${escTbl(a.team_name)}</strong>: ${p > 0 ? '+' : ''}${p} pts &ndash; ${escTbl(a.reason)}</li>`;
+                        }).join('')}
+                    </ul>
+                </div>`;
         }
 
         // Initially load the league table
