@@ -4,8 +4,16 @@
 // Ensure no output before JSON
 ob_start();
 
-// Start session for admin / team login state
+// Start session for admin / team login state. The site is HTTPS-only
+// (HTTP 301s to HTTPS and HSTS is on), so the cookie can be Secure.
+// SameSite=Lax stops browsers attaching it to cross-site POSTs.
 if (session_status() === PHP_SESSION_NONE) {
+    session_set_cookie_params([
+        'path'     => '/',
+        'secure'   => true,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
     session_start();
 }
 
@@ -95,6 +103,12 @@ $endpoint = isset($_GET['endpoint']) ? $_GET['endpoint'] : '';
 
 // Log request info for debugging
 error_log("API Request: $requestMethod to $endpoint");
+
+// CSRF guard for every POST endpoint, including login, submit-match and
+// update-match which don't go through requirePost().
+if ($requestMethod === 'POST') {
+    rejectCrossSitePost();
+}
 
 // Process by endpoint
 switch ($endpoint) {
@@ -884,7 +898,13 @@ function handleLogin() {
 function submitMatch() {
     global $pdo;
     $transactionStarted = false;
-    
+
+    // Only a logged-in admin or team captain may submit scores.
+    if (empty($_SESSION['admin_id']) && empty($_SESSION['captain_id'])) {
+        returnJson(['success' => false, 'error' => 'Login required to submit a match']);
+        return;
+    }
+
     try {
         // Get raw POST data
         $rawData = file_get_contents('php://input');
@@ -911,7 +931,29 @@ function submitMatch() {
             returnJson(['success' => false, 'error' => walkoverLockedMsg()]);
             return;
         }
-        
+
+        // Resetting an existing match (matchId given) follows the same rule
+        // as updateMatch: an admin may reset any match; a captain only one
+        // their team played in or submitted.
+        if (!empty($data['matchId']) && empty($_SESSION['admin_id'])) {
+            $captainId = (int)$_SESSION['captain_id'];
+            $teamId    = (int)($_SESSION['team_id'] ?? 0);
+            $authStmt = $pdo->prepare('SELECT submitted_by_captain_id, home_team_id, away_team_id FROM matches WHERE match_id = ?');
+            $authStmt->execute([(int)$data['matchId']]);
+            $row = $authStmt->fetch();
+            if (!$row) {
+                returnJson(['success' => false, 'error' => 'Match not found']);
+                return;
+            }
+            $owns = ((int)$row['submitted_by_captain_id'] === $captainId)
+                 || ((int)$row['home_team_id'] === $teamId)
+                 || ((int)$row['away_team_id'] === $teamId);
+            if (!$owns) {
+                returnJson(['success' => false, 'error' => 'Not allowed to edit this match']);
+                return;
+            }
+        }
+
         // Start transaction
         if (!$pdo->inTransaction()) {
             $pdo->beginTransaction();
@@ -1540,6 +1582,28 @@ function updateMatch() {
 function requirePost() {
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         returnJson(['success' => false, 'error' => 'Method not allowed']);
+    }
+}
+
+// The site's own pages POST JSON (Content-Type: application/json) from
+// one of the two hosts below. A cross-site HTML form can only send
+// form-encoded, multipart or text/plain bodies, and browsers always send
+// Origin on a cross-site POST, so either rule alone blocks a forged
+// request. A missing Origin (non-browser client) is allowed through to
+// the Content-Type rule. There are no file uploads to exempt.
+function rejectCrossSitePost() {
+    $allowedOrigins = ['https://crawleydartsleague.com', 'https://www.crawleydartsleague.com'];
+    $origin = $_SERVER['HTTP_ORIGIN'] ?? null;
+    if ($origin !== null && !in_array($origin, $allowedOrigins, true)) {
+        error_log("Rejected POST from origin: $origin");
+        returnJson(['success' => false, 'error' => 'Cross-site request rejected']);
+    }
+
+    $contentType = $_SERVER['CONTENT_TYPE'] ?? ($_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+    $mediaType = strtolower(trim(explode(';', $contentType)[0]));
+    if ($mediaType !== 'application/json') {
+        error_log("Rejected POST with Content-Type: $contentType");
+        returnJson(['success' => false, 'error' => 'Content-Type must be application/json']);
     }
 }
 
