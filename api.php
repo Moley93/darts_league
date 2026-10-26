@@ -243,7 +243,16 @@ function getTeams() {
     try {
         $stmt = $pdo->prepare("SELECT * FROM teams WHERE division = ?");
         $stmt->execute([$division]);
-        returnJson($stmt->fetchAll());
+        $teams = $stmt->fetchAll();
+        // Secretary phone numbers are for logged-in admins and captains
+        // only, matching getContactInfo().
+        if (empty($_SESSION['admin_id']) && empty($_SESSION['captain_id'])) {
+            $teams = array_map(function($t) {
+                $t['secretary_phone'] = null;
+                return $t;
+            }, $teams);
+        }
+        returnJson($teams);
     } catch (Exception $e) {
         error_log("Error in getTeams: " . $e->getMessage());
         returnJson(['success' => false, 'error' => 'Error fetching teams']);
