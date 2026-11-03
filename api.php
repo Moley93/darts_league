@@ -62,10 +62,39 @@ header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
 // Database configuration
-$db_host = 'localhost';
-$db_name = 'darts_league';
-$db_user = 'darts_league';  // Update with your MySQL username
-$db_pass = 'M0l3y1993#cdl';   // Update with your MySQL password
+// The credentials are not kept in this file because the GitHub repo is
+// public. They live in db-config.php (copy db-config.example.php), which
+// git ignores. Put it one level above the web root, where Apache can't
+// serve it. Next to api.php also works: a request for it just runs it,
+// which prints nothing.
+$db_host = $db_name = $db_user = $db_pass = null;
+foreach ([dirname(__DIR__) . '/db-config.php', __DIR__ . '/db-config.php'] as $dbConfigFile) {
+    if (!is_file($dbConfigFile)) {
+        continue;
+    }
+    try {
+        $dbConfig = include $dbConfigFile;
+    } catch (Throwable $e) {
+        // Log only the error type and line: a parse error message can
+        // quote part of the password.
+        error_log("$dbConfigFile failed to load: " . get_class($e) . ' on line ' . $e->getLine());
+        returnJson(['success' => false, 'error' => 'Database connection failed: database config file is invalid']);
+    }
+    if (!is_array($dbConfig) || !isset($dbConfig['host'], $dbConfig['name'], $dbConfig['user'], $dbConfig['pass'])) {
+        error_log("$dbConfigFile must return an array with host, name, user and pass");
+        returnJson(['success' => false, 'error' => 'Database connection failed: database config file is invalid']);
+    }
+    $db_host = (string) $dbConfig['host'];
+    $db_name = (string) $dbConfig['name'];
+    $db_user = (string) $dbConfig['user'];
+    $db_pass = (string) $dbConfig['pass'];
+    break;
+}
+if ($db_host === null) {
+    error_log('db-config.php not found one level above the web root or next to api.php');
+    returnJson(['success' => false, 'error' => 'Database connection failed: database config file not found']);
+}
+unset($dbConfig, $dbConfigFile);
 
 // Function to safely return JSON
 function returnJson($data) {
