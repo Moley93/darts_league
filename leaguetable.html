@@ -647,7 +647,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${team.lost}</td>
                     <td>${team.games_for}</td>
                     <td>${team.games_against}</td>
-                    <td>${team.points}${Number(team.points_adjustment) ? '<sup title="Includes a points adjustment – see note below the table">*</sup>' : ''}</td>
+                    <td>${team.points}${Number(team.points_adjustment) ? '<sup title="Includes a points adjustment (see note below the table)">*</sup>' : ''}</td>
                 `;
                 tbody.appendChild(row);
             });
@@ -673,7 +673,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <ul style="margin:6px 0 0 18px;padding:0;">
                         ${rows.map(a => {
                             const p = Number(a.points);
-                            return `<li><strong>${escTbl(a.team_name)}</strong>: ${p > 0 ? '+' : ''}${p} pts &ndash; ${escTbl(a.reason)}</li>`;
+                            return `<li><strong>${escTbl(a.team_name)}</strong>: ${p > 0 ? '+' : ''}${p} pts. ${escTbl(a.reason)}</li>`;
                         }).join('')}
                     </ul>
                 </div>`;

@@ -51,14 +51,20 @@
         .submit-mode-banner.visible { display: flex; }
         .submit-mode-banner button { background: #ef6c00; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; }
 
-        .doubles-match, .singles-match {
+        .doubles-match, .singles-match, .cup-game {
             margin: 15px 0; padding: 15px; background: #f9f9f9; border-radius: 5px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         .match-header { font-weight: bold; margin-bottom: 10px; color: var(--primary); border-bottom: 1px solid var(--medium-gray); padding-bottom: 5px; }
-        .doubles-players, .singles-players { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .doubles-players, .singles-players, .cup-players { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
         .singles-match .home-side, .singles-match .away-side { flex: 1 1 200px; }
-        .doubles-match .home-side, .doubles-match .away-side { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+        .doubles-match .home-side, .doubles-match .away-side,
+        .cup-game .home-side, .cup-game .away-side { display: flex; flex-direction: column; gap: 6px; flex: 1 1 200px; }
+
+        /* Cup result entry */
+        .cup-hint { background: #e8f5e9; border-left: 4px solid #2e7d32; padding: 10px 15px; border-radius: 4px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .cup-scoreline { display: flex; justify-content: center; align-items: center; gap: 14px; flex-wrap: wrap; margin: 10px 0; font-weight: 700; color: var(--primary); text-align: center; }
+        .cup-score { background: var(--primary); color: white; border-radius: 6px; padding: 6px 16px; font-size: 1.3rem; }
         .player-select, .score-select {
             width: 100%; padding: 7px; border: 1px solid var(--medium-gray); border-radius: 4px; font-size: 0.95rem; background: white;
         }
@@ -139,7 +145,7 @@
 
         @media (max-width: 768px) {
             .form-row { grid-template-columns: 1fr; }
-            .doubles-players, .singles-players { flex-direction: column; }
+            .doubles-players, .singles-players, .cup-players { flex-direction: column; }
             .score-select { width: 100%; max-width: none; }
             /* Show the hamburger button on mobile; shrink the title the
                same way the standard pages do. */
@@ -313,28 +319,31 @@
             <!-- Submit Score pane -->
             <div id="paneSubmit" class="team-pane active">
                 <div id="editModeBanner" class="submit-mode-banner">
-                    <span><strong>Editing match #<span id="editMatchIdLabel"></span></strong> – submitting will overwrite the existing result.</span>
+                    <span><strong>Editing match #<span id="editMatchIdLabel"></span>.</strong> Submitting will overwrite the existing result.</span>
                     <button type="button" id="cancelEditBtn">Cancel Edit</button>
+                </div>
+
+                <div id="cupHint" class="cup-hint" style="display:none;"></div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Division</label>
+                        <select id="division" disabled>
+                            <option value="premier">Premier Division</option>
+                            <option value="a">A Division</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Match Type</label>
+                        <select id="matchType">
+                            <option value="league" selected>League</option>
+                            <option value="cup">Cup</option>
+                        </select>
+                    </div>
                 </div>
 
                 <form id="matchForm">
                     <input type="hidden" id="editMatchId" value="">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label>Division</label>
-                            <select id="division" disabled>
-                                <option value="premier">Premier Division</option>
-                                <option value="a">A Division</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>Match Type</label>
-                            <select id="matchType">
-                                <option value="league" selected>League</option>
-                                <option value="cup">Cup</option>
-                            </select>
-                        </div>
-                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label>Home Team (your team)</label>
@@ -344,16 +353,6 @@
                             <label>Away Team</label>
                             <select id="awayTeam"></select>
                         </div>
-                    </div>
-                    <div class="form-group" id="cupRoundContainer" style="display:none;">
-                        <label>Cup Round</label>
-                        <select id="cupRound">
-                            <option value="">Select Cup Round</option>
-                            <option value="Last 16">Last 16</option>
-                            <option value="Quarter Final">Quarter Final</option>
-                            <option value="Semi Final">Semi Final</option>
-                            <option value="Final">Final</option>
-                        </select>
                     </div>
 
                     <h3>Doubles Matches (3 games)</h3>
@@ -370,12 +369,49 @@
 
                     <button type="submit" id="submitBtn" class="btn" style="margin-top:15px;">Submit Score</button>
                 </form>
+
+                <!-- Cup result entry, against the team's drawn bracket match -->
+                <div id="cupEntry" style="display:none;">
+                    <div class="form-group">
+                        <label for="cupMatchSelect">Your Cup Match</label>
+                        <select id="cupMatchSelect" class="player-select"></select>
+                        <p class="small-note" id="cupMatchNote"></p>
+                    </div>
+                    <form id="cupForm" style="display:none;">
+                        <div class="cup-scoreline">
+                            <span id="cupHomeName"></span>
+                            <span id="cupRunningScore" class="cup-score">0 - 0</span>
+                            <span id="cupAwayName"></span>
+                        </div>
+                        <p class="small-note" id="cupFormatNote"></p>
+
+                        <h3>Trebles (2 games)</h3>
+                        <div id="cupTrebles"></div>
+
+                        <h3>Singles (6 games)</h3>
+                        <div id="cupSingles"></div>
+
+                        <div id="cupDeciderWrap" style="display:none;">
+                            <h3>1001 Team Game (4-4 decider)</h3>
+                            <div id="cupDecider"></div>
+                        </div>
+
+                        <h3>180s</h3>
+                        <div id="cupOneEighties" class="stats-section"></div>
+
+                        <h3>High Finishes</h3>
+                        <div id="cupHighFinishes" class="stats-section"></div>
+
+                        <button type="submit" id="cupSubmitBtn" class="btn" style="margin-top:15px;">Submit Cup Result</button>
+                    </form>
+                </div>
             </div>
 
             <!-- My Matches pane -->
             <div id="paneMyMatches" class="team-pane">
                 <h3>Your Team's Submitted Matches</h3>
-                <p class="small-note">Click <strong>Edit</strong> to load the match into the Submit Score form, or <strong>Delete</strong> to remove it (cascades to its results, 180s, and high finishes).</p>
+                <p class="small-note">Click <strong>Edit</strong> to load the match into the Submit Score form, or <strong>Delete</strong> to remove it (cascades to its results, 180s, and high finishes).
+                    For cup matches, <strong>Enter Result</strong> / <strong>Edit</strong> opens the cup score form, and <strong>Delete</strong> clears the result: the match goes back to awaiting result and the winner is taken back out of the next round.</p>
                 <table class="data-table" id="myMatchesTable">
                     <thead><tr><th>Date</th><th>Type / Div</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
                     <tbody></tbody>
@@ -472,7 +508,7 @@ function setSelectValue(sel, val) {
 
 // Format a MariaDB timestamp ("2026-06-09 14:30:15") as "09 Jun 2026, 14:30".
 function fmtDateTime(s) {
-    if (!s) return '–';
+    if (!s) return '-';
     const d = new Date(String(s).replace(' ', 'T'));
     if (isNaN(d.getTime())) return String(s);
     return d.toLocaleString('en-GB', {
@@ -487,7 +523,7 @@ async function init() {
     if (res.success && res.captain) {
         me = res.captain;
         document.getElementById('loggedTeam').textContent = me.team_name + ' (' + (me.division === 'premier' ? 'Premier' : 'A') + ')';
-        document.getElementById('dashTitle').textContent = me.team_name + ' – Team Dashboard';
+        document.getElementById('dashTitle').textContent = me.team_name + ' Team Dashboard';
         document.getElementById('loginView').style.display = 'none';
         document.getElementById('dashboardView').style.display = '';
 
@@ -682,10 +718,23 @@ document.getElementById('awayTeam').addEventListener('change', async () => {
     document.querySelectorAll('.one-eighty-player, .high-finish-player').forEach(populateStatPlayerOptions);
 });
 
-// Match type toggles cup round
+// Match type switches between the league form and cup result entry.
+// Leaving a league edit for the cup abandons that edit.
 document.getElementById('matchType').addEventListener('change', (e) => {
-    document.getElementById('cupRoundContainer').style.display = e.target.value === 'cup' ? '' : 'none';
+    const type = e.target.value;
+    if (type === 'cup' && _editingMatchId) resetForm();
+    showMatchType(type);
+    if (type === 'cup') loadCupMatches();
 });
+
+function showMatchType(type) {
+    const isCup = type === 'cup';
+    document.getElementById('matchType').value = isCup ? 'cup' : 'league';
+    document.getElementById('matchForm').style.display = isCup ? 'none' : '';
+    document.getElementById('cupEntry').style.display = isCup ? '' : 'none';
+    const hint = document.getElementById('cupHint');
+    hint.style.display = !isCup && hint.dataset.show === '1' ? '' : 'none';
+}
 
 // ====== 180s / High Finishes ======
 function generateOneEightiesInputs() {
@@ -769,11 +818,6 @@ document.getElementById('matchForm').addEventListener('submit', async (e) => {
         oneEighties: [],
         highFinishes: [],
     };
-    if (matchType === 'cup') {
-        const cr = document.getElementById('cupRound').value;
-        if (!cr) { showMsg('dashMsg', 'Please pick a Cup Round.', 'error'); return; }
-        payload.cupRound = cr;
-    }
 
     document.querySelectorAll('.doubles-match').forEach(m => {
         const hp1 = m.querySelector('.home-player1').value;
@@ -845,9 +889,7 @@ function resetForm() {
     _editingMatchId = null;
     document.getElementById('editMatchId').value = '';
     document.getElementById('editModeBanner').classList.remove('visible');
-    document.getElementById('matchType').value = 'league';
-    document.getElementById('cupRoundContainer').style.display = 'none';
-    document.getElementById('cupRound').value = '';
+    showMatchType('league');
     document.getElementById('awayTeam').value = '';
     generateDoublesMatches();
     generateSinglesMatches();
@@ -877,9 +919,8 @@ async function editMatch(matchId) {
     // still loading async – this was the bug where match type, away team
     // and (consequently) every away-player dropdown silently failed to
     // pre-fill because their target options didn't exist yet.
-    setSelectValue(document.getElementById('matchType'), detail.match_type);
-    document.getElementById('cupRoundContainer').style.display = detail.match_type === 'cup' ? '' : 'none';
-    if (detail.cup_round) setSelectValue(document.getElementById('cupRound'), detail.cup_round);
+    // Only league matches come through here; cup matches open the cup form.
+    showMatchType('league');
 
     // Make sure the away-team list is loaded before we try to select on it.
     // For the typical league case the team is already in the dropdown from
@@ -957,35 +998,360 @@ async function loadMyMatches() {
         // logged-in captain is the submitter). Matches where we were the
         // away side and the other team submitted are read-only here – ask
         // that team's captain (or an admin) to amend it.
+        // Cup matches come from the draw, so either team's captain can
+        // enter, edit or delete the result.
         const weSubmitted = String(m.submitted_by_captain_id || '') === String(me.captain_id);
-        const actions = weSubmitted
-            ? `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
-               <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>`
-            : (Number(m.is_walkover) === 1
-                ? `<span class="small-note" title="Recorded by the league admin">forfeit (W/O)</span>`
-                : `<span class="small-note" title="Submitted by the other team">read-only</span>`);
+        let actions;
+        if (m.match_type === 'cup') {
+            actions = !isEnterableCupMatch(m)
+                ? `<span class="small-note">${m.status === 'completed' ? 'bye' : 'awaiting teams'}</span>`
+                : (m.status === 'completed'
+                    ? `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="cup">Edit</button>
+                       <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete" data-cup="1">Delete</button>`
+                    : `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="cup">Enter Result</button>`);
+        } else {
+            actions = weSubmitted
+                ? `<button class="btn-sm btn-edit"   data-id="${m.match_id}" data-act="edit">Edit</button>
+                   <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete">Delete</button>`
+                : (Number(m.is_walkover) === 1
+                    ? `<span class="small-note" title="Recorded by the league admin">forfeit (W/O)</span>`
+                    : `<span class="small-note" title="Submitted by the other team">read-only</span>`);
+        }
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
-                        <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}</td>
-                        <td>${escapeHtml(m.home_team_name || '–')}</td>
-                        <td>${m.home_score} - ${m.away_score}</td>
-                        <td>${escapeHtml(m.away_team_name || '–')}</td>
+                        <td>${escapeHtml(m.match_type)}${m.cup_round ? ' (' + escapeHtml(m.cup_round) + ')' : ''} / ${m.division === 'premier' ? 'P' : 'A'}</td>
+                        <td>${escapeHtml(m.home_team_name || '-')}</td>
+                        <td>${m.status === 'completed' ? `${m.home_score} - ${m.away_score}` : 'vs'}</td>
+                        <td>${escapeHtml(m.away_team_name || '-')}</td>
                         <td>${actions}</td>`;
         tbody.appendChild(tr);
     });
     tbody.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.id, act = b.dataset.act;
         if (act === 'edit') editMatch(id);
-        else if (act === 'delete') deleteMyMatch(id);
+        else if (act === 'cup') openCupMatch(id);
+        else if (act === 'delete') deleteMyMatch(id, b.dataset.cup === '1');
+    }));
+
+    // Point the captain at a cup match that still needs a result.
+    const openCup = (res.matches || []).find(m => isEnterableCupMatch(m) && m.status === 'scheduled');
+    const hint = document.getElementById('cupHint');
+    hint.dataset.show = openCup ? '1' : '';
+    if (openCup) {
+        hint.innerHTML = `<span><strong>Your cup match is ready:</strong> ${escapeHtml(openCup.home_team_name)} v ${escapeHtml(openCup.away_team_name)} (${escapeHtml(openCup.cup_round || 'Cup')})</span>
+                          <button type="button" class="btn-sm btn-edit" id="cupHintBtn">Enter Cup Result</button>`;
+        document.getElementById('cupHintBtn').addEventListener('click', () => openCupMatch(openCup.match_id));
+    }
+    showMatchType(document.getElementById('matchType').value);
+}
+
+async function deleteMyMatch(id, isCup) {
+    const msg = isCup
+        ? 'Delete this cup result?\n\nThe match goes back to awaiting result and the winner is taken back out of the next round.'
+        : 'Delete this match? Its results, 180s, and high finishes will be removed too.';
+    if (!confirm(msg)) return;
+    const res = await apiCall('team-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
+    if (res.success) {
+        // Reload the cup form first: loading a fixture clears the message.
+        if (isCup && document.getElementById('matchType').value === 'cup') await loadCupMatches();
+        showMsg('dashMsg', isCup ? 'Cup result deleted: the match is back to awaiting result.' : 'Match deleted.', 'success');
+        loadMyMatches(); loadMyTeam(); loadDivisionPlayers();
+    }
+    else showMsg('dashMsg', res.error || 'Failed', 'error');
+}
+
+// ====== Cup results ======
+// Cup matches come from the draw. The captain picks their drawn fixture
+// (home or away) and enters 2 trebles, 6 singles and, at 4-4, the 1001
+// team game. Dropdowns hold player ids. submit-cup-result saves it and
+// moves the winner into the next round.
+let _cupMatches = [];                     // this team's enterable cup matches
+let _cupMatch = null;                     // the fixture loaded in the cup form
+let _cupPlayers = { home: [], away: [] }; // squads for that fixture
+let _cupLoadToken = 0;                    // ignores stale loads when switching fixtures
+
+function isEnterableCupMatch(m) {
+    return m.match_type === 'cup'
+        && !!m.home_team_id && !!m.away_team_id
+        && !/bye/i.test(m.home_team_name || '') && !/bye/i.test(m.away_team_name || '')
+        && (m.status === 'scheduled' || m.status === 'completed');
+}
+
+function openCupMatch(matchId) {
+    document.querySelectorAll('.team-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.team-pane').forEach(p => p.classList.remove('active'));
+    document.querySelector('.team-tab[data-pane="paneSubmit"]').classList.add('active');
+    document.getElementById('paneSubmit').classList.add('active');
+    if (_editingMatchId) resetForm();
+    showMatchType('cup');
+    loadCupMatches(matchId);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function loadCupMatches(selectId) {
+    const res = await apiCall('team-list-my-matches');
+    _cupMatches = (res.matches || []).filter(isEnterableCupMatch);
+    const sel = document.getElementById('cupMatchSelect');
+    sel.innerHTML = '';
+    if (!_cupMatches.length) {
+        sel.add(new Option('No cup match to enter', ''));
+        sel.disabled = true;
+        document.getElementById('cupMatchNote').textContent = "You don't have a cup match to play right now. When the draw (or your last win) puts you in a match, it appears here.";
+        document.getElementById('cupForm').style.display = 'none';
+        _cupMatch = null;
+        return;
+    }
+    sel.disabled = false;
+    _cupMatches.forEach(m => {
+        const entered = m.status === 'completed' ? ` (result entered: ${m.home_score}-${m.away_score})` : '';
+        sel.add(new Option(`${m.cup_round || 'Cup'}: ${m.home_team_name} v ${m.away_team_name}${entered}`, String(m.match_id)));
+    });
+    // Default to the requested match, else the first one still to play.
+    const pick = _cupMatches.find(m => String(m.match_id) === String(selectId))
+              || _cupMatches.find(m => m.status === 'scheduled')
+              || _cupMatches[0];
+    sel.value = String(pick.match_id);
+    await loadCupFixture(sel.value);
+}
+
+document.getElementById('cupMatchSelect').addEventListener('change', (e) => loadCupFixture(e.target.value));
+
+async function loadCupFixture(matchId) {
+    clearMsg('dashMsg');
+    const token = ++_cupLoadToken;
+    const form = document.getElementById('cupForm');
+    _cupMatch = _cupMatches.find(m => String(m.match_id) === String(matchId)) || null;
+    if (!_cupMatch) { form.style.display = 'none'; return; }
+    const m = _cupMatch;
+    const [home, away] = await Promise.all([getPlayersForTeam(m.home_team_name), getPlayersForTeam(m.away_team_name)]);
+    if (token !== _cupLoadToken) return;
+    _cupPlayers = { home, away };
+
+    document.getElementById('cupHomeName').textContent = `${m.home_team_name} (home)`;
+    document.getElementById('cupAwayName').textContent = `${m.away_team_name} (away)`;
+    document.getElementById('cupFormatNote').textContent =
+        `Trebles and singles are best of ${m.division === 'premier' ? '5' : '3'} legs. ` +
+        'First to 5 games wins: you can stop once a team has 5 or play all 8, and leave unplayed games blank. ' +
+        'At 4-4 the 1001 team game (6 players a side) decides it.';
+    document.getElementById('cupMatchNote').textContent = m.status === 'completed'
+        ? 'A result is already entered for this match. Change it below and submit to correct it.'
+        : '';
+    buildCupGames();
+    refreshCupPlayers();
+    buildCupStatRows();
+    if (m.status === 'completed') {
+        await prefillCupForm(m.match_id);
+        if (token !== _cupLoadToken) return;
+        refreshCupPlayers();
+    }
+    updateCupScore();
+    document.getElementById('cupSubmitBtn').textContent = m.status === 'completed' ? 'Update Cup Result' : 'Submit Cup Result';
+    form.style.display = '';
+}
+
+function cupPlayerSelects(side, group, count, label) {
+    let html = '';
+    for (let n = 1; n <= count; n++) {
+        const text = count === 1 ? `Select ${label} Player` : `${label} Player ${n}`;
+        html += `<select class="player-select cup-player" data-side="${side}" data-group="${group}"><option value="">${text}</option></select>`;
+    }
+    return html;
+}
+
+function buildCupGames() {
+    const scoreOpts = singlesScoreOptions(_cupMatch.division);
+    const game = (type, no, title, perSide, middle) => `
+        <div class="cup-game" data-type="${type}" data-no="${no}">
+            <div class="match-header">${title}</div>
+            <div class="cup-players">
+                <div class="home-side">${cupPlayerSelects('home', type, perSide, 'Home')}</div>
+                ${middle}
+                <div class="away-side">${cupPlayerSelects('away', type, perSide, 'Away')}</div>
+            </div>
+        </div>`;
+    const scoreSelect = `<select class="score-select cup-game-score">${scoreOpts}</select>`;
+    let html = '';
+    for (let i = 1; i <= 2; i++) html += game('trebles', i, `Trebles Game ${i}`, 3, scoreSelect);
+    document.getElementById('cupTrebles').innerHTML = html;
+    html = '';
+    for (let i = 1; i <= 6; i++) html += game('singles', i, `Singles Game ${i}`, 1, scoreSelect);
+    document.getElementById('cupSingles').innerHTML = html;
+    document.getElementById('cupDecider').innerHTML = game('team1001', 1, '1001 Team Game', 6,
+        `<select class="score-select cup-winner">
+            <option value="">Select Winner</option>
+            <option value="home">${escapeHtml(_cupMatch.home_team_name)} won</option>
+            <option value="away">${escapeHtml(_cupMatch.away_team_name)} won</option>
+        </select>`);
+}
+
+// A player can only appear once per side across the trebles, once across
+// the singles, and once in the 1001 team game.
+function refreshCupPlayers() {
+    ['trebles', 'singles', 'team1001'].forEach(group => ['home', 'away'].forEach(side => {
+        const sels = [...document.querySelectorAll(`#cupForm .cup-player[data-group="${group}"][data-side="${side}"]`)];
+        const taken = new Set(sels.map(s => s.value).filter(Boolean));
+        sels.forEach(s => {
+            const current = s.value;
+            const placeholder = s.options[0] ? s.options[0].text : 'Select Player';
+            s.innerHTML = '';
+            s.add(new Option(placeholder, ''));
+            _cupPlayers[side].forEach(p => {
+                const id = String(p.player_id);
+                if (taken.has(id) && id !== current) return;
+                s.add(new Option(p.player_name, id));
+            });
+            s.value = current;
+        });
     }));
 }
 
-async function deleteMyMatch(id) {
-    if (!confirm('Delete this match? Its results, 180s, and high finishes will be removed too.')) return;
-    const res = await apiCall('team-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
-    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMyMatches(); loadMyTeam(); loadDivisionPlayers(); }
-    else showMsg('dashMsg', res.error || 'Failed', 'error');
+// Games won so far from the trebles and singles scores picked.
+function cupTally() {
+    let home = 0, away = 0, played = 0;
+    document.querySelectorAll('#cupForm .cup-game-score').forEach(s => {
+        if (!s.value) return;
+        const [h, a] = s.value.split('-').map(Number);
+        played++;
+        if (h > a) home++; else away++;
+    });
+    return { home, away, played };
 }
+
+// Running score; the 1001 team game only appears at 4-4 after all 8 games.
+function updateCupScore() {
+    const t = cupTally();
+    const decider = t.played === 8 && t.home === 4 && t.away === 4;
+    document.getElementById('cupDeciderWrap').style.display = decider ? '' : 'none';
+    let home = t.home, away = t.away;
+    if (decider) {
+        const w = document.querySelector('#cupForm .cup-winner').value;
+        if (w === 'home') home++;
+        else if (w === 'away') away++;
+    }
+    document.getElementById('cupRunningScore').textContent = `${home} - ${away}`;
+    return { home, away, decider };
+}
+
+document.getElementById('cupForm').addEventListener('change', (e) => {
+    if (e.target.classList.contains('cup-player')) refreshCupPlayers();
+    if (e.target.classList.contains('cup-game-score') || e.target.classList.contains('cup-winner')) updateCupScore();
+});
+
+function buildCupStatRows() {
+    [['cupOneEighties', 'Add Another 180'], ['cupHighFinishes', 'Add Another High Finish']].forEach(([id, label]) => {
+        const c = document.getElementById(id);
+        c.innerHTML = '';
+        const add = document.createElement('button');
+        add.type = 'button'; add.className = 'add-stat-btn'; add.textContent = label;
+        add.addEventListener('click', () => addCupStatRow(id));
+        c.appendChild(add);
+        addCupStatRow(id);
+    });
+}
+
+function addCupStatRow(containerId) {
+    const c = document.getElementById(containerId);
+    const is180 = containerId === 'cupOneEighties';
+    const n = c.querySelectorAll('.stats-row').length;
+    const row = document.createElement('div');
+    row.className = 'stats-row';
+    row.innerHTML = `<select class="player-select cup-stat-player"><option value="">Select Player</option></select>
+                     ${is180
+                        ? '<input type="number" class="cup-stat-value" value="1" min="1" placeholder="Number of 180s">'
+                        : '<input type="number" class="cup-stat-value" min="100" max="170" placeholder="Finish value">'}
+                     ${n > 0 ? '<button type="button" class="remove-stat-btn">Remove</button>' : ''}`;
+    c.insertBefore(row, c.querySelector('.add-stat-btn'));
+    const rb = row.querySelector('.remove-stat-btn'); if (rb) rb.addEventListener('click', () => row.remove());
+    const sel = row.querySelector('.cup-stat-player');
+    [['home', _cupMatch.home_team_name], ['away', _cupMatch.away_team_name]].forEach(([side, team]) =>
+        _cupPlayers[side].forEach(p => sel.add(new Option(`${p.player_name} (${team})`, String(p.player_id)))));
+    return row;
+}
+
+async function prefillCupForm(matchId) {
+    const d = await apiGet('match-details', { match_id: matchId });
+    if (!d || d.success === false) { showMsg('dashMsg', 'Could not load the existing cup result.', 'error'); return; }
+    (d.cupGames || []).forEach(g => {
+        const box = document.querySelector(`#cupForm .cup-game[data-type="${g.game_type}"][data-no="${g.game_no}"]`);
+        if (!box) return;
+        ['home', 'away'].forEach(side => {
+            const sels = box.querySelectorAll(`.cup-player[data-side="${side}"]`);
+            (g[side + '_players'] || []).forEach((p, i) => { if (sels[i]) sels[i].value = String(p.player_id); });
+        });
+        if (g.game_type === 'team1001') box.querySelector('.cup-winner').value = g.home_score > g.away_score ? 'home' : 'away';
+        else box.querySelector('.cup-game-score').value = `${g.home_score}-${g.away_score}`;
+    });
+    [['cupOneEighties', d.oneEighties, 'count'], ['cupHighFinishes', d.highFinishes, 'finish_value']].forEach(([id, rows, key]) => {
+        (rows || []).forEach((r, i) => {
+            const row = document.getElementById(id).querySelectorAll('.stats-row')[i] || addCupStatRow(id);
+            row.querySelector('.cup-stat-player').value = String(r.player_id);
+            row.querySelector('.cup-stat-value').value = r[key];
+        });
+    });
+}
+
+document.getElementById('cupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearMsg('dashMsg');
+    const m = _cupMatch;
+    if (!m) return;
+    const score = updateCupScore();
+    const payload = { match_id: Number(m.match_id), trebles: [], singles: [], team1001: null, oneEighties: [], highFinishes: [] };
+
+    // Unplayed games are left blank and skipped; a half-filled one is an error.
+    for (const box of document.querySelectorAll('#cupForm .cup-game')) {
+        const type = box.dataset.type, no = Number(box.dataset.no);
+        if (type === 'team1001' && !score.decider) continue;
+        const home = [...box.querySelectorAll('.cup-player[data-side="home"]')].map(s => s.value);
+        const away = [...box.querySelectorAll('.cup-player[data-side="away"]')].map(s => s.value);
+        const result = box.querySelector(type === 'team1001' ? '.cup-winner' : '.cup-game-score').value;
+        const filled = [...home, ...away, result].filter(Boolean).length;
+        if (filled === 0) continue;
+        const label = type === 'team1001' ? 'The 1001 team game' : `${type === 'trebles' ? 'Trebles' : 'Singles'} game ${no}`;
+        if (filled < home.length + away.length + 1) {
+            showMsg('dashMsg', `${label} is only partly filled in: pick every player and the ${type === 'team1001' ? 'winner' : 'score'}, or clear it if it wasn't played.`, 'error');
+            return;
+        }
+        const players = { home: home.map(Number), away: away.map(Number) };
+        if (type === 'team1001') payload.team1001 = { ...players, winner: result };
+        else payload[type].push({ game_no: no, ...players, score: result });
+    }
+    if (score.decider && !payload.team1001) {
+        showMsg('dashMsg', "It's 4-4, so enter the 1001 team game to decide the match.", 'error'); return;
+    }
+    if (Math.max(score.home, score.away) < 5) {
+        showMsg('dashMsg', `Not finished yet: it's ${score.home}-${score.away} and a team needs 5 games to win.`, 'error'); return;
+    }
+
+    document.querySelectorAll('#cupOneEighties .stats-row').forEach(r => {
+        const p = r.querySelector('.cup-stat-player').value, c = r.querySelector('.cup-stat-value').value;
+        if (p && c) payload.oneEighties.push({ player_id: Number(p), count: parseInt(c, 10) });
+    });
+    document.querySelectorAll('#cupHighFinishes .stats-row').forEach(r => {
+        const p = r.querySelector('.cup-stat-player').value, v = r.querySelector('.cup-stat-value').value;
+        if (p && v) payload.highFinishes.push({ player_id: Number(p), value: parseInt(v, 10) });
+    });
+
+    const winner = score.home > score.away ? m.home_team_name : m.away_team_name;
+    if (!confirm(`Submit ${m.home_team_name} ${score.home} - ${score.away} ${m.away_team_name}?\n\n${winner} will go through.`)) return;
+
+    const btn = document.getElementById('cupSubmitBtn');
+    const origText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+    let res;
+    try { res = await apiCall('submit-cup-result', { method: 'POST', body: JSON.stringify(payload) }); }
+    catch (err) { res = { success: false, error: 'Network error: ' + (err.message || err) }; }
+    btn.disabled = false;
+    btn.textContent = origText;
+    if (!res.success) { showMsg('dashMsg', res.error || 'Failed', 'error'); return; }
+
+    await loadCupMatches(m.match_id);
+    loadMyMatches();
+    showMsg('dashMsg', `Cup result saved: ${m.home_team_name} ${res.home_score} - ${res.away_score} ${m.away_team_name}. ` +
+        (res.next_round ? `${res.winner} go through to the ${res.next_round}.` : `${res.winner} win the cup!`), 'success');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
 
 // ====== My Team / Roster ======
 async function loadMyTeam() {
@@ -1009,7 +1375,7 @@ async function loadMyTeam() {
 
     // Roster with per-player W/L/Win%
     _myPlayersCache = await getPlayersForTeam(me.team_name);
-    const ranking = await apiGet('singles-ranking', { division: me.division });
+    const ranking = await apiGet('singles-ranking', { division: me.division, match_type: 'league' });
     const rankByName = Object.fromEntries((Array.isArray(ranking) ? ranking : []).map(p => [p.player_name, p]));
 
     const tbody = document.querySelector('#rosterTable tbody');
@@ -1028,7 +1394,7 @@ async function loadMyTeam() {
 
 // ====== Division Players ======
 async function loadDivisionPlayers() {
-    const ranking = await apiGet('singles-ranking', { division: me.division });
+    const ranking = await apiGet('singles-ranking', { division: me.division, match_type: 'league' });
     const tbody = document.querySelector('#divPlayersTable tbody');
     tbody.innerHTML = '';
     const rows = (Array.isArray(ranking) ? ranking : [])

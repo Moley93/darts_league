@@ -1284,7 +1284,9 @@ document.addEventListener('DOMContentLoaded', function() {
             const awayName = m.away_team || null;
             const isCompleted = m.status === 'completed';
             const isScheduled = m.status === 'scheduled';
-            const bye = isByeMatch(m);
+            // Only a completed match can be a bye: a later-round match with
+            // one winner through so far is still waiting for its opponent.
+            const bye = isCompleted && isByeMatch(m);
 
             // ----- Bye render: collapsed walkover card -----
             if (bye) {
@@ -1294,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 wrap.style.border = '2px dashed #ffb300';
                 wrap.innerHTML = `
                     <div class="team" style="border-color:#ffb300;">${escHtml(advancingName || 'Unknown')}</div>
-                    <div class="vs" style="color:#e65100;">– bye –</div>
+                    <div class="vs" style="color:#e65100;">bye</div>
                     <div class="team placeholder" style="background:#fff3e0;color:#e65100;border-color:#ffe082;">no opponent</div>
                     <div class="winner-slot" style="background:#ef6c00;">Auto-advances</div>
                 `;
@@ -1350,6 +1352,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 let html = '';
+                // Cup format: trebles, singles and (at 4-4) the 1001 team game.
+                const cupLabels = { trebles: 'Trebles', singles: 'Singles', team1001: '1001 Team Game' };
+                ['trebles', 'singles', 'team1001'].forEach(type => {
+                    const games = (d.cupGames || []).filter(g => g.game_type === type);
+                    if (!games.length) return;
+                    html += `<h4>${cupLabels[type]}</h4>`;
+                    games.forEach(g => {
+                        const names = side => (g[side + '_players'] || []).map(p => escHtml(p.player_name)).join(', ');
+                        const score = type === 'team1001'
+                            ? (g.home_score > g.away_score ? 'W - L' : 'L - W')
+                            : `${g.home_score} - ${g.away_score}`;
+                        html += `<div class="game-row">
+                            <span>${type === 'team1001' ? '' : `Game ${g.game_no}: `}${names('home')}</span>
+                            <span class="game-score">${score}</span>
+                            <span>${names('away')}</span>
+                        </div>`;
+                    });
+                });
                 if ((d.doubles || []).length) {
                     html += '<h4>Doubles</h4>';
                     d.doubles.forEach((g, i) => {

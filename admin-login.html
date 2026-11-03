@@ -403,7 +403,7 @@
             <!-- Matches pane -->
             <div id="paneMatches" class="admin-pane">
                 <h3>Submitted Matches</h3>
-                <p class="small-note">Delete removes the match and every related stat – all singles &amp; doubles game outcomes, 180s, high finishes, the player ranking points those games contributed (rankings are recomputed live, not stored), and the team's points/standings (refreshed automatically). The action cascades end-to-end; there is no undo.</p>
+                <p class="small-note">Delete removes the match and every related stat: all singles &amp; doubles game outcomes, 180s, high finishes, the player ranking points those games contributed (rankings are recomputed live, not stored), and the team's points/standings (refreshed automatically). The action cascades end-to-end; there is no undo.</p>
                 <table class="data-table" id="matchesTable">
                     <thead><tr><th>Date</th><th>Type / Division</th><th>Home</th><th>Score</th><th>Away</th><th>Action</th></tr></thead>
                     <tbody></tbody>
@@ -413,7 +413,7 @@
             <!-- Forfeits & Deductions pane -->
             <div id="paneForfeits" class="admin-pane">
                 <h3>Record a Forfeit (Walkover)</h3>
-                <p class="small-note">Use this when a team cancels a league fixture. The opponent is awarded the points as a completed result (e.g. 9-0) with <strong>no individual games recorded</strong> &ndash; so nobody's singles, doubles, 180s or finishes are credited and Player Rankings are unaffected. The forfeiting team's deduction is stored separately and stays in place for the whole season, no matter how many scores are entered afterwards.</p>
+                <p class="small-note">Use this when a team cancels a league fixture. The opponent is awarded the points as a completed result (e.g. 9-0) with <strong>no individual games recorded</strong>, so nobody's singles, doubles, 180s or finishes are credited and Player Rankings are unaffected. The forfeiting team's deduction is stored separately and stays in place for the whole season, no matter how many scores are entered afterwards.</p>
                 <form id="walkoverForm" style="max-width:780px;">
                     <div class="form-row">
                         <div class="form-group">
@@ -494,7 +494,7 @@
             <!-- Cup Draw pane -->
             <div id="paneCupDraw" class="admin-pane">
                 <h3>Knockout Cup Draw</h3>
-                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64) – leftover slots become first-round byes that auto-advance their opponent.</p>
+                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64). Leftover slots become first-round byes that auto-advance their opponent.</p>
 
                 <div class="form-row" style="max-width:720px;">
                     <div class="form-group" style="text-align:left;">
@@ -540,26 +540,26 @@
             <!-- Pages pane: admin-editable URLs that drive public pages -->
             <div id="panePages" class="admin-pane">
                 <h3>Page Source URLs</h3>
-                <p class="small-note">Replace the embedded content on the public site without touching the codebase. For Google Sheets, use the "Publish to web" iframe URL (Sheets &rarr; File &rarr; Share &rarr; Publish to web). For Google Docs, use a <code>/preview</code> link (replace <code>/edit</code> with <code>/preview</code> at the end of the share URL). Save each field independently – blank to fall back to the page's static content.</p>
+                <p class="small-note">Replace the embedded content on the public site without touching the codebase. For Google Sheets, use the "Publish to web" iframe URL (Sheets &rarr; File &rarr; Share &rarr; Publish to web). For Google Docs, use a <code>/preview</code> link (replace <code>/edit</code> with <code>/preview</code> at the end of the share URL). Save each field independently; leave one blank to fall back to the page's static content.</p>
 
                 <form id="settingsForm" style="max-width:780px;">
                     <div class="form-group">
-                        <label>Premier Division Fixtures &mdash; Google Sheets URL</label>
+                        <label>Premier Division Fixtures (Google Sheets URL)</label>
                         <input name="fixtures_premier_url" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pubhtml?...">
                         <div class="small-note">Loaded into <code>leaguefixtures.html</code> for the Premier tab.</div>
                     </div>
                     <div class="form-group">
-                        <label>A Division Fixtures &mdash; Google Sheets URL</label>
+                        <label>A Division Fixtures (Google Sheets URL)</label>
                         <input name="fixtures_a_url" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/.../pubhtml?...">
                         <div class="small-note">Loaded into <code>leaguefixtures.html</code> for the A Division tab.</div>
                     </div>
                     <div class="form-group">
-                        <label>League Rules &mdash; Google Doc URL</label>
+                        <label>League Rules (Google Doc URL)</label>
                         <input name="rules_doc_url" type="url" placeholder="https://docs.google.com/document/d/.../preview">
                         <div class="small-note">Replaces the body of <code>rules.html</code> with this document.</div>
                     </div>
                     <div class="form-group">
-                        <label>AGM Minutes &mdash; Google Doc URL</label>
+                        <label>AGM Minutes (Google Doc URL)</label>
                         <input name="agm_doc_url" type="url" placeholder="https://docs.google.com/document/d/.../preview">
                         <div class="small-note">Replaces the body of <code>agm-minutes.html</code> with this document.</div>
                     </div>
@@ -629,7 +629,7 @@
                         <li>All <strong>points adjustments</strong> (forfeit deductions and manual bonuses/penalties)</li>
                     </ul>
                     <p>Your admin account and any league announcements are <em>not</em> affected. You'll have to add every team and player from scratch afterwards, and run a fresh cup draw if you want a new bracket. <strong>There is no undo.</strong></p>
-                    <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season &mdash;&nbsp;Delete Everything</button>
+                    <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season: Delete Everything</button>
                 </div>
             </div>
         </section>
@@ -985,32 +985,49 @@ async function loadMatches() {
         const woBadge = isWo
             ? ` <span class="status-pill status-denied" title="${escapeHtml((m.forfeit_team_name || 'A team') + ' forfeited')}">W/O</span>`
             : '';
+        // Cup matches are bracket slots: their results are entered and
+        // edited by the captains, and Delete clears a result (taking the
+        // winner back out of the next round) rather than removing the match.
+        const isCup = m.match_type === 'cup';
+        const isBye = isCup && (!m.home_team_id || !m.away_team_id || /bye/i.test(m.home_team_name || '') || /bye/i.test(m.away_team_name || ''));
+        let actions;
+        if (isCup) {
+            actions = m.status === 'completed' && !isBye
+                ? `<button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete" data-cup="1">Delete</button>`
+                : '';
+        } else {
+            actions = `${isWo ? '' : `<button class="btn-sm btn-edit" data-id="${m.match_id}" data-act="edit">Edit</button>`}
+                       <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete" data-wo="${isWo ? 1 : 0}">Delete</button>`;
+        }
         const tr = document.createElement('tr');
         tr.innerHTML = `<td>${escapeHtml(m.match_date || '')}</td>
-                        <td>${escapeHtml(m.match_type)} / ${m.division === 'premier' ? 'P' : 'A'}${woBadge}</td>
-                        <td>${escapeHtml(m.home_team_name || '–')}</td>
-                        <td>${m.home_score} - ${m.away_score}</td>
-                        <td>${escapeHtml(m.away_team_name || '–')}</td>
-                        <td>
-                            ${isWo ? '' : `<button class="btn-sm btn-edit" data-id="${m.match_id}" data-act="edit">Edit</button>`}
-                            <button class="btn-sm btn-delete" data-id="${m.match_id}" data-act="delete" data-wo="${isWo ? 1 : 0}">Delete</button>
-                        </td>`;
+                        <td>${escapeHtml(m.match_type)}${m.cup_round ? ' (' + escapeHtml(m.cup_round) + ')' : ''} / ${m.division === 'premier' ? 'P' : 'A'}${woBadge}</td>
+                        <td>${escapeHtml(m.home_team_name || '-')}</td>
+                        <td>${m.status === 'completed' ? `${m.home_score} - ${m.away_score}` : 'vs'}</td>
+                        <td>${escapeHtml(m.away_team_name || '-')}</td>
+                        <td>${actions}</td>`;
         tbody.appendChild(tr);
     });
     tbody.querySelectorAll('button[data-act]').forEach(b => b.addEventListener('click', () => {
         const id = b.dataset.id, act = b.dataset.act;
         if (act === 'edit') openMatchEditModal(id);
-        else if (act === 'delete') deleteMatch(id, b.dataset.wo === '1');
+        else if (act === 'delete') deleteMatch(id, b.dataset.wo === '1', b.dataset.cup === '1');
     }));
 }
 
-async function deleteMatch(id, isWalkover) {
-    const msg = isWalkover
+async function deleteMatch(id, isWalkover, isCup) {
+    const msg = isCup
+        ? 'Delete this cup result?\n\nThe match goes back to awaiting result and the winner is taken back out of the next round.'
+        : isWalkover
         ? 'Delete this forfeit?\n\nThe awarded points AND the linked points deduction will both be removed.'
         : 'Delete this match and all its results?';
     if (!confirm(msg)) return;
     const res = await apiCall('admin-delete-match', { method: 'POST', body: JSON.stringify({ match_id: Number(id) }) });
-    if (res.success) { showMsg('dashMsg', 'Match deleted.', 'success'); loadMatches(); loadAdjustments(); }
+    if (res.success) {
+        showMsg('dashMsg', isCup ? 'Cup result deleted: the match is back to awaiting result.' : 'Match deleted.', 'success');
+        loadMatches(); loadAdjustments();
+        if (isCup) { loadBracketStatus('premier'); loadBracketStatus('a'); }
+    }
     else showMsg('dashMsg', res.error || 'Failed', 'error');
 }
 
@@ -1148,7 +1165,7 @@ function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c
 // Format a MySQL/MariaDB timestamp (e.g. "2026-06-09 14:30:15") as a
 // readable "09 Jun 2026, 14:30" string. Returns an em-dash for null/blank.
 function fmtDateTime(s) {
-    if (!s) return '–';
+    if (!s) return '-';
     const d = new Date(String(s).replace(' ', 'T'));
     if (isNaN(d.getTime())) return String(s);
     return d.toLocaleString('en-GB', {
@@ -1200,7 +1217,7 @@ function openTeamModal(teamId) {
     f.elements['secretary_phone'].value  = t.secretary_phone || '';
     f.elements['captain_username'].value = t.captain_username || '';
     f.elements['captain_password'].value = '';
-    openModal('team', `Edit Team – ${t.team_name}`);
+    openModal('team', `Edit Team: ${t.team_name}`);
 }
 
 editTeamForm().addEventListener('submit', async (e) => {
@@ -1235,7 +1252,7 @@ function openPlayerModal(playerId) {
     f.elements['player_id'].value   = p.player_id;
     f.elements['player_name'].value = p.player_name || '';
     f.elements['team_id'].value     = p.team_id || '';
-    openModal('player', `Edit Player – ${p.player_name}`);
+    openModal('player', `Edit Player: ${p.player_name}`);
 }
 
 editPlayerForm().addEventListener('submit', async (e) => {
@@ -1342,7 +1359,7 @@ function openVenueModal(venueId) {
     f.elements['venue_name'].value = v.venue_name || '';
     f.elements['address'].value    = v.address || '';
     f.elements['phone'].value      = v.phone || '';
-    openModal('venue', `Edit Venue – ${v.venue_name}`);
+    openModal('venue', `Edit Venue: ${v.venue_name}`);
 }
 
 document.getElementById('editVenueForm').addEventListener('submit', async (e) => {
@@ -1412,7 +1429,7 @@ async function loadDrawPreview(division) {
         const res = await apiCall('cup-draw-preview', {}, { division });
         if (!res.success) { previewEl.textContent = res.error || 'Preview unavailable.'; previewEl.style.color = '#c62828'; return; }
         if (!res.supported) {
-            previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong> – ${escapeHtml(res.message)}`;
+            previewEl.innerHTML = `<strong>${res.team_count} team${res.team_count === 1 ? '' : 's'}</strong>: ${escapeHtml(res.message)}`;
             previewEl.style.color = '#c62828';
             if (buttonEl) buttonEl.disabled = true;
             return;
@@ -1431,13 +1448,13 @@ async function loadDrawPreview(division) {
 
 async function performDraw(division) {
     const label = division === 'premier' ? 'Premier' : 'A';
-    if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket – every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
+    if (!confirm(`Run a fresh ${label} Division cup draw?\n\nThis will WIPE the existing ${label} cup bracket: every cup match in this division and all its game-by-game results, 180s and high finishes will be deleted, then a new random draw will be generated.\n\nThe league standings are NOT affected.`)) return;
     const statusEl = document.getElementById(division === 'premier' ? 'drawPremierStatus' : 'drawAStatus');
     statusEl.style.color = ''; statusEl.textContent = 'Drawing...';
     const res = await apiCall('admin-cup-draw', { method: 'POST', body: JSON.stringify({ division }) });
     if (res.success) {
         statusEl.style.color = '#2e7d32';
-        statusEl.textContent = `Draw complete – ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
+        statusEl.textContent = `Draw complete: ${res.team_count} team${res.team_count === 1 ? '' : 's'} in ${res.bracket_size}-slot bracket (${(res.rounds || []).join(' → ')}).`;
         loadBracketStatus(division);
         loadDrawPreview(division);
         loadMatches();
@@ -1560,8 +1577,8 @@ async function openMatchEditModal(matchId) {
 
     let html = '';
     html += `<div class="match-info">
-        <div><div class="label">Date</div><div class="val">${escapeHtml(detail.match_date || '–')}</div></div>
-        <div><div class="label">Type</div><div class="val">${escapeHtml(detail.match_type)}${detail.cup_round ? ' – ' + escapeHtml(detail.cup_round) : ''}</div></div>
+        <div><div class="label">Date</div><div class="val">${escapeHtml(detail.match_date || '-')}</div></div>
+        <div><div class="label">Type</div><div class="val">${escapeHtml(detail.match_type)}${detail.cup_round ? ' (' + escapeHtml(detail.cup_round) + ')' : ''}</div></div>
         <div><div class="label">Division</div><div class="val">${div === 'premier' ? 'Premier' : 'A'}</div></div>
         <div><div class="label">Home</div><div class="val">${escapeHtml(detail.home_team)}</div></div>
         <div><div class="label">Away</div><div class="val">${escapeHtml(detail.away_team)}</div></div>
@@ -1760,7 +1777,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
     // Second confirmation with typed phrase
     const typed = prompt('FINAL WARNING TWO OF TWO\n\nType the word RESET (in capitals) to confirm.');
     if (typed !== 'RESET') {
-        alert('Reset cancelled – confirmation text did not match.');
+        alert('Reset cancelled: the confirmation text did not match.');
         return;
     }
     // Disable button and call endpoint

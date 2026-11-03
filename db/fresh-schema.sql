@@ -27,6 +27,8 @@ DROP PROCEDURE IF EXISTS `advance_cup_winner`;
 DROP PROCEDURE IF EXISTS `calculate_player_rankings`;
 DROP PROCEDURE IF EXISTS `update_league_standings`;
 
+DROP TABLE IF EXISTS `cup_game_players`;
+DROP TABLE IF EXISTS `cup_games`;
 DROP TABLE IF EXISTS `points_adjustments`;
 DROP TABLE IF EXISTS `venues`;
 DROP TABLE IF EXISTS `site_settings`;
@@ -428,6 +430,38 @@ CREATE TABLE `points_adjustments` (
   CONSTRAINT `points_adjustments_team_fk` FOREIGN KEY (`team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE,
   CONSTRAINT `points_adjustments_match_fk` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE,
   CONSTRAINT `points_adjustments_admin_fk` FOREIGN KEY (`created_by_admin_id`) REFERENCES `admins` (`admin_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- ---------------------------------------------------------------------
+-- Cup match games: 2 trebles, 6 singles and the 1001 team game at 4-4.
+-- Kept apart from singles_results / doubles_results so cup matches
+-- never count towards players' individual stats. Cup 180s and high
+-- finishes still go into one_eighties / high_finishes.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE `cup_games` (
+  `game_id` int(11) NOT NULL AUTO_INCREMENT,
+  `match_id` int(11) NOT NULL,
+  `game_type` enum('trebles','singles','team1001') NOT NULL,
+  `game_no` tinyint(4) NOT NULL,
+  `home_score` int(11) NOT NULL DEFAULT 0,
+  `away_score` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`game_id`),
+  KEY `idx_cup_games_match` (`match_id`),
+  CONSTRAINT `cup_games_match_fk` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+CREATE TABLE `cup_game_players` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `game_id` int(11) NOT NULL,
+  `side` enum('home','away') NOT NULL,
+  `player_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_cup_game_players_game` (`game_id`),
+  KEY `idx_cup_game_players_player` (`player_id`),
+  CONSTRAINT `cup_game_players_game_fk` FOREIGN KEY (`game_id`) REFERENCES `cup_games` (`game_id`) ON DELETE CASCADE,
+  CONSTRAINT `cup_game_players_player_fk` FOREIGN KEY (`player_id`) REFERENCES `players` (`player_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- ---------------------------------------------------------------------

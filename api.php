@@ -230,6 +230,7 @@ switch ($endpoint) {
     case 'team-my-requests':  teamMyRequests(); break;
     case 'team-list-my-matches': teamListMyMatches(); break;
     case 'team-delete-match': requirePost(); teamDeleteMatch(); break;
+    case 'submit-cup-result': requirePost(); submitCupResult(); break;
 
     default:
         returnJson(['success' => false, 'error' => 'Invalid endpoint']);
@@ -784,6 +785,7 @@ function getMatchDetails() {
         $oneEightiesStmt = $pdo->prepare("
             SELECT 
                 o.id,
+                p.player_id,
                 p.player_name,
                 o.count
             FROM one_eighties o
@@ -801,6 +803,7 @@ function getMatchDetails() {
         $highFinishesStmt = $pdo->prepare("
             SELECT 
                 h.id,
+                p.player_id,
                 p.player_name,
                 h.finish_value
             FROM high_finishes h
@@ -819,14 +822,52 @@ function getMatchDetails() {
         error_log("Doubles count: " . count($doubles));
         error_log("Singles count: " . count($singles));
         
-        $result = [
+        // Cup games (trebles, singles, 1001 team game), one entry per game
+        // with the players on each side.
+        $cupGames = [];
+        if ($matchInfo['match_type'] === 'cup' && schemaHas('cup_games')) {
+            $cupStmt = $pdo->prepare("
+                SELECT g.game_id, g.game_type, g.game_no, g.home_score, g.away_score,
+                       cp.side, p.player_id, p.player_name
+                FROM cup_games g
+                LEFT JOIN cup_game_players cp ON cp.game_id = g.game_id
+                LEFT JOIN players p ON p.player_id = cp.player_id
+                WHERE g.match_id = ?
+                ORDER BY FIELD(g.game_type, 'trebles', 'singles', 'team1001'), g.game_no, cp.id
+            ");
+            $cupStmt->execute([$matchId]);
+            $byGame = [];
+            foreach ($cupStmt->fetchAll() as $r) {
+                $gameId = (int)$r['game_id'];
+                if (!isset($byGame[$gameId])) {
+                    $byGame[$gameId] = [
+                        'game_type'    => $r['game_type'],
+                        'game_no'      => (int)$r['game_no'],
+                        'home_score'   => (int)$r['home_score'],
+                        'away_score'   => (int)$r['away_score'],
+                        'home_players' => [],
+                        'away_players' => [],
+                    ];
+                }
+                if ($r['side'] !== null && $r['player_id'] !== null) {
+                    $byGame[$gameId][$r['side'] . '_players'][] = ['player_id' => (int)$r['player_id'], 'player_name' => $r['player_name']];
+                }
+            }
+            $cupGames = array_values($byGame);
+        }
+
+        // The match fields are also copied to the top level: the captain
+        // and admin edit forms read detail.match_type, detail.home_team etc.
+        // directly, while the public pages read detail.match.*.
+        $result = array_merge($match ?: [], [
             'success' => true,
             'match' => $match,
             'doubles' => $doubles,
             'singles' => $singles,
             'oneEighties' => $oneEighties,
-            'highFinishes' => $highFinishes
-        ];
+            'highFinishes' => $highFinishes,
+            'cupGames' => $cupGames,
+        ]);
         returnJson($result);
     } catch (Exception $e) {
         error_log("Error in getMatchDetails: " . $e->getMessage());
@@ -934,6 +975,13 @@ function submitMatch() {
         // Validate required fields
         if (!isset($data['homeTeam']) || !isset($data['awayTeam'])) {
             returnJson(['success' => false, 'error' => 'Missing required fields: homeTeam or awayTeam']);
+            return;
+        }
+        // Cup results go through submit-cup-result against the drawn
+        // bracket match. A free-standing cup match created here would sit
+        // outside the bracket and never advance anyone.
+        if (($data['matchType'] ?? '') === 'cup') {
+            returnJson(['success' => false, 'error' => 'Cup results are entered against your drawn cup match: choose Cup as the match type and pick your fixture.']);
             return;
         }
         if (!empty($data['matchId']) && isWalkoverMatch((int)$data['matchId'])) {
@@ -1323,7 +1371,16 @@ function updateMatch() {
             returnJson(['success' => false, 'error' => 'Login required to edit a match']);
             return;
         }
-        
+
+        // Cup matches belong to the bracket and have their own game format,
+        // so they are only changed through submit-cup-result.
+        $typeStmt = $pdo->prepare('SELECT match_type FROM matches WHERE match_id = ?');
+        $typeStmt->execute([$matchIdForAuth]);
+        if ($typeStmt->fetchColumn() === 'cup' || ($data['matchType'] ?? '') === 'cup') {
+            returnJson(['success' => false, 'error' => 'Cup results are entered and edited from the Cup option on the Team Login page.']);
+            return;
+        }
+
         // Start transaction
         if (!$pdo->inTransaction()) {
             $pdo->beginTransaction();
@@ -1981,10 +2038,12 @@ function adminDeletePlayer() {
     try {
         // Block delete if player has any results recorded against them.
         $hasResults = false;
-        foreach (['singles_results' => ['home_player_id','away_player_id'],
-                  'doubles_results' => ['home_player1_id','home_player2_id','away_player1_id','away_player2_id'],
-                  'high_finishes'   => ['player_id'],
-                  'one_eighties'    => ['player_id']] as $tbl => $cols) {
+        $resultTables = ['singles_results' => ['home_player_id','away_player_id'],
+                         'doubles_results' => ['home_player1_id','home_player2_id','away_player1_id','away_player2_id'],
+                         'high_finishes'   => ['player_id'],
+                         'one_eighties'    => ['player_id']];
+        if (schemaHas('cup_game_players')) $resultTables['cup_game_players'] = ['player_id'];
+        foreach ($resultTables as $tbl => $cols) {
             $clauses = implode(' OR ', array_map(fn($c) => "$c = ?", $cols));
             $stmt = $pdo->prepare("SELECT COUNT(*) FROM $tbl WHERE $clauses");
             $stmt->execute(array_fill(0, count($cols), $playerId));
@@ -2085,6 +2144,13 @@ function adminDeleteMatch() {
     $matchId = isset($d['match_id']) ? (int)$d['match_id'] : 0;
     if ($matchId <= 0) returnJson(['success' => false, 'error' => 'match_id required']);
     try {
+        // A cup match is a fixed slot in the bracket: deleting it clears the
+        // result and takes the winner back out of the next round instead.
+        $cup = loadCupMatch($matchId);
+        if ($cup) {
+            $err = resetCupResult($cup);
+            returnJson($err ? ['success' => false, 'error' => $err] : ['success' => true, 'cup_reset' => true]);
+        }
         // FKs are ON DELETE CASCADE for child stat tables in the fresh schema,
         // so singles_results/doubles_results/180s/high_finishes are tidied
         // automatically. league_standings is a denormalised cache and must be
@@ -2559,6 +2625,7 @@ function adminSeasonReset() {
     // Tables from later migrations: only truncate when present, so a reset
     // still works on a database that hasn't been upgraded.
     if (schemaHas('points_adjustments')) array_unshift($tables, 'points_adjustments');
+    if (schemaHas('cup_games')) array_unshift($tables, 'cup_game_players', 'cup_games');
     $cleared = [];
     try {
         $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');
@@ -2655,6 +2722,13 @@ function teamDeleteMatch() {
         if (isWalkoverMatch($matchId)) {
             returnJson(['success' => false, 'error' => 'This result is an admin-recorded forfeit and can only be removed by a league admin.']);
         }
+        // A cup match is a fixed slot in the bracket: deleting it clears the
+        // result and takes the winner back out of the next round instead.
+        $cup = loadCupMatch($matchId);
+        if ($cup) {
+            $err = resetCupResult($cup);
+            returnJson($err ? ['success' => false, 'error' => $err] : ['success' => true, 'cup_reset' => true]);
+        }
         // Stats cascade automatically via FKs; standings need an explicit
         // refresh so leaguetable.html reflects the deletion immediately.
         $pdo->prepare('DELETE FROM matches WHERE match_id = ?')->execute([$matchId]);
@@ -2662,6 +2736,278 @@ function teamDeleteMatch() {
         returnJson(['success' => true]);
     } catch (Exception $e) {
         returnJson(['success' => false, 'error' => 'Failed to delete match: ' . $e->getMessage()]);
+    }
+}
+
+// ---------------------- Cup results ----------------------
+
+function requireCupSchema() {
+    if (!schemaHas('cup_games') || !schemaHas('cup_game_players')) {
+        returnJson(['success' => false, 'error' => 'Database not upgraded yet: run db/2026-add-cup-games.sql in phpMyAdmin first.']);
+    }
+}
+
+// A cup match with both team names, or null if it isn't a cup match.
+function loadCupMatch($matchId) {
+    global $pdo;
+    $stmt = $pdo->prepare('SELECT m.match_id, m.match_type, m.division, m.status, m.cup_round,
+                                  m.home_team_id, m.away_team_id, m.home_score, m.away_score,
+                                  m.next_match_id, m.next_match_slot,
+                                  ht.team_name AS home_team, at.team_name AS away_team
+                           FROM matches m
+                           LEFT JOIN teams ht ON m.home_team_id = ht.team_id
+                           LEFT JOIN teams at ON m.away_team_id = at.team_id
+                           WHERE m.match_id = ?');
+    $stmt->execute([(int)$matchId]);
+    $m = $stmt->fetch();
+    return ($m && $m['match_type'] === 'cup') ? $m : null;
+}
+
+// A bye: one side empty or a team named "Bye". The draw completes byes
+// itself, so they have no games to enter or delete.
+function isCupBye($m) {
+    $homeBye = empty($m['home_team_id']) || stripos((string)$m['home_team'], 'bye') !== false;
+    $awayBye = empty($m['away_team_id']) || stripos((string)$m['away_team'], 'bye') !== false;
+    return $homeBye || $awayBye;
+}
+
+// Winning team_id from a match's stored score, or null for no winner.
+function cupMatchWinner($m) {
+    if ((int)$m['home_score'] > (int)$m['away_score']) return (int)$m['home_team_id'];
+    if ((int)$m['away_score'] > (int)$m['home_score']) return (int)$m['away_team_id'];
+    return null;
+}
+
+// Enter or correct the result of a drawn cup match. Either team's captain
+// (or an admin) may submit. Format: 2 trebles (3 a side) and 6 singles,
+// one game each; every trebles and singles game is best of 5 legs in the
+// Premier and best of 3 in the A Division. First to 5 games wins – play
+// may stop once a side reaches 5 – and at 4-4 after all 8 games a 1001
+// team game (6 a side) decides it. Games go into cup_games, never
+// singles_results / doubles_results, so they don't count towards players'
+// individual stats; 180s and high finishes go into the normal tables.
+// The winner is moved into the next round straight away.
+function submitCupResult() {
+    global $pdo;
+    if (empty($_SESSION['admin_id']) && empty($_SESSION['captain_id'])) {
+        returnJson(['success' => false, 'error' => 'Login required to submit a cup result']);
+    }
+    requireCupSchema();
+    $d = readJsonBody();
+    $matchId = isset($d['match_id']) ? (int)$d['match_id'] : 0;
+    $m = $matchId > 0 ? loadCupMatch($matchId) : null;
+    if (!$m) returnJson(['success' => false, 'error' => 'Cup match not found']);
+    if (empty($m['home_team_id']) || empty($m['away_team_id'])) {
+        returnJson(['success' => false, 'error' => 'This cup match is still waiting for both teams.']);
+    }
+    if (isCupBye($m)) returnJson(['success' => false, 'error' => 'Byes go through automatically; there is no score to enter.']);
+
+    $homeId = (int)$m['home_team_id'];
+    $awayId = (int)$m['away_team_id'];
+    if (empty($_SESSION['admin_id'])) {
+        $teamId = (int)($_SESSION['team_id'] ?? 0);
+        if ($teamId !== $homeId && $teamId !== $awayId) {
+            returnJson(['success' => false, 'error' => "You can only enter results for your own team's cup matches"]);
+        }
+    }
+
+    // Each side's squad, so every player picked can be checked against it.
+    $squads = [];
+    $squadStmt = $pdo->prepare('SELECT player_id FROM players WHERE team_id = ?');
+    foreach (['home' => $homeId, 'away' => $awayId] as $side => $tid) {
+        $squadStmt->execute([$tid]);
+        $squads[$side] = array_map('intval', $squadStmt->fetchAll(PDO::FETCH_COLUMN));
+    }
+    // Validates one side's line-up for a game and returns the player ids.
+    $lineUp = function($ids, $side, $count, $label) use ($squads) {
+        if (!is_array($ids) || count($ids) !== $count) {
+            returnJson(['success' => false, 'error' => "$label: pick $count $side player" . ($count === 1 ? '' : 's') . '.']);
+        }
+        $ids = array_map('intval', array_values($ids));
+        if (count(array_unique($ids)) !== $count) {
+            returnJson(['success' => false, 'error' => "$label: the same $side player is picked twice."]);
+        }
+        foreach ($ids as $id) {
+            if (!in_array($id, $squads[$side], true)) {
+                returnJson(['success' => false, 'error' => "$label: a $side player isn't in that team's squad."]);
+            }
+        }
+        return $ids;
+    };
+
+    // Trebles and singles. Only the games actually played are sent, each
+    // with its game number, because play can stop once a side has 5.
+    $legsToWin = $m['division'] === 'premier' ? 3 : 2;
+    $games = [];    // [type, game_no, home legs, away legs, home ids, away ids]
+    $homeWins = 0;
+    $awayWins = 0;
+    foreach ([['trebles', 2, 3, 'Trebles'], ['singles', 6, 1, 'Singles']] as [$type, $maxGames, $perSide, $name]) {
+        $rows = isset($d[$type]) && is_array($d[$type]) ? $d[$type] : [];
+        $seenNos = [];
+        $used = ['home' => [], 'away' => []];
+        foreach ($rows as $g) {
+            $no = isset($g['game_no']) ? (int)$g['game_no'] : 0;
+            if ($no < 1 || $no > $maxGames || in_array($no, $seenNos, true)) {
+                returnJson(['success' => false, 'error' => "$name: invalid game number."]);
+            }
+            $seenNos[] = $no;
+            $label = "$name game $no";
+            $homeIds = $lineUp($g['home'] ?? null, 'home', $perSide, $label);
+            $awayIds = $lineUp($g['away'] ?? null, 'away', $perSide, $label);
+            foreach (['home' => $homeIds, 'away' => $awayIds] as $side => $ids) {
+                if (array_intersect($ids, $used[$side])) {
+                    returnJson(['success' => false, 'error' => "$label: a player can only play in one $type game."]);
+                }
+                $used[$side] = array_merge($used[$side], $ids);
+            }
+            $parts = explode('-', (string)($g['score'] ?? ''));
+            $homeLegs = count($parts) === 2 ? (int)$parts[0] : -1;
+            $awayLegs = count($parts) === 2 ? (int)$parts[1] : -1;
+            if ($homeLegs < 0 || $awayLegs < 0 || max($homeLegs, $awayLegs) !== $legsToWin || min($homeLegs, $awayLegs) >= $legsToWin) {
+                returnJson(['success' => false, 'error' => "$label: pick a valid score."]);
+            }
+            if ($homeLegs > $awayLegs) $homeWins++; else $awayWins++;
+            $games[] = [$type, $no, $homeLegs, $awayLegs, $homeIds, $awayIds];
+        }
+    }
+
+    // 1001 team game: only at 4-4 after all 8 games, and then required.
+    $decider = $d['team1001'] ?? null;
+    if (count($games) === 8 && $homeWins === 4 && $awayWins === 4) {
+        if (!is_array($decider)) {
+            returnJson(['success' => false, 'error' => "It's 4-4, so enter the 1001 team game to decide the match."]);
+        }
+        $homeIds = $lineUp($decider['home'] ?? null, 'home', 6, '1001 team game');
+        $awayIds = $lineUp($decider['away'] ?? null, 'away', 6, '1001 team game');
+        $winner = $decider['winner'] ?? '';
+        if ($winner !== 'home' && $winner !== 'away') {
+            returnJson(['success' => false, 'error' => '1001 team game: pick the winning side.']);
+        }
+        if ($winner === 'home') $homeWins++; else $awayWins++;
+        $games[] = ['team1001', 1, $winner === 'home' ? 1 : 0, $winner === 'away' ? 1 : 0, $homeIds, $awayIds];
+    } elseif (!empty($decider)) {
+        returnJson(['success' => false, 'error' => 'The 1001 team game is only played when the trebles and singles finish 4-4.']);
+    }
+    if (max($homeWins, $awayWins) < 5) {
+        returnJson(['success' => false, 'error' => "Not finished yet: it's $homeWins-$awayWins and a team needs 5 games to win. Enter the remaining games."]);
+    }
+
+    // 180s and high finishes, by players from either team.
+    $everyone = array_merge($squads['home'], $squads['away']);
+    $oneEighties = [];
+    foreach ((isset($d['oneEighties']) && is_array($d['oneEighties']) ? $d['oneEighties'] : []) as $o) {
+        $pid = (int)($o['player_id'] ?? 0);
+        $count = (int)($o['count'] ?? 0);
+        if (!in_array($pid, $everyone, true) || $count < 1) {
+            returnJson(['success' => false, 'error' => '180s: pick a player from either team and a count of at least 1.']);
+        }
+        $oneEighties[] = [$pid, $count];
+    }
+    $highFinishes = [];
+    foreach ((isset($d['highFinishes']) && is_array($d['highFinishes']) ? $d['highFinishes'] : []) as $f) {
+        $pid = (int)($f['player_id'] ?? 0);
+        $value = (int)($f['value'] ?? 0);
+        if (!in_array($pid, $everyone, true) || $value < 100 || $value > 170) {
+            returnJson(['success' => false, 'error' => 'High finishes: pick a player from either team and a finish from 100 to 170.']);
+        }
+        $highFinishes[] = [$pid, $value];
+    }
+
+    // Correcting a result may change the winner only while the next round
+    // match is unplayed; advanceCupWinner then swaps the team in that slot.
+    $newWinner = $homeWins > $awayWins ? $homeId : $awayId;
+    $oldWinner = $m['status'] === 'completed' ? cupMatchWinner($m) : null;
+    if ($oldWinner !== null && $oldWinner !== $newWinner && !empty($m['next_match_id'])) {
+        $nextStmt = $pdo->prepare('SELECT status FROM matches WHERE match_id = ?');
+        $nextStmt->execute([(int)$m['next_match_id']]);
+        if ($nextStmt->fetchColumn() === 'completed') {
+            returnJson(['success' => false, 'error' => "The winner can't change now: the next round match has already been played. Delete that result first."]);
+        }
+    }
+
+    try {
+        $pdo->beginTransaction();
+        // Replace any earlier entry for this match.
+        foreach (['cup_games', 'one_eighties', 'high_finishes'] as $t) {
+            $pdo->prepare("DELETE FROM $t WHERE match_id = ?")->execute([$matchId]);
+        }
+        $insGame   = $pdo->prepare('INSERT INTO cup_games (match_id, game_type, game_no, home_score, away_score) VALUES (?, ?, ?, ?, ?)');
+        $insPlayer = $pdo->prepare('INSERT INTO cup_game_players (game_id, side, player_id) VALUES (?, ?, ?)');
+        foreach ($games as [$type, $no, $homeLegs, $awayLegs, $homeIds, $awayIds]) {
+            $insGame->execute([$matchId, $type, $no, $homeLegs, $awayLegs]);
+            $gameId = (int)$pdo->lastInsertId();
+            foreach ($homeIds as $pid) $insPlayer->execute([$gameId, 'home', $pid]);
+            foreach ($awayIds as $pid) $insPlayer->execute([$gameId, 'away', $pid]);
+        }
+        $ins180 = $pdo->prepare('INSERT INTO one_eighties (match_id, player_id, count) VALUES (?, ?, ?)');
+        foreach ($oneEighties as [$pid, $count]) $ins180->execute([$matchId, $pid, $count]);
+        $insFinish = $pdo->prepare('INSERT INTO high_finishes (match_id, player_id, finish_value) VALUES (?, ?, ?)');
+        foreach ($highFinishes as [$pid, $value]) $insFinish->execute([$matchId, $pid, $value]);
+
+        // The first captain to submit is kept as the submitter on later edits.
+        $pdo->prepare("UPDATE matches SET home_score = ?, away_score = ?, status = 'completed',
+                       submitted_by_captain_id = COALESCE(submitted_by_captain_id, ?)
+                       WHERE match_id = ?")
+            ->execute([$homeWins, $awayWins, $_SESSION['captain_id'] ?? null, $matchId]);
+        advanceCupWinner($matchId);
+        $pdo->commit();
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        returnJson(['success' => false, 'error' => 'Failed to save cup result: ' . $e->getMessage()]);
+    }
+
+    $nextRound = null;
+    if (!empty($m['next_match_id'])) {
+        $roundStmt = $pdo->prepare('SELECT cup_round FROM matches WHERE match_id = ?');
+        $roundStmt->execute([(int)$m['next_match_id']]);
+        $nextRound = $roundStmt->fetchColumn() ?: null;
+    }
+    returnJson([
+        'success'    => true,
+        'match_id'   => $matchId,
+        'home_score' => $homeWins,
+        'away_score' => $awayWins,
+        'winner'     => $newWinner === $homeId ? $m['home_team'] : $m['away_team'],
+        'next_round' => $nextRound,
+    ]);
+}
+
+// Deleting a cup result puts the match back to "Awaiting result" instead
+// of removing it, because the match is a fixed slot in the bracket. The
+// winner is taken back out of the next round, unless that match has
+// already been played – its result must be deleted first. Returns an
+// error message, or null on success.
+function resetCupResult($m) {
+    global $pdo;
+    if (isCupBye($m)) return "Byes go through automatically and can't be deleted.";
+    if ($m['status'] !== 'completed') return 'This cup match has no result to delete.';
+    if (!empty($m['next_match_id'])) {
+        $stmt = $pdo->prepare('SELECT status FROM matches WHERE match_id = ?');
+        $stmt->execute([(int)$m['next_match_id']]);
+        if ($stmt->fetchColumn() === 'completed') {
+            return 'The next round match has already been played. Delete that result first.';
+        }
+    }
+    $matchId = (int)$m['match_id'];
+    try {
+        $pdo->beginTransaction();
+        $tables = ['singles_results', 'doubles_results', 'one_eighties', 'high_finishes'];
+        if (schemaHas('cup_games')) $tables[] = 'cup_games';
+        foreach ($tables as $t) {
+            $pdo->prepare("DELETE FROM $t WHERE match_id = ?")->execute([$matchId]);
+        }
+        $pdo->prepare("UPDATE matches SET home_score = 0, away_score = 0, status = 'scheduled', submitted_by_captain_id = NULL WHERE match_id = ?")
+            ->execute([$matchId]);
+        if (!empty($m['next_match_id'])) {
+            $col = $m['next_match_slot'] === 'away' ? 'away_team_id' : 'home_team_id';
+            $pdo->prepare("UPDATE matches SET $col = NULL, status = 'pending' WHERE match_id = ?")
+                ->execute([(int)$m['next_match_id']]);
+        }
+        $pdo->commit();
+        return null;
+    } catch (Exception $e) {
+        if ($pdo->inTransaction()) $pdo->rollBack();
+        return 'Failed to delete cup result: ' . $e->getMessage();
     }
 }
 
@@ -2700,7 +3046,7 @@ function adminAddAdjustment() {
     $reason = trim((string)($d['reason'] ?? ''));
     if ($teamId <= 0) returnJson(['success' => false, 'error' => 'Choose a team.']);
     if ($points === 0 || $points < -100 || $points > 100) returnJson(['success' => false, 'error' => 'Points must be a non-zero whole number between -100 and 100 (negative = deduction).']);
-    if ($reason === '') returnJson(['success' => false, 'error' => 'A reason is required – it is shown under the league table.']);
+    if ($reason === '') returnJson(['success' => false, 'error' => 'A reason is required. It is shown under the league table.']);
     $exists = $pdo->prepare('SELECT COUNT(*) FROM teams WHERE team_id = ?');
     $exists->execute([$teamId]);
     if (!(int)$exists->fetchColumn()) returnJson(['success' => false, 'error' => 'Team not found.']);
@@ -2782,7 +3128,7 @@ function adminRecordWalkover() {
         $matchId = (int)$pdo->lastInsertId();
         if ($deduction > 0) {
             $reason = 'Forfeited league match vs ' . $opponent . ' (' . date('j M Y', strtotime($date)) . ')'
-                    . ($note !== '' ? ' – ' . $note : '');
+                    . ($note !== '' ? ': ' . $note : '');
             $pdo->prepare('INSERT INTO points_adjustments (team_id, points, reason, match_id, created_by_admin_id) VALUES (?, ?, ?, ?, ?)')
                 ->execute([$forfeitId, -$deduction, clipReason($reason), $matchId, $adminId]);
         }

@@ -840,7 +840,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
                         detailsSection.querySelector('.match-details-content').innerHTML = `
                             <p style="text-align:center;margin:10px 0;">
-                                <strong>Walkover</strong> &ndash; ${esc(result.forfeit_team || 'A team')} forfeited this fixture.<br>
+                                <strong>Walkover:</strong> ${esc(result.forfeit_team || 'A team')} forfeited this fixture.<br>
                                 <span style="color:var(--dark-gray);font-size:0.9em;">No games were played, so no player statistics were recorded.</span>
                             </p>`;
                         loadedMatchDetails[result.match_id] = true;
