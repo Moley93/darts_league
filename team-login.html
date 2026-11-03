@@ -324,6 +324,10 @@
                     <span><strong>Editing match #<span id="editMatchIdLabel"></span>.</strong> Submitting will overwrite the existing result.</span>
                     <button type="button" id="cancelEditBtn">Cancel Edit</button>
                 </div>
+                <div id="draftBanner" class="submit-mode-banner">
+                    <span><strong>Unsaved score restored.</strong> Carry on where you left off, or start again.</span>
+                    <button type="button" id="draftDiscardBtn">Start Again</button>
+                </div>
 
                 <div id="cupHint" class="cup-hint" style="display:none;"></div>
 
@@ -549,6 +553,8 @@ async function init() {
         loadMyTeam();
         loadDivisionPlayers();
         loadMyRequests();
+        hideDraftBanner();
+        await restoreScoreDraft();
     } else {
         me = null;
         document.getElementById('loginView').style.display = '';
@@ -751,6 +757,7 @@ document.getElementById('matchType').addEventListener('change', (e) => {
     const type = e.target.value;
     if (type === 'cup' && _editingMatchId) resetForm();
     showMatchType(type);
+    saveDraft();
     if (type === 'cup') loadCupMatches();
 });
 
@@ -913,6 +920,8 @@ document.getElementById('cancelEditBtn').addEventListener('click', () => {
 });
 
 function resetForm() {
+    clearDraft('league');
+    hideDraftBanner();
     _editingMatchId = null;
     document.getElementById('editMatchId').value = '';
     document.getElementById('editModeBanner').classList.remove('visible');
@@ -927,6 +936,8 @@ function resetForm() {
 
 // ====== Edit flow ======
 async function editMatch(matchId) {
+    // Loading a match replaces whatever was in the league form.
+    if (!_restoringDraft) { clearDraft('league'); hideDraftBanner(); }
     document.querySelectorAll('.team-tab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.team-pane').forEach(p => p.classList.remove('active'));
     document.querySelector('.team-tab[data-pane="paneSubmit"]').classList.add('active');
@@ -1173,6 +1184,7 @@ async function loadCupFixture(matchId) {
         refreshCupPlayers();
     }
     updateCupScore();
+    applyCupDraft(m.match_id);
     document.getElementById('cupSubmitBtn').textContent = m.status === 'completed' ? 'Update Cup Result' : 'Submit Cup Result';
     form.style.display = '';
 }
@@ -1374,12 +1386,204 @@ document.getElementById('cupForm').addEventListener('submit', async (e) => {
     btn.textContent = origText;
     if (!res.success) { showMsg('dashMsg', res.error || 'Failed', 'error'); return; }
 
+    clearDraft('cup');
+    hideDraftBanner();
     await loadCupMatches(m.match_id);
     loadMyMatches();
     showMsg('dashMsg', `Cup result saved: ${m.home_team_name} ${res.home_score} - ${res.away_score} ${m.away_team_name}. ` +
         (res.next_round ? `${res.winner} go through to the ${res.next_round}.` : `${res.winner} win the cup!`), 'success');
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+// ====== Unsaved score drafts ======
+// Score entry is saved in this browser as it's typed, so a refresh or a
+// dropped connection doesn't lose it. One draft per captain, holding the
+// league form and the cup form separately; each part is cleared once
+// that result is submitted or its form is reset. Drafts older than 7
+// days are ignored. If browser storage is unavailable (private mode),
+// nothing is saved and the forms work as before.
+const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+let _restoringDraft = false;
+
+function draftKey() { return me ? `cdl-score-draft-${me.captain_id}` : null; }
+
+function readDraft() {
+    try {
+        const raw = draftKey() ? localStorage.getItem(draftKey()) : null;
+        const d = raw ? JSON.parse(raw) : null;
+        return d && Date.now() - (d.savedAt || 0) <= DRAFT_MAX_AGE_MS ? d : null;
+    } catch (e) { return null; }
+}
+
+function writeDraft(d) {
+    try {
+        if (!draftKey()) return;
+        if (d.league || d.cup) localStorage.setItem(draftKey(), JSON.stringify({ ...d, savedAt: Date.now() }));
+        else localStorage.removeItem(draftKey());
+    } catch (e) { /* storage unavailable: drafts just aren't kept */ }
+}
+
+function clearDraft(part) {
+    const d = readDraft();
+    if (!d || !d[part]) return;
+    d[part] = null;
+    writeDraft(d);
+}
+
+// The league form as plain values, or null when nothing has been entered.
+function leagueDraft() {
+    const vals = (root, selectors) => selectors.map(s => root.querySelector(s).value);
+    const rows = (id, player, value) => [...document.querySelectorAll(`#${id} .stats-row`)].map(r => vals(r, [player, value]));
+    const d = {
+        editingMatchId: _editingMatchId,
+        awayTeam: document.getElementById('awayTeam').value,
+        doubles: [...document.querySelectorAll('.doubles-match')].map(m => vals(m, ['.home-player1', '.home-player2', '.away-player1', '.away-player2', '.doubles-score'])),
+        singles: [...document.querySelectorAll('.singles-match')].map(m => vals(m, ['.home-player', '.away-player', '.singles-score'])),
+        oneEighties: rows('oneEightiesSection', '.one-eighty-player', '.one-eighty-count'),
+        highFinishes: rows('highFinishesSection', '.high-finish-player', '.high-finish-value'),
+    };
+    const used = d.editingMatchId || d.awayTeam
+        || [...d.doubles, ...d.singles].some(g => g.some(Boolean))
+        || [...d.oneEighties, ...d.highFinishes].some(r => r[0]);
+    return used ? d : null;
+}
+
+// The cup form as plain values for the fixture it's showing, or null.
+function cupDraft() {
+    if (!_cupMatch || document.getElementById('cupForm').style.display === 'none') return null;
+    let used = false;
+    const games = {};
+    document.querySelectorAll('#cupForm .cup-game').forEach(box => {
+        const g = {
+            home: [...box.querySelectorAll('.cup-player[data-side="home"]')].map(s => s.value),
+            away: [...box.querySelectorAll('.cup-player[data-side="away"]')].map(s => s.value),
+            result: box.querySelector('.cup-game-score, .cup-winner').value,
+        };
+        if ([...g.home, ...g.away, g.result].some(Boolean)) used = true;
+        games[`${box.dataset.type}-${box.dataset.no}`] = g;
+    });
+    const rows = id => [...document.querySelectorAll(`#${id} .stats-row`)].map(r => [r.querySelector('.cup-stat-player').value, r.querySelector('.cup-stat-value').value]);
+    const d = { matchId: String(_cupMatch.match_id), games, oneEighties: rows('cupOneEighties'), highFinishes: rows('cupHighFinishes') };
+    if ([...d.oneEighties, ...d.highFinishes].some(r => r[0])) used = true;
+    return used ? d : null;
+}
+
+function saveDraft(part) {
+    if (_restoringDraft || !me) return;
+    const d = readDraft() || {};
+    d.type = document.getElementById('matchType').value;
+    if (part === 'league') d.league = leagueDraft();
+    if (part === 'cup') {
+        // An empty form only clears the draft if the draft is for this fixture.
+        const current = cupDraft();
+        const otherFixture = d.cup && _cupMatch && d.cup.matchId !== String(_cupMatch.match_id);
+        d.cup = current || (otherFixture ? d.cup : null);
+    }
+    writeDraft(d);
+}
+
+[['matchForm', 'league'], ['cupForm', 'cup']].forEach(([id, part]) => {
+    const form = document.getElementById(id);
+    form.addEventListener('change', () => saveDraft(part));
+    form.addEventListener('input', () => saveDraft(part));
+    // Adding or removing a 180 / high finish row changes the form without
+    // a change event; save once the row is in or out.
+    form.addEventListener('click', (e) => {
+        if (e.target.closest('.add-stat-btn, .remove-stat-btn')) setTimeout(() => saveDraft(part), 0);
+    });
+});
+
+function showDraftBanner() { document.getElementById('draftBanner').classList.add('visible'); }
+function hideDraftBanner() { document.getElementById('draftBanner').classList.remove('visible'); }
+
+document.getElementById('draftDiscardBtn').addEventListener('click', () => {
+    if (!confirm('Clear the restored score and start again?')) return;
+    hideDraftBanner();
+    if (document.getElementById('matchType').value === 'cup') {
+        clearDraft('cup');
+        if (_cupMatch) loadCupFixture(_cupMatch.match_id);
+    } else {
+        resetForm();
+    }
+});
+
+// Runs once after login: puts back whichever form was in use.
+async function restoreScoreDraft() {
+    const d = readDraft();
+    if (!d) return;
+    if (d.league && await restoreLeagueDraft(d.league)) showDraftBanner();
+    if (d.cup && d.type === 'cup') {
+        showMatchType('cup');
+        await loadCupMatches(d.cup.matchId);   // loadCupFixture applies the cup draft
+        if (!_cupMatches.some(m => String(m.match_id) === d.cup.matchId)) clearDraft('cup');
+    }
+}
+
+async function restoreLeagueDraft(l) {
+    _restoringDraft = true;
+    try {
+        if (l.editingMatchId) {
+            await editMatch(l.editingMatchId);
+            if (_editingMatchId !== Number(l.editingMatchId)) { clearDraft('league'); return false; }
+        }
+        setSelectValue(document.getElementById('awayTeam'), l.awayTeam);
+        await updateDoublesPlayerOptions();
+        await updateSinglesPlayerOptions();
+        // Recreate the 180 / high finish rows to match the draft, and let
+        // their player lists finish loading before filling them.
+        generateOneEightiesInputs();
+        generateHighFinishesInputs();
+        (l.oneEighties || []).slice(1).forEach(() => addOneEightyRow());
+        (l.highFinishes || []).slice(1).forEach(() => addHighFinishRow());
+        await new Promise(r => setTimeout(r, 0));
+
+        const fill = (root, selectors, values) => selectors.forEach((s, j) => setSelectValue(root.querySelector(s), values[j]));
+        document.querySelectorAll('.doubles-match').forEach((m, i) => { if (l.doubles[i]) fill(m, ['.home-player1', '.home-player2', '.away-player1', '.away-player2', '.doubles-score'], l.doubles[i]); });
+        document.querySelectorAll('.singles-match').forEach((m, i) => { if (l.singles[i]) fill(m, ['.home-player', '.away-player', '.singles-score'], l.singles[i]); });
+        [['oneEightiesSection', l.oneEighties, '.one-eighty-player', '.one-eighty-count'],
+         ['highFinishesSection', l.highFinishes, '.high-finish-player', '.high-finish-value']].forEach(([id, saved, player, value]) => {
+            document.querySelectorAll(`#${id} .stats-row`).forEach((r, i) => {
+                if (!saved || !saved[i]) return;
+                setSelectValue(r.querySelector(player), saved[i][0]);
+                r.querySelector(value).value = saved[i][1];
+            });
+        });
+        // Rebuild the player lists so each pick is excluded elsewhere again.
+        await updateDoublesPlayerOptions();
+        await updateSinglesPlayerOptions();
+        updateLeagueScore();
+        return true;
+    } finally {
+        _restoringDraft = false;
+    }
+}
+
+// Called when a cup fixture loads: puts back unsaved entries for it.
+function applyCupDraft(matchId) {
+    const d = readDraft();
+    const c = d && d.cup;
+    if (!c || c.matchId !== String(matchId)) return;
+    document.querySelectorAll('#cupForm .cup-player').forEach(s => { s.value = ''; });
+    refreshCupPlayers();
+    Object.entries(c.games || {}).forEach(([key, g]) => {
+        const [type, no] = key.split('-');
+        const box = document.querySelector(`#cupForm .cup-game[data-type="${type}"][data-no="${no}"]`);
+        if (!box) return;
+        ['home', 'away'].forEach(side => box.querySelectorAll(`.cup-player[data-side="${side}"]`).forEach((s, i) => { s.value = (g[side] || [])[i] || ''; }));
+        box.querySelector('.cup-game-score, .cup-winner').value = g.result || '';
+    });
+    buildCupStatRows();
+    [['cupOneEighties', c.oneEighties], ['cupHighFinishes', c.highFinishes]].forEach(([id, saved]) => {
+        (saved || []).forEach((v, i) => {
+            const row = document.getElementById(id).querySelectorAll('.stats-row')[i] || addCupStatRow(id);
+            row.querySelector('.cup-stat-player').value = v[0];
+            row.querySelector('.cup-stat-value').value = v[1];
+        });
+    });
+    refreshCupPlayers();
+    updateCupScore();
+    showDraftBanner();
+}
 
 // ====== My Team / Roster ======
 async function loadMyTeam() {
