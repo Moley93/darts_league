@@ -110,6 +110,10 @@ if ($requestMethod === 'POST') {
     rejectCrossSitePost();
 }
 
+// Individual cup competitions (comp-draws and admin-comp-* endpoints).
+define('CDL_API', true);
+require_once __DIR__ . '/cups.php';
+
 // Process by endpoint
 switch ($endpoint) {
     case 'teams':
@@ -213,6 +217,11 @@ switch ($endpoint) {
     case 'cup-bracket':           getBracket(); break;
     case 'cup-draw-preview':      adminCupDrawPreview(); break;
     case 'admin-cup-draw':        requirePost(); adminCupDraw(); break;
+    case 'comp-draws':               compListDraws(); break;
+    case 'admin-comp-draw':          requirePost(); compAdminDraw(); break;
+    case 'admin-comp-result':        requirePost(); compAdminResult(); break;
+    case 'admin-comp-clear-result':  requirePost(); compAdminClearResult(); break;
+    case 'admin-comp-delete-draw':   requirePost(); compAdminDeleteDraw(); break;
 
     case 'settings':              listSettings(); break;
     case 'update-setting':        requirePost(); adminUpdateSetting(); break;
@@ -2382,12 +2391,22 @@ function getBracket() {
     global $pdo;
     $division = isset($_GET['division']) ? $_GET['division'] : 'premier';
     try {
+        // The home team (drawn first) hosts, so a fixture's venue is the
+        // home team's venue. venue_name isn't unique, hence the LIMIT 1
+        // subqueries. Skipped if the venues migration hasn't been run.
+        $venueCols = schemaHas('teams', 'venue')
+            ? ', ht.venue AS venue' . (schemaHas('venues')
+                ? ', (SELECT v.address FROM venues v WHERE v.venue_name = ht.venue ORDER BY v.venue_id LIMIT 1) AS venue_address'
+                  . ', (SELECT v.phone FROM venues v WHERE v.venue_name = ht.venue ORDER BY v.venue_id LIMIT 1) AS venue_phone'
+                : ', NULL AS venue_address, NULL AS venue_phone')
+            : ', NULL AS venue, NULL AS venue_address, NULL AS venue_phone';
         $stmt = $pdo->prepare("
             SELECT m.match_id, m.match_date, m.cup_round, m.status,
                    m.home_score, m.away_score,
                    m.home_team_id, m.away_team_id,
                    ht.team_name AS home_team, at.team_name AS away_team,
                    m.next_match_id, m.next_match_slot
+                   $venueCols
             FROM matches m
             LEFT JOIN teams ht ON m.home_team_id = ht.team_id
             LEFT JOIN teams at ON m.away_team_id = at.team_id
@@ -2626,6 +2645,7 @@ function adminSeasonReset() {
     // still works on a database that hasn't been upgraded.
     if (schemaHas('points_adjustments')) array_unshift($tables, 'points_adjustments');
     if (schemaHas('cup_games')) array_unshift($tables, 'cup_game_players', 'cup_games');
+    if (schemaHas('comp_draws')) array_unshift($tables, 'comp_entry_players', 'comp_matches', 'comp_entries', 'comp_draws');
     $cleared = [];
     try {
         $pdo->exec('SET FOREIGN_KEY_CHECKS = 0');

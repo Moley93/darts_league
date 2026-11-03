@@ -41,6 +41,8 @@
         .btn-delete  { background: #c62828; }
         .btn-delete:hover, .btn-deny:hover { background: #a31515; }
         .btn-approve:hover { background: #1b5e20; }
+        .btn-edit { background: var(--primary); }
+        .btn-edit:hover { background: var(--secondary); }
 
         .status-pill { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 600; }
         .status-pending  { background: #fff3e0; color: #e65100; }
@@ -83,6 +85,72 @@
         .modal-close { position: absolute; top: 10px; right: 14px; font-size: 1.6rem; line-height: 1; background: none; border: none; cursor: pointer; color: var(--dark-gray); }
         .btn-secondary { background: var(--medium-gray); color: var(--primary); padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
         .btn-secondary:hover { background: #d0d0d0; }
+
+        /* Cups pane (individual cup draws). Everything in it uses cups-
+           classes: the tab switcher grabs every .admin-tab / .admin-pane
+           on the page and the nav JS every .dropdown-toggle. The brackets
+           themselves come from cup-draw.js / cup-draw.css (cd- classes). */
+        .cups-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+        .cups-picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+        .cups-pill { font: inherit; position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid var(--medium-gray); border-radius: 999px; background: white; color: var(--primary); font-weight: 500; cursor: pointer; }
+        .cups-pill:hover { background: var(--light-gray); }
+        .cups-pill.cups-on { background: var(--primary); border-color: var(--primary); color: white; }
+        .cups-dot { width: 8px; height: 8px; border-radius: 50%; background: #e65100; flex-shrink: 0; }
+        .cups-pill.cups-on .cups-dot { background: #ffb74d; }
+        .cups-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+        /* minmax(0, 1fr) and min-width:0 let a wide bracket scroll inside
+           its own .cd-scroll instead of stretching the page sideways. */
+        .cups-panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+        .cups-panel { min-width: 0; border: 1px solid var(--medium-gray); border-radius: 8px; padding: 14px; background: white; }
+        .cups-panel-wide { grid-column: 1 / -1; }
+        .cups-panel [hidden] { display: none !important; }
+        .cups-panel button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .cups-panel-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+        .cups-panel-title { color: var(--primary); font-size: 1.1rem; }
+        .cups-line { font-size: 0.85rem; color: var(--dark-gray); }
+        .cups-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+        .cups-empty { color: var(--dark-gray); margin: 6px 0 12px; }
+        .cups-form { margin-top: 4px; }
+        .cups-field { border: 0; min-width: 0; margin-bottom: 14px; }
+        .cups-field legend, .cups-field-label { display: block; padding: 0; margin-bottom: 4px; font-weight: 600; font-size: 0.9rem; color: var(--primary); }
+        .cups-choices { display: flex; flex-wrap: wrap; gap: 4px 18px; }
+        .cups-choice { display: inline-flex; align-items: center; gap: 7px; padding: 2px 0; cursor: pointer; }
+        .cups-form input[type="radio"], .cups-form input[type="checkbox"] { width: auto; padding: 0; margin: 0; flex-shrink: 0; }
+        .cups-input { max-width: 100%; padding: 8px 10px; border: 1px solid var(--medium-gray); border-radius: 4px; background: white; font: inherit; font-size: 16px; font-weight: 400; }
+        .cups-search, .cups-date { display: block; margin-top: 4px; }
+        .cups-search { width: 100%; }
+        .cups-picklist { max-height: 420px; overflow-y: auto; margin-top: 8px; padding: 0 10px 10px; border: 1px solid var(--medium-gray); border-radius: 6px; }
+        .cups-divhead { margin-top: 12px; padding-bottom: 2px; border-bottom: 2px solid var(--primary); font-weight: 700; color: var(--primary); }
+        .cups-team { margin-top: 10px; }
+        .cups-team-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; margin-bottom: 2px; padding-bottom: 2px; border-bottom: 1px solid var(--medium-gray); }
+        .cups-team-name { font-weight: 600; color: var(--primary); overflow-wrap: anywhere; }
+        .cups-team-count { font-size: 0.8rem; color: #2e7d32; }
+        .cups-team-links { display: flex; gap: 12px; margin-left: auto; }
+        .cups-link { font: inherit; font-size: 0.85rem; padding: 2px 0; background: none; border: none; color: var(--secondary); text-decoration: underline; cursor: pointer; }
+        .cups-players { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0 12px; }
+        .cups-player { display: flex; align-items: center; gap: 8px; min-width: 0; padding: 4px 0; cursor: pointer; overflow-wrap: anywhere; }
+        .cups-guests { margin-top: 12px; }
+        .cups-guest-add { display: flex; flex-wrap: wrap; gap: 6px; }
+        .cups-guest-add .cups-input { flex: 1 1 180px; min-width: 0; }
+        .cups-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+        .cups-chip { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; padding: 2px 2px 2px 10px; border-radius: 999px; background: #e3f2fd; color: #1565c0; font-size: 0.9rem; }
+        .cups-chip > span { min-width: 0; overflow-wrap: anywhere; }
+        .cups-chip-x { font: inherit; font-size: 1.1rem; line-height: 1; padding: 4px 8px; border: none; border-radius: 999px; background: none; color: #1565c0; cursor: pointer; }
+        .cups-chip-x:hover { background: #bbdefb; }
+        .cups-fixed-row { padding: 8px 0; border-bottom: 1px solid var(--light-gray); }
+        .cups-fixed-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
+        .cups-fixed-name { font-weight: 600; font-size: 0.9rem; color: var(--primary); }
+        .cups-fixed-slots { display: flex; flex-wrap: wrap; gap: 6px; }
+        .cups-slot { flex: 1 1 180px; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+        .cups-slot .cups-input { width: 100%; }
+        .cups-fixed-add { margin-top: 10px; }
+        .cups-summary { margin: 14px 0 10px; padding: 10px 12px; border-radius: 4px; border-left: 4px solid #1565c0; background: #e3f2fd; color: #1565c0; }
+        .cups-summary.cups-bad { border-left-color: #e65100; background: #fff3e0; color: #e65100; }
+        .cups-form-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+        @media (max-width: 900px) {
+            /* Premier and A stack instead of sitting side by side. */
+            .cups-panels { grid-template-columns: minmax(0, 1fr); }
+        }
 
         /* Full nav block — matches the inline nav styling on every other
            page (index, leaguetable, rules, etc.) so admin-login renders
@@ -180,6 +248,13 @@
             .btn-danger { width: 100%; min-height: 44px; }
             .container { padding: 0 12px; }
 
+            /* Cups pane: finger-sized targets. */
+            .cups-pill, .cups-head .btn-secondary, .cups-panel .btn, .cups-panel .btn-secondary, .cups-panel .btn-sm { min-height: 44px; }
+            .cups-player, .cups-choice { min-height: 40px; }
+            .cups-link { padding: 8px 2px; }
+            .cups-chip-x { padding: 8px 10px; }
+            .cups-panel { padding: 12px 10px; }
+
             /* Mobile nav: hamburger-style collapse + tap-to-open dropdowns.
                The desktop block above uses opacity/visibility transitions,
                so the mobile rules need to reset those properties explicitly
@@ -226,6 +301,7 @@
             .data-table th, .data-table td { font-size: 0.82rem; padding: 7px 8px; }
         }
 </style>
+    <link rel="stylesheet" href="cup-draw.css?v=1">
 </head>
 <body>
     <header class="header">
@@ -240,11 +316,21 @@
             <li class="dropdown"><a href="#" class="dropdown-toggle">League</a>
                 <ul class="dropdown-menu">
                     <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
                     <li><a href="leagueresults.html">Results</a></li>
                 </ul>
             </li>
-            <li><a href="knockoutcup.html">Knockout Cup</a></li>
+            <li class="dropdown"><a href="#" class="dropdown-toggle">Cup</a>
+                <ul class="dropdown-menu">
+                    <li><a href="knockoutcup.html">Knockout Cup</a></li>
+                    <li><a href="321cup.html">3-2-1 Cup</a></li>
+                    <li><a href="singlescup.html">Singles Cup</a></li>
+                    <li><a href="pairscup.html">Pairs Cup</a></li>
+                    <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
+                    <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
+                    <li><a href="memorialcup.html">Memorial Cup</a></li>
+                    <li><a href="capseccup.html">Cap/Sec Cup</a></li>
+                </ul>
+            </li>
             <li class="dropdown"><a href="#" class="dropdown-toggle">Statistics</a>
                 <ul class="dropdown-menu">
                     <li><a href="180sfinishes.html">180s &amp; High Finishes</a></li>
@@ -253,6 +339,7 @@
             </li>
             <li class="dropdown"><a href="#" class="dropdown-toggle">Information</a>
                 <ul class="dropdown-menu">
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
                     <li><a href="contactinfo.html">Contacts &amp; Venues</a></li>
                     <li><a href="rules.html">League Rules</a></li>
                     <li><a href="agm-minutes.html">AGM Minutes</a></li>
@@ -306,7 +393,8 @@
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
                 <button class="admin-tab" data-pane="paneForfeits">Forfeits &amp; Deductions</button>
-                <button class="admin-tab" data-pane="paneCupDraw">Cup Draw</button>
+                <button class="admin-tab" data-pane="paneCupDraw">Knockout Cup</button>
+                <button class="admin-tab" data-pane="paneCups">Cups</button>
                 <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
                 <button class="admin-tab" data-pane="panePages">Pages (URLs)</button>
                 <button class="admin-tab" data-pane="paneVenues">Venues</button>
@@ -514,6 +602,18 @@
                 <div id="bracketStatusA"></div>
             </div>
 
+            <!-- Cups pane -->
+            <div id="paneCups" class="admin-pane">
+                <div class="cups-head">
+                    <h3>Cup Competitions</h3>
+                    <button type="button" id="cupsRefreshBtn" class="btn-secondary">Refresh</button>
+                </div>
+                <p class="small-note">Draws for the 3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec Cups. Each cup can have a Premier Division, an A Division and a Combined draw running at the same time. Click a name in a bracket to record the winner: they go straight into the next round and the cup's public page shows the result.</p>
+                <div id="cupsMsg" class="auth-msg"></div>
+                <div id="cupsPicker" class="cups-picker" role="group" aria-label="Choose a cup"></div>
+                <div id="cupsPanels" class="cups-panels"></div>
+            </div>
+
             <!-- Announcements pane -->
             <div id="paneAnnouncements" class="admin-pane">
                 <h3>Post a League Announcement</h3>
@@ -627,6 +727,7 @@
                         <li>All <strong>league standings</strong></li>
                         <li>All <strong>player requests</strong> (pending, approved, denied)</li>
                         <li>All <strong>points adjustments</strong> (forfeit deductions and manual bonuses/penalties)</li>
+                        <li>All <strong>cup competition draws</strong> (3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec Cups)</li>
                     </ul>
                     <p>Your admin account and any league announcements are <em>not</em> affected. You'll have to add every team and player from scratch afterwards, and run a fresh cup draw if you want a new bracket. <strong>There is no undo.</strong></p>
                     <button type="button" id="seasonResetBtn" class="btn-danger">Reset the Season: Delete Everything</button>
@@ -749,6 +850,7 @@
         </div>
     </div>
 
+<script src="cup-draw.js?v=1"></script>
 <script>
 const API = 'api.php';
 
@@ -828,6 +930,9 @@ async function loadAllDashboardData() {
         loadBracketStatus('premier'), loadBracketStatus('a'),
         loadDrawPreview('premier'), loadDrawPreview('a'),
     ]);
+    // Cup competition draws last: their setup form builds its player
+    // lists from _playersCache / _teamsCache, which are ready by now.
+    await cupsLoad();
 }
 
 // ----- teams -----
@@ -1467,6 +1572,842 @@ async function performDraw(division) {
 document.getElementById('drawPremierBtn').addEventListener('click', () => performDraw('premier'));
 document.getElementById('drawABtn').addEventListener('click', () => performDraw('a'));
 
+// ============== Cups (individual cup draws) ==============
+// The 3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec
+// cups (comp_* tables), separate from the team Knockout Cup above. One
+// comp-draws GET loads every draw and cup-draw.js (window.CupDraw) draws
+// the brackets. This page is one global script, so every new name starts
+// with "cups": a clash with an existing let/const would stop the dashboard.
+
+let cupsState = {
+    cup: cupsStoredCup(),   // selected cup slug (checked against CupDraw.CUPS when drawn)
+    loaded: false,          // a comp-draws response has arrived
+    loadError: '',
+    schemaReady: true,
+    draws: [],              // Draw objects from comp-draws and the admin POSTs
+    loadSeq: 0,             // lets a newer load overtake a slow one
+    mutSeq: 0,              // bumped when a POST starts and again when it ends
+    mutatedAt: {},          // "cup|division" -> mutSeq of its latest POST
+    forms: {},              // open setup forms: "cup|division" -> { el, mode: 'new' | 'redraw' }
+    busy: {},               // "cup|division" -> true while a POST for it runs
+    shownCup: '',           // the cup whose three panels are in #cupsPanels
+};
+
+function cupsStoredCup() {
+    try { return localStorage.getItem('cdlAdminCupsCup') || ''; } catch (e) { return ''; }
+}
+function cupsRememberCup(slug) {
+    try { localStorage.setItem('cdlAdminCupsCup', slug); } catch (e) { /* storage blocked: the choice just isn't remembered */ }
+}
+function cupsLib() { return window.CupDraw || null; }
+function cupsKey(cup, division) { return cup + '|' + division; }
+function cupsMsgId(division) { return 'cupsMsg_' + division; }
+function cupsSameId(a, b) { return a != null && b != null && String(a) === String(b); }
+function cupsCupName(slug) {
+    const lib = cupsLib();
+    const cup = lib ? lib.CUPS.find(c => c.slug === slug) : null;
+    return cup ? cup.name : slug;
+}
+function cupsDivLabel(key) {
+    const lib = cupsLib();
+    const div = lib ? lib.DIVISIONS.find(d => d.key === key) : null;
+    return div ? div.label : key;
+}
+function cupsFindDraw(cup, division) {
+    return cupsState.draws.find(d => d.cup_slug === cup && d.division === division) || null;
+}
+function cupsStoreDraw(draw) {
+    cupsState.draws = cupsState.draws.filter(d => !(d.cup_slug === draw.cup_slug && d.division === draw.division));
+    cupsState.draws.push(draw);
+}
+function cupsPlayerName(id) {
+    const p = (_playersCache || []).find(x => cupsSameId(x.player_id, id));
+    return p ? p.player_name : 'A player';
+}
+// Today in LOCAL time: toISOString() is UTC, which is still yesterday for
+// the first hour after midnight in summer.
+function cupsToday() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function cupsBracketSize(n) { let p = 1; while (p < n) p *= 2; return p; }
+function cupsPaneShown() {
+    const pane = document.getElementById('paneCups');
+    return !!pane && pane.offsetWidth > 0;
+}
+function cupsShownPanel(cup, division) {
+    if (!cupsState.shownCup || cupsState.shownCup !== cup) return null;
+    return document.querySelector('#cupsPanels .cups-panel[data-division="' + division + '"]');
+}
+// In the panel, or at the top of the pane if the admin has moved to another cup meanwhile.
+function cupsPanelMsg(cup, division, text, type) {
+    if (cupsShownPanel(cup, division)) showMsg(cupsMsgId(division), text, type);
+    else showMsg('cupsMsg', cupsCupName(cup) + ', ' + cupsDivLabel(division) + ': ' + text, type);
+}
+
+// Squad players who can enter a draw for this division (Combined: both).
+// Team-less players and placeholder "Bye" teams are left out.
+function cupsPlayersFor(division) {
+    const rank = d => (d === 'premier' ? 0 : 1);
+    const text = (a, b) => String(a || '').localeCompare(String(b || ''), 'en', { sensitivity: 'base' });
+    return (_playersCache || [])
+        .filter(p => p.team_id != null && (p.division === 'premier' || p.division === 'a')
+            && (division === 'combined' || p.division === division)
+            && !/^\s*bye\b/i.test(p.team_name || ''))
+        .sort((x, y) => rank(x.division) - rank(y.division) || text(x.team_name, y.team_name)
+            || Number(x.team_id) - Number(y.team_id) || text(x.player_name, y.player_name));
+}
+
+// One GET loads every cup's draws. A cup/division whose POST started or
+// finished while this GET was out keeps its local copy: that POST's own
+// response is newer than this list.
+async function cupsLoad(resetForms) {
+    if (resetForms) cupsState.forms = {};
+    const seq = ++cupsState.loadSeq;
+    const mutAtStart = cupsState.mutSeq;
+    let res;
+    try {
+        res = await apiCall('comp-draws');
+    } catch (e) {
+        res = { success: false, error: 'Network error: the cup draws could not be loaded. Press Refresh to try again.' };
+    }
+    if (seq !== cupsState.loadSeq) return;
+    if (res && res.success) {
+        const keepLocal = d => (cupsState.mutatedAt[cupsKey(d.cup_slug, d.division)] || 0) > mutAtStart;
+        cupsState.draws = (Array.isArray(res.draws) ? res.draws : []).filter(d => !keepLocal(d))
+            .concat(cupsState.draws.filter(keepLocal));
+        cupsState.schemaReady = res.schema_ready !== false;
+        cupsState.loaded = true;
+        cupsState.loadError = '';
+    } else {
+        cupsState.loadError = (res && res.error) || 'The cup draws could not be loaded. Press Refresh to try again.';
+    }
+    cupsRenderPane();
+}
+
+function cupsRenderPane() {
+    // The brackets measure their container to pick a view, so draw only
+    // while the pane is on screen; clicking the Cups tab draws it again.
+    if (!cupsPaneShown()) return;
+    const lib = cupsLib();
+    const picker = document.getElementById('cupsPicker');
+    const panels = document.getElementById('cupsPanels');
+    let note = '', type = 'info';
+    if (!lib) {
+        note = 'The cup draw script (cup-draw.js) did not load. Reload the page to try again.';
+        type = 'error';
+    } else if (!cupsState.loaded) {
+        note = cupsState.loadError || 'Loading the cup draws...';
+        type = cupsState.loadError ? 'error' : 'info';
+    } else if (!cupsState.schemaReady) {
+        note = 'Run db/2026-add-individual-cups.sql in phpMyAdmin to switch on cup draws.';
+    }
+    if (note) {
+        showMsg('cupsMsg', note, type);
+        picker.innerHTML = '';
+        panels.innerHTML = '';
+        cupsState.shownCup = '';
+        return;
+    }
+    if (cupsState.loadError) showMsg('cupsMsg', cupsState.loadError, 'error');
+    else clearMsg('cupsMsg');
+    if (!lib.CUPS.some(c => c.slug === cupsState.cup)) cupsState.cup = lib.CUPS.length ? lib.CUPS[0].slug : '';
+    cupsRenderPicker();
+    if (cupsState.shownCup !== cupsState.cup) {
+        // Another cup: new panels. Open setup forms stay parked in cupsState.forms.
+        panels.innerHTML = lib.DIVISIONS.map(d => `
+            <section class="cups-panel${d.key === 'combined' ? ' cups-panel-wide' : ''}" data-division="${escapeHtml(d.key)}" aria-label="${escapeHtml(d.label)}">
+                <div class="cups-panel-head"></div>
+                <div id="${escapeHtml(cupsMsgId(d.key))}" class="auth-msg"></div>
+                <div class="cups-panel-body"></div>
+            </section>`).join('');
+        cupsState.shownCup = cupsState.cup;
+    }
+    lib.DIVISIONS.forEach(d => cupsRenderPanel(d.key));
+}
+
+// The cup pills; a dot marks a cup with a draw still in progress.
+function cupsRenderPicker() {
+    const lib = cupsLib();
+    const picker = document.getElementById('cupsPicker');
+    if (!lib || !cupsPaneShown()) return;
+    const hadFocus = picker.contains(document.activeElement);
+    picker.innerHTML = lib.CUPS.map(c => {
+        const on = c.slug === cupsState.cup;
+        const live = cupsState.draws.some(d => d.cup_slug === c.slug && !d.complete);
+        return `<button type="button" class="cups-pill${on ? ' cups-on' : ''}" data-cups-act="cup" data-cup="${escapeHtml(c.slug)}" aria-pressed="${on}">`
+            + escapeHtml(c.name)
+            + (live ? '<span class="cups-dot" title="Draw in progress"></span><span class="cups-sr"> (draw in progress)</span>' : '')
+            + '</button>';
+    }).join('');
+    if (hadFocus) {
+        const pill = picker.querySelector('.cups-on');
+        if (pill) pill.focus();
+    }
+}
+
+function cupsRenderPanel(division) {
+    const lib = cupsLib();
+    const cup = cupsState.cup;
+    const panel = cupsShownPanel(cup, division);
+    if (!lib || !panel || !cupsPaneShown()) return;
+    const key = cupsKey(cup, division);
+    const draw = cupsFindDraw(cup, division);
+    const form = cupsState.forms[key];
+    const head = panel.querySelector('.cups-panel-head');
+    const body = panel.querySelector('.cups-panel-body');
+    const title = `<h4 class="cups-panel-title">${escapeHtml(cupsDivLabel(division))}</h4>`;
+    let bracketEl = body.querySelector('.cups-bracket');
+
+    if (form) {
+        // The form goes on top; a bracket underneath is only hidden, so
+        // Cancel brings it back as it was.
+        head.innerHTML = `<div>${title}<div class="cups-line">${form.mode === 'redraw'
+            ? 'Redraw: making the draw replaces the current one and all its results.'
+            : 'New draw'}</div></div>`;
+        Array.from(body.children).forEach(ch => { if (ch !== form.el && ch !== bracketEl) ch.remove(); });
+        if (form.el.parentNode !== body) body.insertBefore(form.el, body.firstChild);
+        if (bracketEl) bracketEl.hidden = true;
+        return;
+    }
+    if (!draw) {
+        head.innerHTML = `<div>${title}</div>`;
+        body.innerHTML = '<p class="cups-empty">No draw yet.</p><button type="button" class="btn" data-cups-act="make">Make a draw</button>';
+        return;
+    }
+    try {
+        head.innerHTML = `<div>${title}<div class="cups-line">${escapeHtml(lib.formatLine(draw))}</div></div>
+            <div class="cups-actions">
+                <button type="button" class="btn-sm btn-edit" data-cups-act="redraw">Redraw</button>
+                <button type="button" class="btn-sm btn-delete" data-cups-act="delete">Delete draw</button>
+            </div>`;
+        // Same draw in the same container: CupDraw keeps its view, round and scroll.
+        if (!bracketEl || bracketEl.dataset.drawId !== String(draw.draw_id)) {
+            body.innerHTML = '';
+            bracketEl = document.createElement('div');
+            bracketEl.className = 'cups-bracket';
+            bracketEl.dataset.drawId = String(draw.draw_id);
+            body.appendChild(bracketEl);
+        } else {
+            Array.from(body.children).forEach(ch => { if (ch !== bracketEl) ch.remove(); });
+            bracketEl.hidden = false;
+        }
+        lib.render(bracketEl, draw, {
+            admin: true,
+            view: 'auto',
+            // One click per result, no confirm. CupDraw never offers the current
+            // winner as a button, so a pick is always a new or changed winner.
+            onPick: (match, side) => cupsSendResult(cup, division, 'admin-comp-result', { match_id: match.match_id, winner: side }),
+            onScore: (match, home, away) => cupsSendScore(cup, division, match, home, away),
+            onClear: (match) => {
+                if (!confirm('Undo this result? The winner is taken back out of the next round.')) return;
+                cupsSendResult(cup, division, 'admin-comp-clear-result', { match_id: match.match_id });
+            },
+        });
+        if (cupsState.busy[key]) cupsApplyBusy(panel, true);
+    } catch (err) {
+        showMsg(cupsMsgId(division), 'This draw could not be shown (' + ((err && err.message) || err) + '). Try Refresh, or reload the page.', 'error');
+    }
+}
+
+// After a POST: redraw that one panel (if it is on screen) and the pill dots.
+function cupsRefreshShown(cup, division) {
+    if (cupsShownPanel(cup, division)) cupsRenderPanel(division);
+    cupsRenderPicker();
+}
+
+function cupsApplyBusy(panel, on) {
+    panel.querySelectorAll('.cups-panel-head button').forEach(b => { b.disabled = on; });
+    const bracketEl = panel.querySelector('.cups-bracket');
+    if (bracketEl && cupsLib()) cupsLib().setBusy(bracketEl, on);
+}
+
+// One POST per panel at a time: its buttons are blocked and its bracket dimmed.
+function cupsSetBusy(cup, division, on) {
+    const key = cupsKey(cup, division);
+    if (on) cupsState.busy[key] = true; else delete cupsState.busy[key];
+    const form = cupsState.forms[key];
+    if (form) {
+        form.el.querySelectorAll('button').forEach(b => { b.disabled = on; });
+        if (!on) cupsUpdateSummary(form.el);
+    }
+    const panel = cupsShownPanel(cup, division);
+    if (panel) cupsApplyBusy(panel, on);
+}
+
+// Runs one admin POST for a panel and never throws. The panel is stamped
+// before and after, so a cupsLoad that overlaps it keeps this newer result.
+async function cupsPost(cup, division, endpoint, body, networkError) {
+    const key = cupsKey(cup, division);
+    cupsState.mutatedAt[key] = ++cupsState.mutSeq;
+    cupsSetBusy(cup, division, true);
+    let res;
+    try {
+        res = await apiCall(endpoint, { method: 'POST', body: JSON.stringify(body) });
+    } catch (e) {
+        res = { success: false, error: networkError };
+    }
+    cupsState.mutatedAt[key] = ++cupsState.mutSeq;
+    cupsSetBusy(cup, division, false);
+    return res || { success: false };
+}
+
+async function cupsSendResult(cup, division, endpoint, body) {
+    if (cupsState.busy[cupsKey(cup, division)]) return;
+    if (cupsShownPanel(cup, division)) clearMsg(cupsMsgId(division));
+    const res = await cupsPost(cup, division, endpoint, body, 'Network error: the result may not have been saved. Press Refresh to check.');
+    if (res.success) {
+        if (res.draw) cupsStoreDraw(res.draw); else cupsLoad();
+        cupsRefreshShown(cup, division);
+    } else {
+        cupsPanelMsg(cup, division, res.error || 'The result could not be saved.', 'error');
+    }
+}
+
+function cupsSendScore(cup, division, match, home, away) {
+    const side = cupsSameId(match.winner_entry_id, match.home_entry_id) ? 'home'
+        : cupsSameId(match.winner_entry_id, match.away_entry_id) ? 'away' : '';
+    if (!side) return;
+    const body = { match_id: match.match_id, winner: side };
+    if (home != null && away != null) {
+        body.home_score = Number(home);
+        body.away_score = Number(away);
+    }
+    cupsSendResult(cup, division, 'admin-comp-result', body);
+}
+
+async function cupsDeleteDraw(division) {
+    const cup = cupsState.cup;
+    const draw = cupsFindDraw(cup, division);
+    if (!draw || cupsState.busy[cupsKey(cup, division)]) return;
+    if (!confirm(`Delete the ${cupsCupName(cup)} ${cupsDivLabel(division)} draw and all its results? This cannot be undone.`)) return;
+    clearMsg(cupsMsgId(division));
+    const res = await cupsPost(cup, division, 'admin-comp-delete-draw', { draw_id: draw.draw_id },
+        'Network error: the draw may not have been deleted. Press Refresh to check.');
+    if (res.success) {
+        cupsState.draws = cupsState.draws.filter(d => !cupsSameId(d.draw_id, draw.draw_id));
+        cupsRefreshShown(cup, division);
+        cupsPanelMsg(cup, division, 'Draw deleted.', 'success');
+    } else {
+        cupsPanelMsg(cup, division, res.error || 'The draw could not be deleted.', 'error');
+    }
+}
+
+function cupsSelectCup(slug) {
+    const lib = cupsLib();
+    if (!lib || slug === cupsState.cup || !lib.CUPS.some(c => c.slug === slug)) return;
+    cupsState.cup = slug;
+    cupsRememberCup(slug);
+    cupsRenderPane();
+}
+
+// ----- setup form -----
+
+function cupsOpenForm(division, draw) {
+    const cup = cupsState.cup;
+    const key = cupsKey(cup, division);
+    if (cupsState.busy[key]) return;
+    const built = cupsBuildForm(cup, division, draw);
+    cupsState.forms[key] = { el: built.el, mode: draw ? 'redraw' : 'new' };
+    clearMsg(cupsMsgId(division));
+    cupsRenderPanel(division);
+    if (built.missing.length) {
+        showMsg(cupsMsgId(division), `No longer in this division's squads, so left out: ${built.missing.join(', ')}. Add them as guests if they should still play.`, 'info');
+    }
+    const first = built.el.querySelector('input[name="format"]:checked');
+    if (first) first.focus();
+}
+
+function cupsCloseForm(division) {
+    const key = cupsKey(cupsState.cup, division);
+    if (cupsState.busy[key]) return;
+    delete cupsState.forms[key];
+    clearMsg(cupsMsgId(division));
+    cupsRenderPanel(division);
+}
+
+// Built fresh from the current caches each time it opens (Redraw fills it
+// in from the draw). It has no ids, so a form parked while the admin looks
+// at another cup can be put back exactly as it was left.
+function cupsBuildForm(cup, division, draw) {
+    const players = cupsPlayersFor(division);
+    const format = draw ? draw.format : (cup === 'pairs-cup' ? 'pairs' : 'singles');
+    const partner = draw && draw.partner_mode === 'random' ? 'random' : 'fixed';
+    const bestOf = draw && Number(draw.best_of) === 5 ? 5 : 3;
+    const date = draw && /^\d{4}-\d{2}-\d{2}$/.test(draw.draw_date || '') ? draw.draw_date : cupsToday();
+    const radio = (name, value, label, on) =>
+        `<label class="cups-choice"><input type="radio" name="${name}" value="${value}"${on ? ' checked' : ''}>${label}</label>`;
+    const el = document.createElement('form');
+    el.className = 'cups-form';
+    el.noValidate = true;
+    el.dataset.key = cupsKey(cup, division);
+    el.dataset.division = division;
+    el.innerHTML = `
+        <fieldset class="cups-field">
+            <legend>Format</legend>
+            <div class="cups-choices">
+                ${radio('format', 'singles', 'Singles', format === 'singles')}
+                ${radio('format', 'pairs', 'Pairs', format === 'pairs')}
+                ${radio('format', 'trebles', 'Trebles', format === 'trebles')}
+            </div>
+        </fieldset>
+        <fieldset class="cups-field">
+            <legend>Best of</legend>
+            <div class="cups-choices">
+                ${radio('bestof', '3', '3 legs', bestOf === 3)}
+                ${radio('bestof', '5', '5 legs', bestOf === 5)}
+            </div>
+        </fieldset>
+        <div class="cups-field">
+            <label class="cups-choice"><input type="checkbox" name="plate"${draw && draw.has_plate ? ' checked' : ''}>Losers bracket for first-round losers</label>
+        </div>
+        <div class="cups-field">
+            <label class="cups-field-label">Draw date
+                <input type="date" name="date" class="cups-input cups-date" value="${escapeHtml(date)}">
+            </label>
+        </div>
+        <fieldset class="cups-field cups-partners">
+            <legend>Partners</legend>
+            <div class="cups-choices">
+                ${radio('partners', 'fixed', 'Fixed (enter each pair/treble)', partner === 'fixed')}
+                ${radio('partners', 'random', 'Random (shuffle the ticked players)', partner === 'random')}
+            </div>
+        </fieldset>
+        <div class="cups-field cups-pick-section">
+            <label class="cups-field-label">Players
+                <input type="search" class="cups-input cups-search" placeholder="Search by name" autocomplete="off">
+            </label>
+            <div class="cups-picklist">${cupsPickListHtml(division, players)}</div>
+            <div class="cups-guests">
+                <span class="cups-field-label">Guests (not in a squad)</span>
+                <div class="cups-guest-add">
+                    <input type="text" class="cups-input cups-guest-input" maxlength="100" placeholder="Guest name" aria-label="Guest name" autocomplete="off">
+                    <button type="button" class="btn-secondary" data-cups-act="add-guest">Add guest</button>
+                </div>
+                <div class="cups-chips"></div>
+            </div>
+        </div>
+        <div class="cups-field cups-fixed-section">
+            <div class="cups-fixed-rows"></div>
+            <button type="button" class="btn-secondary cups-fixed-add" data-cups-act="add-row">Add pair</button>
+            <template class="cups-slot-tpl"><div class="cups-slot"><select class="cups-input cups-fixed-select">${cupsFixedOptionsHtml(division, players)}</select><input type="text" class="cups-input cups-fixed-guest" maxlength="100" placeholder="Guest name" aria-label="Guest name" autocomplete="off" hidden></div></template>
+        </div>
+        <div class="cups-summary" aria-live="polite"></div>
+        <div class="cups-form-actions">
+            <button type="button" class="btn" data-cups-act="submit">Make the draw</button>
+            <button type="button" class="btn-secondary" data-cups-act="cancel">Cancel</button>
+        </div>`;
+
+    const missing = [];
+    const usesPicker = format === 'singles' || partner === 'random';
+    const size = format === 'trebles' ? 3 : 2;
+    if (draw && usesPicker) {
+        const chips = el.querySelector('.cups-chips');
+        (draw.entries || []).forEach(entry => (entry.players || []).forEach(p => {
+            if (p.player_id == null) { chips.insertAdjacentHTML('beforeend', cupsChipHtml(p.player_name)); return; }
+            const box = el.querySelector('.cups-pick[value="' + Number(p.player_id) + '"]');
+            if (box) box.checked = true; else missing.push(p.player_name);
+        }));
+    }
+    if (draw && !usesPicker) {
+        (draw.entries || []).forEach(entry => {
+            const slots = cupsAddFixedRow(el, size).querySelectorAll('.cups-slot');
+            (entry.players || []).forEach((p, i) => {
+                if (!slots[i]) return;
+                const sel = slots[i].querySelector('select');
+                if (p.player_id == null) {
+                    sel.value = 'guest';
+                    slots[i].querySelector('input').value = p.player_name || '';
+                } else {
+                    sel.value = String(p.player_id);
+                    if (sel.value !== String(p.player_id)) { sel.value = ''; missing.push(p.player_name); }
+                }
+            });
+        });
+    }
+    while (el.querySelectorAll('.cups-fixed-row').length < 2) cupsAddFixedRow(el, size);
+    cupsRefreshForm(el);
+    return { el, missing };
+}
+
+// Tick list: players grouped by team (Combined: by division, then team).
+function cupsPickListHtml(division, players) {
+    if (!players.length) {
+        return '<p class="cups-empty">No players in this division yet. Add them on the Players tab, or add guests below.</p>';
+    }
+    const groups = [];
+    players.forEach(p => {
+        let g = groups[groups.length - 1];
+        if (!g || g.division !== p.division) { g = { division: p.division, teams: [] }; groups.push(g); }
+        let t = g.teams[g.teams.length - 1];
+        if (!t || !cupsSameId(t.id, p.team_id)) { t = { id: p.team_id, name: p.team_name || '', players: [] }; g.teams.push(t); }
+        t.players.push(p);
+    });
+    return groups.map(g => '<div class="cups-divgroup">'
+        + (division === 'combined' ? `<div class="cups-divhead">${escapeHtml(cupsDivLabel(g.division))}</div>` : '')
+        + g.teams.map(t => `
+            <div class="cups-team">
+                <div class="cups-team-head">
+                    <span class="cups-team-name">${escapeHtml(t.name)}</span>
+                    <span class="cups-team-count"></span>
+                    <span class="cups-team-links">
+                        <button type="button" class="cups-link" data-cups-act="team-all" aria-label="Select all ${escapeHtml(t.name)} players">Select all</button>
+                        <button type="button" class="cups-link" data-cups-act="team-none" aria-label="Clear ${escapeHtml(t.name)} players">Clear</button>
+                    </span>
+                </div>
+                <div class="cups-players">${t.players.map(p => `<label class="cups-player" data-name="${escapeHtml(String(p.player_name || '').toLowerCase())}"><input type="checkbox" class="cups-pick" value="${Number(p.player_id)}"><span>${escapeHtml(p.player_name)}</span></label>`).join('')}</div>
+            </div>`).join('')
+        + '</div>').join('')
+        + '<p class="cups-empty cups-nomatch" hidden>No players match that search.</p>';
+}
+
+// Options for the fixed pair/treble selects: "Name (Team)" by name, then "Guest...".
+function cupsFixedOptionsHtml(division, players) {
+    const byName = (x, y) => String(x.player_name || '').localeCompare(String(y.player_name || ''), 'en', { sensitivity: 'base' });
+    const option = p => `<option value="${Number(p.player_id)}">${escapeHtml(p.player_name)} (${escapeHtml(p.team_name)})</option>`;
+    const list = division === 'combined'
+        ? ['premier', 'a'].map(dk => {
+            const inDiv = players.filter(p => p.division === dk).sort(byName);
+            return inDiv.length ? `<optgroup label="${escapeHtml(cupsDivLabel(dk))}">${inDiv.map(option).join('')}</optgroup>` : '';
+        }).join('')
+        : players.slice().sort(byName).map(option).join('');
+    return '<option value="">Choose a player</option>' + list + '<option value="guest">Guest...</option>';
+}
+
+function cupsAddFixedRow(form, size) {
+    const row = document.createElement('div');
+    row.className = 'cups-fixed-row';
+    row.innerHTML = '<div class="cups-fixed-head"><span class="cups-fixed-name"></span>'
+        + '<button type="button" class="cups-link" data-cups-act="remove-row">Remove</button></div>'
+        + '<div class="cups-fixed-slots"></div>';
+    const slots = row.querySelector('.cups-fixed-slots');
+    const tpl = form.querySelector('.cups-slot-tpl');
+    for (let i = 0; i < size; i++) slots.appendChild(tpl.content.cloneNode(true));
+    form.querySelector('.cups-fixed-rows').appendChild(row);
+    return row;
+}
+
+function cupsChipHtml(name) {
+    return `<span class="cups-chip" data-name="${escapeHtml(name)}"><span>${escapeHtml(name)}</span>`
+        + `<button type="button" class="cups-chip-x" data-cups-act="remove-guest" aria-label="Remove guest ${escapeHtml(name)}">&times;</button></span>`;
+}
+
+function cupsAddGuest(form) {
+    const input = form.querySelector('.cups-guest-input');
+    const name = input.value.trim().replace(/\s+/g, ' ');
+    const msgId = cupsMsgId(form.dataset.division);
+    if (!name) { input.focus(); return; }
+    const clash = Array.from(form.querySelectorAll('.cups-chip')).some(c => c.dataset.name.toLowerCase() === name.toLowerCase());
+    if (clash) { showMsg(msgId, name + ' is already on the guest list.', 'error'); input.select(); return; }
+    form.querySelector('.cups-chips').insertAdjacentHTML('beforeend', cupsChipHtml(name));
+    input.value = '';
+    input.focus();
+    const msg = document.getElementById(msgId);
+    if (msg && msg.classList.contains('error')) clearMsg(msgId);
+    cupsUpdateSummary(form);
+}
+
+// "Select all" / "Clear" act on the players of that team the search shows.
+function cupsTickTeam(btn, on) {
+    btn.closest('.cups-team').querySelectorAll('.cups-player').forEach(row => {
+        if (!row.hidden) row.querySelector('.cups-pick').checked = on;
+    });
+    cupsUpdateSummary(btn.closest('.cups-form'));
+}
+
+function cupsFilterPlayers(form) {
+    const q = form.querySelector('.cups-search').value.trim().toLowerCase();
+    let any = false;
+    form.querySelectorAll('.cups-team').forEach(team => {
+        let shown = 0;
+        team.querySelectorAll('.cups-player').forEach(row => {
+            const hit = !q || row.dataset.name.indexOf(q) !== -1;
+            row.hidden = !hit;
+            if (hit) shown++;
+        });
+        team.hidden = !shown;
+        if (shown) any = true;
+    });
+    form.querySelectorAll('.cups-divgroup').forEach(g => { g.hidden = !g.querySelector('.cups-team:not([hidden])'); });
+    const none = form.querySelector('.cups-nomatch');
+    if (none) none.hidden = any || !q;
+}
+
+function cupsChecked(form, name) {
+    const input = form.querySelector('input[name="' + name + '"]:checked');
+    return input ? input.value : '';
+}
+
+// Shows the parts that fit the chosen format / partners, then re-checks.
+function cupsRefreshForm(form) {
+    const format = cupsChecked(form, 'format') || 'singles';
+    const usesPicker = format === 'singles' || cupsChecked(form, 'partners') === 'random';
+    form.querySelector('.cups-partners').hidden = format === 'singles';
+    form.querySelector('.cups-pick-section').hidden = !usesPicker;
+    form.querySelector('.cups-fixed-section').hidden = usesPicker;
+    if (format !== 'singles') cupsSyncFixed(form, format === 'trebles' ? 3 : 2);
+    cupsUpdateSummary(form);
+}
+
+// Fixed rows: 2 or 3 places each, numbered, guest boxes shown for "Guest...",
+// and a player picked in one place greyed out in all the others.
+function cupsSyncFixed(form, size) {
+    const unit = size === 3 ? 'Treble' : 'Pair';
+    const tpl = form.querySelector('.cups-slot-tpl');
+    form.querySelectorAll('.cups-fixed-row').forEach((row, i) => {
+        const slots = row.querySelector('.cups-fixed-slots');
+        while (slots.children.length < size) slots.appendChild(tpl.content.cloneNode(true));
+        while (slots.children.length > size) slots.lastElementChild.remove();
+        row.querySelector('.cups-fixed-name').textContent = unit + ' ' + (i + 1);
+        row.querySelector('[data-cups-act="remove-row"]').setAttribute('aria-label', 'Remove ' + unit.toLowerCase() + ' ' + (i + 1));
+        Array.from(slots.children).forEach((slot, j) => {
+            const sel = slot.querySelector('select');
+            sel.setAttribute('aria-label', unit + ' ' + (i + 1) + ', player ' + (j + 1));
+            slot.querySelector('input').hidden = sel.value !== 'guest';
+        });
+    });
+    const selects = Array.from(form.querySelectorAll('.cups-fixed-select'));
+    const owner = new Map();
+    selects.forEach(s => { if (s.value && s.value !== 'guest' && !owner.has(s.value)) owner.set(s.value, s); });
+    selects.forEach(s => {
+        for (let k = 0; k < s.options.length; k++) {
+            const o = s.options[k];
+            if (o.value && o.value !== 'guest') o.disabled = owner.has(o.value) && owner.get(o.value) !== s;
+        }
+    });
+    form.querySelector('[data-cups-act="add-row"]').textContent = 'Add ' + unit.toLowerCase();
+}
+
+function cupsReadForm(form) {
+    const format = cupsChecked(form, 'format') || 'singles';
+    const partnerMode = format !== 'singles' && cupsChecked(form, 'partners') === 'random' ? 'random' : 'fixed';
+    const f = {
+        format,
+        partnerMode,
+        size: format === 'trebles' ? 3 : format === 'pairs' ? 2 : 1,
+        bestOf: cupsChecked(form, 'bestof') === '5' ? 5 : 3,
+        hasPlate: form.querySelector('input[name="plate"]').checked,
+        date: form.querySelector('input[name="date"]').value,
+        usesPicker: format === 'singles' || partnerMode === 'random',
+    };
+    if (f.usesPicker) {
+        f.players = Array.from(form.querySelectorAll('.cups-pick:checked')).map(b => ({ player_id: Number(b.value) }))
+            .concat(Array.from(form.querySelectorAll('.cups-chip')).map(c => ({ guest: c.dataset.name })));
+    } else {
+        f.rows = Array.from(form.querySelectorAll('.cups-fixed-row')).map(row =>
+            Array.from(row.querySelectorAll('.cups-slot')).map(slot => {
+                const v = slot.querySelector('select').value;
+                if (v === 'guest') return { guest: slot.querySelector('input').value.trim().replace(/\s+/g, ' ') };
+                return v ? { player_id: Number(v) } : null;
+            }));
+    }
+    return f;
+}
+
+// The server's rules: 2..256 entries, random groups must divide exactly,
+// every fixed place filled, nobody twice. Bracket P = next power of two,
+// byes P - N, first-round matches P/2 - byes; a losers bracket needs 2+.
+function cupsEvaluate(f) {
+    const unit = f.size === 3 ? ['treble', 'trebles'] : f.size === 2 ? ['pair', 'pairs'] : ['entry', 'entries'];
+    const count = (n, words) => n + ' ' + (n === 1 ? words[0] : words[1]);
+    let n, lead = '';
+    if (f.usesPicker) {
+        const k = f.players.length;
+        const guests = f.players.filter(p => 'guest' in p).length;
+        if (!k) return { ok: false, text: 'Tick the players for this draw, or add guests.' };
+        const who = count(k, ['player', 'players'])
+            + (guests ? ` (${k - guests} ticked, ${count(guests, ['guest', 'guests'])})` : ' ticked');
+        if (f.size === 1) {
+            n = k;
+        } else {
+            n = Math.floor(k / f.size);
+            const left = k % f.size;
+            if (left) {
+                return { ok: false, text: `Random ${unit[1]}: ${who} makes ${count(n, unit)} with ${left} left over: `
+                    + (f.size === 2 ? 'tick an even number.' : 'tick a multiple of 3.') };
+            }
+            lead = `Random ${unit[1]}: ${who} makes ${count(n, unit)}. `;
+        }
+    } else {
+        const Unit = unit[0].charAt(0).toUpperCase() + unit[0].slice(1);
+        const seen = new Set();
+        for (let i = 0; i < f.rows.length; i++) {
+            for (const ref of f.rows[i]) {
+                if (!ref) return { ok: false, text: `${Unit} ${i + 1} is not complete: choose a player for every place, or remove the row.` };
+                if ('guest' in ref && !ref.guest) return { ok: false, text: `${Unit} ${i + 1}: type the guest's name.` };
+                const id = 'guest' in ref ? 'g:' + ref.guest.toLowerCase() : 'p:' + ref.player_id;
+                if (seen.has(id)) return { ok: false, text: `${'guest' in ref ? ref.guest : cupsPlayerName(ref.player_id)} is in the draw twice.` };
+                seen.add(id);
+            }
+        }
+        n = f.rows.length;
+    }
+    if (n < 2) return { ok: false, text: `${lead}A draw needs at least 2 ${unit[1]}.` };
+    if (n > 256) return { ok: false, text: `${lead}That is ${n} ${unit[1]}: a draw can have at most 256.` };
+    const size = cupsBracketSize(n), byes = size - n, firstRound = size / 2 - byes;
+    let text = `${lead}${n} entries: ${size}-slot bracket, ${byes ? count(byes, ['bye', 'byes']) : 'no byes'}.`;
+    if (f.hasPlate) {
+        text += firstRound >= 2 ? ` Losers bracket: ${firstRound} first-round losers.`
+            : ' No losers bracket: there would be only one first-round match.';
+    }
+    return { ok: true, text, entries: n };
+}
+
+function cupsUpdateSummary(form) {
+    const f = cupsReadForm(form);
+    let result = cupsEvaluate(f);
+    // A name typed in the guest box but never added would quietly miss the draw.
+    const typed = form.querySelector('.cups-guest-input').value.trim();
+    if (f.usesPicker && typed) {
+        result = { ok: false, text: `${typed} is typed in the guest box but not added: press Add guest, or clear the box.` };
+    }
+    const box = form.querySelector('.cups-summary');
+    box.textContent = result.text;
+    box.classList.toggle('cups-bad', !result.ok);
+    form.querySelector('[data-cups-act="submit"]').disabled = !result.ok || !!cupsState.busy[form.dataset.key];
+    form.querySelectorAll('.cups-team').forEach(team => {
+        const ticked = team.querySelectorAll('.cups-pick:checked').length;
+        team.querySelector('.cups-team-count').textContent = ticked ? ticked + ' ticked' : '';
+    });
+    return result;
+}
+
+async function cupsSubmitForm(division) {
+    const cup = cupsState.cup;
+    const key = cupsKey(cup, division);
+    const form = cupsState.forms[key];
+    if (!form || cupsState.busy[key]) return;
+    const f = cupsReadForm(form.el);
+    const check = cupsUpdateSummary(form.el);
+    if (!check.ok) return;
+    const replacing = form.mode === 'redraw';
+    if (!confirm(`Make the ${cupsCupName(cup)} draw for ${cupsDivLabel(division)}: ${check.entries} entries?`
+        + (replacing ? '\n\nThis replaces the current draw and all its results.' : ''))) return;
+    const body = {
+        cup, division, format: f.format, best_of: f.bestOf, has_plate: f.hasPlate,
+        partner_mode: f.partnerMode, replace: replacing,
+    };
+    if (f.date) body.draw_date = f.date;
+    if (f.usesPicker) body.players = f.players; else body.entries = f.rows;
+    clearMsg(cupsMsgId(division));
+    const btn = form.el.querySelector('[data-cups-act="submit"]');
+    btn.textContent = 'Drawing...';
+    const res = await cupsPost(cup, division, 'admin-comp-draw', body,
+        'Network error: the draw may not have been made. Press Refresh to check before trying again.');
+    btn.textContent = 'Make the draw';
+    if (res.success) {
+        delete cupsState.forms[key];
+        if (res.draw) cupsStoreDraw(res.draw); else cupsLoad();
+        cupsRefreshShown(cup, division);
+        cupsPanelMsg(cup, division, `Draw made: ${check.entries} entries.`, 'success');
+    } else if (res.exists) {
+        // Fetch that draw so Cancel shows it, then write the message: the
+        // reload redraws the pane, which clears the top-of-pane message used
+        // when the admin has moved to another cup meanwhile.
+        await cupsLoad();
+        cupsPanelMsg(cup, division, 'There is already a draw for this cup and division. Press Cancel to see it, then use Redraw if you want to replace it.', 'error');
+    } else {
+        cupsPanelMsg(cup, division, res.error || 'The draw could not be made.', 'error');
+    }
+}
+
+// ----- cups events: bound once here, never inside a loader. The pane's
+// content is redrawn all the time, so clicks, ticks and typing are caught
+// on the pane itself. -----
+
+function cupsOnClick(e) {
+    const btn = e.target.closest('[data-cups-act]');
+    if (!btn || btn.disabled) return;
+    const act = btn.dataset.cupsAct;
+    if (act === 'cup') { cupsSelectCup(btn.dataset.cup); return; }
+    const panel = btn.closest('.cups-panel');
+    if (!panel) return;
+    const division = panel.dataset.division;
+    const form = btn.closest('.cups-form');
+    if (act === 'make') cupsOpenForm(division, null);
+    else if (act === 'redraw') {
+        const draw = cupsFindDraw(cupsState.cup, division);
+        if (draw) cupsOpenForm(division, draw);
+    }
+    else if (act === 'delete') cupsDeleteDraw(division);
+    else if (act === 'cancel') cupsCloseForm(division);
+    else if (act === 'submit') cupsSubmitForm(division);
+    else if (!form) return;
+    else if (act === 'team-all' || act === 'team-none') cupsTickTeam(btn, act === 'team-all');
+    else if (act === 'add-guest') cupsAddGuest(form);
+    else if (act === 'remove-guest') {
+        btn.closest('.cups-chip').remove();
+        form.querySelector('.cups-guest-input').focus();
+        cupsUpdateSummary(form);
+    }
+    else if (act === 'add-row') {
+        const row = cupsAddFixedRow(form, cupsChecked(form, 'format') === 'trebles' ? 3 : 2);
+        cupsRefreshForm(form);
+        row.querySelector('select').focus();
+    }
+    else if (act === 'remove-row') {
+        btn.closest('.cups-fixed-row').remove();
+        cupsRefreshForm(form);
+    }
+}
+
+function cupsOnChange(e) {
+    const form = e.target.closest('.cups-form');
+    if (!form || e.target.classList.contains('cups-search') || e.target.classList.contains('cups-guest-input')) return;
+    cupsRefreshForm(form);
+}
+
+function cupsOnInput(e) {
+    const form = e.target.closest('.cups-form');
+    if (!form) return;
+    if (e.target.classList.contains('cups-search')) cupsFilterPlayers(form);
+    else if (e.target.classList.contains('cups-fixed-guest') || e.target.classList.contains('cups-guest-input')) cupsUpdateSummary(form);
+}
+
+// Enter never submits the setup form; in the guest box it adds the guest.
+function cupsOnKeydown(e) {
+    if (e.key !== 'Enter' || e.isComposing || e.target.tagName !== 'INPUT' || !e.target.closest('.cups-form')) return;
+    e.preventDefault();
+    if (e.target.classList.contains('cups-guest-input')) cupsAddGuest(e.target.closest('.cups-form'));
+}
+
+async function cupsOnRefresh() {
+    const btn = document.getElementById('cupsRefreshBtn');
+    if (btn.disabled) return;
+    btn.disabled = true;
+    btn.textContent = 'Refreshing...';
+    // Old messages go, except under an open form (it may list left-out players).
+    document.querySelectorAll('#cupsPanels .cups-panel').forEach(panel => {
+        if (!cupsState.forms[cupsKey(cupsState.shownCup, panel.dataset.division)]) clearMsg(cupsMsgId(panel.dataset.division));
+    });
+    try {
+        await cupsLoad();
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Refresh';
+    }
+}
+
+// Guarded so a markup slip here can never stop the rest of the dashboard.
+if (document.getElementById('paneCups')) {
+    document.getElementById('paneCups').addEventListener('click', cupsOnClick);
+    document.getElementById('paneCups').addEventListener('change', cupsOnChange);
+    document.getElementById('paneCups').addEventListener('input', cupsOnInput);
+    document.getElementById('paneCups').addEventListener('keydown', cupsOnKeydown);
+    document.getElementById('paneCups').addEventListener('submit', (e) => e.preventDefault());
+}
+if (document.getElementById('cupsRefreshBtn')) {
+    document.getElementById('cupsRefreshBtn').addEventListener('click', cupsOnRefresh);
+}
+// A second listener on the Cups tab. The switcher above was bound first, so
+// it has already shown the pane: draw from what we have, then fetch fresh.
+if (document.querySelector('.admin-tab[data-pane="paneCups"]')) {
+    document.querySelector('.admin-tab[data-pane="paneCups"]').addEventListener('click', () => {
+        cupsRenderPane();
+        cupsLoad();
+    });
+}
+
 // ============== Announcements ==============
 
 async function loadAnnouncements() {
@@ -1773,7 +2714,7 @@ async function submitMatchEdit(e) {
 
 document.getElementById('seasonResetBtn').addEventListener('click', async () => {
     // First confirmation
-    if (!confirm("FINAL WARNING ONE OF TWO\n\nThis will permanently delete ALL teams, players, league matches, the knockout cup bracket (both divisions), all singles/doubles results, 180s, high finishes, league standings, and player requests.\n\nYour admin account and league announcements stay. There is NO undo.\n\nProceed?")) return;
+    if (!confirm("FINAL WARNING ONE OF TWO\n\nThis will permanently delete ALL teams, players, league matches, the knockout cup bracket (both divisions), all cup competition draws, all singles/doubles results, 180s, high finishes, league standings, and player requests.\n\nYour admin account and league announcements stay. There is NO undo.\n\nProceed?")) return;
     // Second confirmation with typed phrase
     const typed = prompt('FINAL WARNING TWO OF TWO\n\nType the word RESET (in capitals) to confirm.');
     if (typed !== 'RESET') {
@@ -1786,7 +2727,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
     const res = await apiCall('admin-season-reset', { method: 'POST', body: JSON.stringify({}) });
     btn.disabled = false; btn.textContent = orig;
     if (res.success) {
-        showMsg('dashMsg', 'Season reset complete. All teams, players, league matches, the cup bracket, stats and player requests have been wiped.', 'success');
+        showMsg('dashMsg', 'Season reset complete. All teams, players, league matches, the cup bracket, cup competition draws, stats and player requests have been wiped.', 'success');
         // Refresh every dashboard view that depends on this data – including
         // the cup bracket status and the per-division draw preview, both of
         // which were silently stale before this commit.
@@ -1799,6 +2740,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
         loadDrawPreview('premier');
         loadDrawPreview('a');
         loadAdjustments();
+        cupsLoad(true);
     } else {
         showMsg('dashMsg', res.error || 'Reset failed', 'error');
     }

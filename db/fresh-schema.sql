@@ -27,6 +27,10 @@ DROP PROCEDURE IF EXISTS `advance_cup_winner`;
 DROP PROCEDURE IF EXISTS `calculate_player_rankings`;
 DROP PROCEDURE IF EXISTS `update_league_standings`;
 
+DROP TABLE IF EXISTS `comp_entry_players`;
+DROP TABLE IF EXISTS `comp_matches`;
+DROP TABLE IF EXISTS `comp_entries`;
+DROP TABLE IF EXISTS `comp_draws`;
 DROP TABLE IF EXISTS `cup_game_players`;
 DROP TABLE IF EXISTS `cup_games`;
 DROP TABLE IF EXISTS `points_adjustments`;
@@ -462,6 +466,75 @@ CREATE TABLE `cup_game_players` (
   KEY `idx_cup_game_players_player` (`player_id`),
   CONSTRAINT `cup_game_players_game_fk` FOREIGN KEY (`game_id`) REFERENCES `cup_games` (`game_id`) ON DELETE CASCADE,
   CONSTRAINT `cup_game_players_player_fk` FOREIGN KEY (`player_id`) REFERENCES `players` (`player_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+-- ---------------------------------------------------------------------
+-- Individual cup competitions (3-2-1, Singles, Pairs, Good Friday,
+-- Paul/Terry, Memorial and Cap/Sec Cups): one draw per cup and division,
+-- its entries (registered players or guests) and every match of the
+-- main bracket and the optional losers bracket for first-round losers.
+-- Everything cascades from comp_draws.
+-- ---------------------------------------------------------------------
+
+CREATE TABLE `comp_draws` (
+  `draw_id` int(11) NOT NULL AUTO_INCREMENT,
+  `cup_slug` varchar(40) NOT NULL,
+  `division` enum('premier','a','combined') NOT NULL,
+  `format` enum('singles','pairs','trebles') NOT NULL,
+  `best_of` tinyint(4) NOT NULL DEFAULT 3,
+  `has_plate` tinyint(1) NOT NULL DEFAULT 0,
+  `partner_mode` enum('fixed','random') NOT NULL DEFAULT 'fixed',
+  `draw_date` date DEFAULT NULL,
+  `created_by_admin_id` int(11) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`draw_id`),
+  UNIQUE KEY `uq_comp_draws_cup_division` (`cup_slug`, `division`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+CREATE TABLE `comp_entries` (
+  `entry_id` int(11) NOT NULL AUTO_INCREMENT,
+  `draw_id` int(11) NOT NULL,
+  `draw_order` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `team_name` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`entry_id`),
+  KEY `idx_comp_entries_draw` (`draw_id`),
+  CONSTRAINT `comp_entries_draw_fk` FOREIGN KEY (`draw_id`) REFERENCES `comp_draws` (`draw_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+CREATE TABLE `comp_entry_players` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `entry_id` int(11) NOT NULL,
+  `player_id` int(11) DEFAULT NULL,
+  `player_name` varchar(100) NOT NULL,
+  `team_name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_comp_entry_players_entry` (`entry_id`),
+  KEY `idx_comp_entry_players_player` (`player_id`),
+  CONSTRAINT `comp_entry_players_entry_fk` FOREIGN KEY (`entry_id`) REFERENCES `comp_entries` (`entry_id`) ON DELETE CASCADE,
+  CONSTRAINT `comp_entry_players_player_fk` FOREIGN KEY (`player_id`) REFERENCES `players` (`player_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
+
+CREATE TABLE `comp_matches` (
+  `match_id` int(11) NOT NULL AUTO_INCREMENT,
+  `draw_id` int(11) NOT NULL,
+  `bracket` enum('main','plate') NOT NULL DEFAULT 'main',
+  `round_no` tinyint(4) NOT NULL,
+  `match_no` smallint(6) NOT NULL,
+  `home_entry_id` int(11) DEFAULT NULL,
+  `away_entry_id` int(11) DEFAULT NULL,
+  `winner_entry_id` int(11) DEFAULT NULL,
+  `home_score` tinyint(4) DEFAULT NULL,
+  `away_score` tinyint(4) DEFAULT NULL,
+  `is_bye` tinyint(1) NOT NULL DEFAULT 0,
+  `next_match_id` int(11) DEFAULT NULL,
+  `next_slot` enum('home','away') DEFAULT NULL,
+  `loser_next_match_id` int(11) DEFAULT NULL,
+  `loser_next_slot` enum('home','away') DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`match_id`),
+  KEY `idx_comp_matches_draw` (`draw_id`),
+  CONSTRAINT `comp_matches_draw_fk` FOREIGN KEY (`draw_id`) REFERENCES `comp_draws` (`draw_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb3 COLLATE=utf8mb3_general_ci;
 
 -- ---------------------------------------------------------------------

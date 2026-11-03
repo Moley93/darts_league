@@ -1,0 +1,669 @@
+/*
+ * cup-draw.css: individual cup draws (bracket tree, round-by-round list and
+ * the admin result controls) plus the cup page banner. Shared by the seven
+ * cup pages and admin-login.html. Every class starts with cd-, and there are
+ * no element-only selectors, so nothing here touches the rest of a page.
+ */
+
+/* ---------- Cup page banner (same look as winnershistory's .season-banner) ---------- */
+.cd-banner {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    text-align: center;
+    padding: 30px 20px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.cd-banner h2 {
+    font-size: 1.8rem;
+    margin: 0 0 8px 0;
+}
+
+.cd-banner p {
+    font-size: 1rem;
+    margin: 0;
+    opacity: 0.95;
+}
+
+/* ---------- Public page: loading, empty and error states, division tabs ---------- */
+.cd-root {
+    min-height: 80px;
+}
+
+.cd-status {
+    text-align: center;
+    padding: 30px 10px;
+    color: var(--dark-gray);
+}
+
+.cd-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--dark-gray);
+    font-style: italic;
+}
+
+.cd-empty.cd-error {
+    color: #c62828;
+    font-style: normal;
+}
+
+.cd-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.cd-tab {
+    font: inherit;
+    font-weight: 600;
+    flex: 0 1 auto;
+    min-width: 120px;
+    min-height: 44px;
+    padding: 8px 18px;
+    border: 2px solid var(--primary);
+    border-radius: 22px;
+    background: white;
+    color: var(--primary);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.cd-tab:not(.cd-on):hover {
+    background: #e8eaf6;
+}
+
+.cd-tab.cd-on {
+    background: var(--primary);
+    color: white;
+}
+
+.cd-section[hidden] {
+    display: none;
+}
+
+.cd-divhead {
+    color: var(--primary);
+    font-size: 1.3rem;
+    line-height: 1.3;
+}
+
+.cd-meta {
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+    margin: 2px 0 14px;
+}
+
+/* ---------- One draw: status, view switch, winner banners ---------- */
+.cd-ui {
+    min-width: 0;
+}
+
+.cd-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.cd-state {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.cd-state-live {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.cd-state-done {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.cd-views {
+    display: inline-flex;
+    border: 1px solid var(--primary);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.cd-vbtn {
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 600;
+    min-height: 36px;
+    padding: 6px 14px;
+    border: 0;
+    background: white;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.cd-vbtn + .cd-vbtn {
+    border-left: 1px solid var(--primary);
+}
+
+.cd-vbtn:not(.cd-on):hover {
+    background: #e8eaf6;
+}
+
+.cd-vbtn.cd-on {
+    background: var(--primary);
+    color: white;
+}
+
+.cd-champ {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #333;
+    text-align: center;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.cd-champ-name {
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.cd-champ-team {
+    font-size: 0.9rem;
+}
+
+.cd-champ.cd-champ-sm {
+    padding: 8px 14px;
+    background: linear-gradient(135deg, #fff4c2, #ffdca0);
+    box-shadow: none;
+}
+
+.cd-champ-sm .cd-champ-name {
+    font-size: 1rem;
+}
+
+.cd-note {
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+    margin: 0 0 12px;
+}
+
+.cd-plate-head {
+    color: var(--primary);
+    font-size: 1.1rem;
+    line-height: 1.3;
+    margin-top: 18px;
+}
+
+/* ---------- Bracket tree ----------
+   One CSS grid per bracket: a column per round, row 1 for the round titles,
+   then one row per first-round match. The script only sets each cell's
+   grid-column / grid-row, so cards line up exactly with no measuring. */
+.cd-scroll {
+    /* width 0 plus min-width 100% fills the width without letting a wide
+       bracket stretch a grid or flex parent: the scrolling stays in here */
+    width: 0;
+    min-width: 100%;
+    overflow-x: auto;
+    padding: 6px 2px 12px;
+    margin-bottom: 6px;
+}
+
+/* Column and row sizes are the px value at the default 16px text and grow with a
+   larger text setting (the rem side of max()), as the card text is sized in rem.
+   A row also stretches to fit a card taller still (a minimum font size, text-only
+   zoom), so cards never spill into their neighbours.
+   Columns are at least --cd-col and share any spare width up to --cd-col-max, so
+   long pairs and trebles names show in full on a wide screen. Below the minimum
+   the grid keeps its min-content width and .cd-scroll scrolls sideways. */
+.cd-grid {
+    --cd-col: max(170px, 10.625rem);
+    --cd-col-max: max(280px, 17.5rem);
+    --cd-gap: 32px;
+    --cd-row-min: max(64px, 4rem);
+    --cd-row: minmax(var(--cd-row-min), auto);
+    --cd-line: #b3b9cc;
+    display: grid;
+    column-gap: var(--cd-gap);
+    row-gap: 0;
+    width: 100%;
+    min-width: min-content;
+}
+
+.cd-grid.cd-fmt-trebles {
+    --cd-row-min: max(76px, 4.75rem);
+    --cd-col-max: max(360px, 22.5rem);
+}
+
+/* Result buttons, leg score and Undo need taller rows */
+.cd-admin .cd-grid {
+    --cd-col: max(196px, 12.25rem);
+    --cd-row-min: max(140px, 8.75rem);
+}
+
+.cd-rtitle {
+    padding: 0 4px 6px;
+    margin-bottom: 6px;
+    border-bottom: 2px solid var(--medium-gray);
+    color: var(--primary);
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* No overflow:hidden on cells: the connector lines sit outside them. The padding
+   keeps a gap (with room for the match number) between the cards of a row that
+   had to stretch; it is even, so the card and the connectors stay centred. */
+.cd-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+    padding: 6px 0;
+}
+
+.cd-cell::before,
+.cd-cell::after {
+    box-sizing: border-box;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Connectors: the top match of a pair draws the upper half of the bracket
+   line, the bottom match the lower half, and every later round draws the
+   stub coming in. The last column has nothing going out. */
+.cd-cell:not(.cd-last)::after {
+    content: "";
+    right: calc(var(--cd-gap) / -2);
+    width: calc(var(--cd-gap) / 2);
+    border-right: 2px solid var(--cd-line);
+}
+
+.cd-cell.cd-top:not(.cd-last)::after {
+    top: calc(50% - 1px);
+    bottom: 0;
+    border-top: 2px solid var(--cd-line);
+}
+
+.cd-cell.cd-bot:not(.cd-last)::after {
+    top: 0;
+    bottom: calc(50% - 1px);
+    border-bottom: 2px solid var(--cd-line);
+}
+
+.cd-cell:not(.cd-first)::before {
+    content: "";
+    left: calc(var(--cd-gap) / -2);
+    width: calc(var(--cd-gap) / 2);
+    top: calc(50% - 1px);
+    border-top: 2px solid var(--cd-line);
+}
+
+.cd-tcard {
+    position: relative;
+    width: 100%;
+    padding: 2px;
+    background: white;
+    border: 1px solid #c5cad8;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    font-size: 0.82rem;
+    line-height: 1.35;
+}
+
+.cd-tcard.cd-final {
+    border: 2px solid var(--secondary);
+}
+
+.cd-tcard.cd-byecard {
+    border-style: dashed;
+    background: #fafafa;
+    box-shadow: none;
+}
+
+/* Match number sits on the card's top border */
+.cd-tnum {
+    position: absolute;
+    top: -8px;
+    left: 8px;
+    padding: 0 4px;
+    border-radius: 3px;
+    background: white;
+    color: var(--dark-gray);
+    font-size: 0.64rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.cd-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    min-height: 22px;
+    padding: 2px 6px 2px 8px;
+    border: 0;
+    border-radius: 4px;
+    background: #f6f7fb;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.cd-row + .cd-row {
+    margin-top: 1px;
+}
+
+.cd-byecard .cd-row {
+    background: transparent;
+}
+
+/* One line per entrant in the tree: name then team, cut short with an ellipsis */
+.cd-line {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.cd-t {
+    color: var(--dark-gray);
+}
+
+/* ---------- By round ---------- */
+.cd-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.cd-rchip {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 36px;
+    padding: 5px 12px;
+    border: 1px solid #c5cad8;
+    border-radius: 18px;
+    background: var(--light-gray);
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.cd-rchip.cd-rchip-plate {
+    border-style: dashed;
+}
+
+.cd-rchip:not(.cd-on):hover {
+    background: #e8eaf6;
+}
+
+.cd-rchip.cd-on {
+    background: var(--primary);
+    border: 1px solid var(--primary);
+    color: white;
+}
+
+.cd-rhead {
+    color: var(--primary);
+    font-size: 1.1rem;
+    line-height: 1.3;
+    margin-bottom: 8px;
+}
+
+.cd-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cd-mcard {
+    padding: 4px;
+    background: white;
+    border: 1px solid #c5cad8;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.cd-mcard.cd-final {
+    border: 2px solid var(--secondary);
+}
+
+.cd-mhead {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 4px 10px;
+    padding: 2px 8px 4px;
+    font-size: 0.8rem;
+}
+
+.cd-mnum {
+    flex: none;
+    color: var(--dark-gray);
+    font-weight: 700;
+}
+
+.cd-hint {
+    color: var(--secondary);
+    font-weight: 600;
+}
+
+.cd-side {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-height: 44px;
+    padding: 6px 10px 6px 12px;
+    border: 0;
+    border-radius: 5px;
+    background: #f6f7fb;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+}
+
+.cd-side + .cd-side {
+    margin-top: 4px;
+}
+
+/* Full names wrap here, however long */
+.cd-who {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.cd-who .cd-n,
+.cd-who .cd-t {
+    display: block;
+}
+
+.cd-who .cd-t {
+    font-size: 0.85rem;
+}
+
+.cd-byerow {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 12px;
+    border: 1px dashed #c5cad8;
+    border-radius: 6px;
+    background: #fafafa;
+    color: var(--dark-gray);
+    font-size: 0.9rem;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+.cd-byetext {
+    min-width: 0;
+}
+
+/* ---------- Card states (both views) ---------- */
+.cd-row.cd-win,
+.cd-side.cd-win {
+    background: #e8f5e9;
+    box-shadow: inset 4px 0 0 #2e7d32;
+}
+
+.cd-win .cd-n {
+    font-weight: 700;
+}
+
+.cd-row.cd-lose,
+.cd-side.cd-lose {
+    color: #757575;
+}
+
+.cd-lose .cd-t {
+    color: #9e9e9e;
+}
+
+.cd-row.cd-tbd,
+.cd-side.cd-tbd {
+    background: transparent;
+    color: var(--dark-gray);
+    font-style: italic;
+}
+
+.cd-legs {
+    flex: none;
+    min-width: 1.2em;
+    text-align: right;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Admin: result buttons, leg score, Undo ---------- */
+.cd-pick {
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.cd-pick:hover {
+    background: #e3e7f6;
+}
+
+.cd-admin .cd-row {
+    min-height: 36px;
+}
+
+.cd-ctrl {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 2px 2px;
+}
+
+.cd-mcard .cd-ctrl {
+    padding: 6px 2px 2px;
+}
+
+.cd-ui .cd-legsel {
+    font: inherit;
+    font-size: 0.85rem;
+    width: auto;
+    min-height: 36px;
+    padding: 4px 6px;
+    border: 1px solid #b0b6c9;
+    border-radius: 4px;
+    background: white;
+    color: var(--primary);
+    cursor: pointer;
+}
+
+.cd-undo {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    min-height: 36px;
+    padding: 4px 12px;
+    border: 1px solid #c62828;
+    border-radius: 4px;
+    background: white;
+    color: #c62828;
+    cursor: pointer;
+}
+
+.cd-undo:hover {
+    background: #ffebee;
+}
+
+/* While the admin page waits for the API */
+.cd-busy {
+    opacity: 0.55;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.cd-tab:focus-visible,
+.cd-vbtn:focus-visible,
+.cd-rchip:focus-visible,
+.cd-pick:focus-visible,
+.cd-undo:focus-visible,
+.cd-ui .cd-legsel:focus-visible {
+    outline: 3px solid #ffb300;
+    outline-offset: -3px;
+}
+
+/* Read by screen readers only */
+.cd-sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Touch-size screens: 44px targets */
+@media (max-width: 768px), (pointer: coarse) {
+    .cd-admin .cd-row,
+    .cd-ui .cd-legsel,
+    .cd-undo,
+    .cd-vbtn,
+    .cd-rchip {
+        min-height: 44px;
+    }
+
+    .cd-admin .cd-grid {
+        --cd-row-min: max(164px, 10.25rem);
+    }
+}
+
+@media (max-width: 480px) {
+    .cd-banner h2 {
+        font-size: 1.4rem;
+    }
+
+    .cd-tab {
+        flex: 1 1 auto;
+        padding: 6px 12px;
+    }
+
+    .cd-divhead {
+        font-size: 1.15rem;
+    }
+}

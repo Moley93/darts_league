@@ -421,6 +421,18 @@
             box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
         }
 
+        .venue-line {
+            margin-top: 8px;
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--dark-gray);
+        }
+
+        .venue-line a {
+            color: inherit;
+            white-space: nowrap;
+        }
+
         /* Bracket connections (optional visual enhancement) */
         .bracket-round:not(:last-child)::after {
             content: '';
@@ -1028,12 +1040,23 @@
                 <a href="#" class="dropdown-toggle">League</a>
                 <ul class="dropdown-menu">
                     <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
                     <li><a href="leagueresults.html">Results</a></li>
                 </ul>
             </li>
             
-        <li><a href="knockoutcup.html">Knockout Cup</a></li>
+        <li class="dropdown">
+            <a href="#" class="dropdown-toggle">Cup</a>
+            <ul class="dropdown-menu">
+                <li><a href="knockoutcup.html">Knockout Cup</a></li>
+                <li><a href="321cup.html">3-2-1 Cup</a></li>
+                <li><a href="singlescup.html">Singles Cup</a></li>
+                <li><a href="pairscup.html">Pairs Cup</a></li>
+                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
+                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
+                <li><a href="memorialcup.html">Memorial Cup</a></li>
+                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
+            </ul>
+        </li>
             
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Statistics</a>
@@ -1046,6 +1069,7 @@
             <li class="dropdown">
                 <a href="#" class="dropdown-toggle">Information</a>
                 <ul class="dropdown-menu">
+                    <li><a href="leaguefixtures.html">Fixtures</a></li>
                     <li><a href="contactinfo.html">Contacts & Venues</a></li>
                     <li><a href="rules.html">League Rules</a></li>
                     <li><a href="agm-minutes.html">AGM Minutes</a></li>
@@ -1275,9 +1299,21 @@ document.addEventListener('DOMContentLoaded', function() {
             return (isHomeBye || isAwayBye) && !(isHomeBye && isAwayBye);
         }
 
+        // The home team (drawn first) hosts the fixture at its venue. The
+        // venue's phone number is a tap-to-call link.
+        function venueLineHtml(m) {
+            if (!m.home_team || !m.venue) return '<div class="venue-line">Venue TBC</div>';
+            let html = 'Venue: ' + escHtml(m.venue + (m.venue_address ? ', ' + m.venue_address : ''));
+            const tel = String(m.venue_phone || '').replace(/[^\d+]/g, '');
+            if (tel) html += ` (<a href="tel:${tel}">${escHtml(m.venue_phone)}</a>)`;
+            return `<div class="venue-line">${html}</div>`;
+        }
+
         function buildMatchEl(m, roundName, idx) {
             const wrap = document.createElement('div');
-            const isFinal = /final/i.test(roundName) && !/semi/i.test(roundName);
+            // Exact match: "Quarter Final" and "Semi Final" must not get the
+            // gold champion styling.
+            const isFinal = roundName === 'Final';
             wrap.className = 'match' + (isFinal ? ' final-match' : '');
 
             const homeName = m.home_team || null;
@@ -1317,6 +1353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     ? `<div class="score-line" data-match="${m.match_id}">${escHtml(homeName || 'Home')} ${m.home_score} - ${m.away_score} ${escHtml(awayName || 'Away')}<span class="expand-hint">▼ click to expand</span></div>`
                     : '<div class="vs">vs</div>'}
                 ${teamSlotHtml(awayName, !awayName)}
+                ${venueLineHtml(m)}
                 ${isScheduled
                     ? '<div class="winner-slot" style="background:#fff3e0;color:#e65100;">Awaiting result</div>'
                     : (isCompleted
@@ -1330,7 +1367,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 const scoreEl = wrap.querySelector('.score-line');
                 const detailEl = wrap.querySelector('.match-details');
                 wrap.addEventListener('click', async (e) => {
-                    if (e.target.closest('.match-details')) return;
+                    // A tap on the venue's phone link dials; it doesn't toggle.
+                    if (e.target.closest('.match-details, .venue-line a')) return;
                     const opened = detailEl.classList.toggle('expanded');
                     const hint = scoreEl.querySelector('.expand-hint');
                     if (hint) hint.textContent = opened ? '▲ click to collapse' : '▼ click to expand';
