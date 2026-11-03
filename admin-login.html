@@ -86,25 +86,35 @@
         .btn-secondary { background: var(--medium-gray); color: var(--primary); padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; }
         .btn-secondary:hover { background: #d0d0d0; }
 
-        /* Cups pane (individual cup draws). Everything in it uses cups-
-           classes: the tab switcher grabs every .admin-tab / .admin-pane
-           on the page and the nav JS every .dropdown-toggle. The brackets
-           themselves come from cup-draw.js / cup-draw.css (cd- classes). */
+        /* Cups pane: the team Knockout Cup and the individual cup draws.
+           Everything new in it uses cups- classes: the tab switcher grabs
+           every .admin-tab / .admin-pane on the page and the nav JS every
+           .dropdown-toggle. The brackets themselves come from cup-draw.js /
+           cup-draw.css (cd- classes). */
         .cups-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
         .cups-picker { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
         .cups-pill { font: inherit; position: relative; display: inline-flex; align-items: center; gap: 7px; padding: 7px 14px; border: 1px solid var(--medium-gray); border-radius: 999px; background: white; color: var(--primary); font-weight: 500; cursor: pointer; }
         .cups-pill:hover { background: var(--light-gray); }
         .cups-pill.cups-on { background: var(--primary); border-color: var(--primary); color: white; }
+        /* The white gap keeps the ring visible on the navy pill and buttons. */
+        .cups-pill:focus-visible, .cups-head .btn-secondary:focus-visible, .cups-ko-panel .btn:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
         .cups-dot { width: 8px; height: 8px; border-radius: 50%; background: #e65100; flex-shrink: 0; }
         .cups-pill.cups-on .cups-dot { background: #ffb74d; }
         .cups-sr { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
         /* minmax(0, 1fr) and min-width:0 let a wide bracket scroll inside
            its own .cd-scroll instead of stretching the page sideways. */
         .cups-panels { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
-        .cups-panel { min-width: 0; border: 1px solid var(--medium-gray); border-radius: 8px; padding: 14px; background: white; }
+        .cups-panel, .cups-ko-panel { min-width: 0; border: 1px solid var(--medium-gray); border-radius: 8px; padding: 14px; background: white; }
         .cups-panel-wide { grid-column: 1 / -1; }
-        .cups-panel [hidden] { display: none !important; }
-        .cups-panel button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        /* Anything in the pane hidden with [hidden] stays hidden, including
+           the setup form's rows, whose display rules (flex and so on) would
+           otherwise beat the browser's own [hidden]. */
+        #paneCups [hidden] { display: none !important; }
+        .cups-panel button:disabled, .cups-ko-panel button:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+        .cups-ko-status { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--light-gray); font-size: 0.9rem; }
+        #cupsKnockout > .small-note { margin: 0 0 6px; }
+        #cupsIntro, .cups-ko-link { margin: 0 0 14px; }
+        .cups-ko-link { font-size: 0.9rem; }
         .cups-panel-head { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
         .cups-panel-title { color: var(--primary); font-size: 1.1rem; }
         .cups-line { font-size: 0.85rem; color: var(--dark-gray); }
@@ -249,11 +259,12 @@
             .container { padding: 0 12px; }
 
             /* Cups pane: finger-sized targets. */
-            .cups-pill, .cups-head .btn-secondary, .cups-panel .btn, .cups-panel .btn-secondary, .cups-panel .btn-sm { min-height: 44px; }
+            .cups-pill, .cups-head .btn-secondary, .cups-panel .btn, .cups-panel .btn-secondary, .cups-panel .btn-sm, .cups-ko-panel .btn { min-height: 44px; }
             .cups-player, .cups-choice { min-height: 40px; }
             .cups-link { padding: 8px 2px; }
             .cups-chip-x { padding: 8px 10px; }
-            .cups-panel { padding: 12px 10px; }
+            .cups-panel, .cups-ko-panel { padding: 12px 10px; }
+            .cups-ko-link a { display: inline-block; padding: 12px 0; }
 
             /* Mobile nav: hamburger-style collapse + tap-to-open dropdowns.
                The desktop block above uses opacity/visibility transitions,
@@ -393,7 +404,6 @@
                 <button class="admin-tab" data-pane="paneRequests">Player Requests <span id="pendingCount"></span></button>
                 <button class="admin-tab" data-pane="paneMatches">Match Results</button>
                 <button class="admin-tab" data-pane="paneForfeits">Forfeits &amp; Deductions</button>
-                <button class="admin-tab" data-pane="paneCupDraw">Knockout Cup</button>
                 <button class="admin-tab" data-pane="paneCups">Cups</button>
                 <button class="admin-tab" data-pane="paneAnnouncements">Announcements</button>
                 <button class="admin-tab" data-pane="panePages">Pages (URLs)</button>
@@ -579,38 +589,40 @@
                 </table>
             </div>
 
-            <!-- Cup Draw pane -->
-            <div id="paneCupDraw" class="admin-pane">
-                <h3>Knockout Cup Draw</h3>
-                <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64). Leftover slots become first-round byes that auto-advance their opponent.</p>
-
-                <div class="form-row" style="max-width:720px;">
-                    <div class="form-group" style="text-align:left;">
-                        <button type="button" id="drawPremierBtn" class="btn" style="width:100%;">Draw Premier Division</button>
-                        <div class="small-note" id="drawPremierPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
-                        <div class="small-note" id="drawPremierStatus" style="margin-top:4px;"></div>
-                    </div>
-                    <div class="form-group" style="text-align:left;">
-                        <button type="button" id="drawABtn" class="btn" style="width:100%;">Draw A Division</button>
-                        <div class="small-note" id="drawAPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
-                        <div class="small-note" id="drawAStatus" style="margin-top:4px;"></div>
-                    </div>
-                </div>
-
-                <h3 style="margin-top:25px;">Current Bracket Status</h3>
-                <div id="bracketStatusPremier" style="margin-bottom:20px;"></div>
-                <div id="bracketStatusA"></div>
-            </div>
-
-            <!-- Cups pane -->
+            <!-- Cups pane: the team Knockout Cup, then the individual cups -->
             <div id="paneCups" class="admin-pane">
                 <div class="cups-head">
                     <h3>Cup Competitions</h3>
                     <button type="button" id="cupsRefreshBtn" class="btn-secondary">Refresh</button>
                 </div>
-                <p class="small-note">Draws for the 3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec Cups. Each cup can have a Premier Division, an A Division and a Combined draw running at the same time. Click a name in a bracket to record the winner: they go straight into the next round and the cup's public page shows the result.</p>
                 <div id="cupsMsg" class="auth-msg"></div>
                 <div id="cupsPicker" class="cups-picker" role="group" aria-label="Choose a cup"></div>
+
+                <!-- Knockout Cup, shown while its pill is picked. The Cup Draw
+                     script (performDraw, loadDrawPreview, loadBracketStatus)
+                     finds these elements by id. -->
+                <div id="cupsKnockout">
+                    <p class="small-note">A random draw replaces the existing cup bracket for the chosen division. Every cup match in that division (and its singles/doubles/180s/finishes) is wiped, then a fresh first-round draw is generated. Later rounds are created empty and fill in as winners are submitted from the team dashboards. Bracket size is the next power of 2 above the team count (2, 4, 8, 16, 32, 64). Leftover slots become first-round byes that auto-advance their opponent.</p>
+                    <p class="cups-ko-link"><a href="knockoutcup.html" target="_blank" rel="noopener">Open the Knockout Cup page (new tab)</a></p>
+                    <div class="cups-panels">
+                        <section class="cups-ko-panel" aria-label="Premier Division">
+                            <div class="cups-panel-head"><h4 class="cups-panel-title">Premier Division</h4></div>
+                            <button type="button" id="drawPremierBtn" class="btn">Draw Premier Division</button>
+                            <div class="small-note" id="drawPremierPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
+                            <div class="small-note" id="drawPremierStatus" style="margin-top:4px;"></div>
+                            <div id="bracketStatusPremier" class="cups-ko-status"></div>
+                        </section>
+                        <section class="cups-ko-panel" aria-label="A Division">
+                            <div class="cups-panel-head"><h4 class="cups-panel-title">A Division</h4></div>
+                            <button type="button" id="drawABtn" class="btn">Draw A Division</button>
+                            <div class="small-note" id="drawAPreview" style="margin-top:8px;color:var(--primary);">Loading preview...</div>
+                            <div class="small-note" id="drawAStatus" style="margin-top:4px;"></div>
+                            <div id="bracketStatusA" class="cups-ko-status"></div>
+                        </section>
+                    </div>
+                </div>
+
+                <p id="cupsIntro" class="small-note" hidden>Draws for the 3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec Cups. Each cup can have a Premier Division, an A Division and a Combined draw running at the same time. Click a name in a bracket to record the winner: they go straight into the next round and the cup's public page shows the result.</p>
                 <div id="cupsPanels" class="cups-panels"></div>
             </div>
 
@@ -1498,9 +1510,11 @@ async function loadBracketStatus(division) {
     try {
         const res = await fetch(`${API}?endpoint=cup-bracket&division=${encodeURIComponent(division)}`);
         const data = await res.json();
-        const label = division === 'premier' ? 'Premier Division' : 'A Division';
+        // The division's panel title names it, so the line just says Bracket.
+        const label = 'Bracket';
         if (!data || !data.success || !Array.isArray(data.matches) || data.matches.length === 0) {
-            target.innerHTML = `<strong>${label}:</strong> <span style="color:#c62828;">No draw yet.</span>`;
+            target.innerHTML = `<strong>${label}:</strong> <span style="color:var(--dark-gray);">No draw yet.</span>`;
+            cupsSetKnockoutLive(division, false);
             return;
         }
         // Count by round, plus status totals
@@ -1517,8 +1531,10 @@ async function loadBracketStatus(division) {
         });
         const rows = order.map(r => `<li><strong>${escapeHtml(r)}:</strong> ${byRound[r].completed}/${byRound[r].total} completed</li>`).join('');
         target.innerHTML = `<strong>${label}:</strong> ${data.matches.length} matches (${completed} completed, ${scheduled} ready to play, ${pending} awaiting winners)<ul style="margin:6px 0 0 18px;padding:0;">${rows}</ul>`;
+        cupsSetKnockoutLive(division, completed < data.matches.length);
     } catch (e) {
         target.innerHTML = '<span style="color:#c62828;">Could not load bracket status.</span>';
+        cupsSetKnockoutLive(division, false);
     }
 }
 
@@ -1572,15 +1588,20 @@ async function performDraw(division) {
 document.getElementById('drawPremierBtn').addEventListener('click', () => performDraw('premier'));
 document.getElementById('drawABtn').addEventListener('click', () => performDraw('a'));
 
-// ============== Cups (individual cup draws) ==============
-// The 3-2-1, Singles, Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec
-// cups (comp_* tables), separate from the team Knockout Cup above. One
-// comp-draws GET loads every draw and cup-draw.js (window.CupDraw) draws
-// the brackets. This page is one global script, so every new name starts
-// with "cups": a clash with an existing let/const would stop the dashboard.
+// ============== Cups pane ==============
+// The team Knockout Cup, then the 3-2-1, Singles, Pairs, Good Friday,
+// Paul/Terry, Memorial and Cap/Sec cups (comp_* tables). The Knockout Cup
+// pill shows the static #cupsKnockout section, which the Cup Draw code above
+// runs. For the other cups one comp-draws GET loads every draw and
+// cup-draw.js (window.CupDraw) draws the brackets. This page is one global
+// script, so every new name starts with "cups": a clash with an existing
+// let/const would stop the dashboard.
+
+// The Knockout Cup's pill. It is not a comp-draws cup.
+const cupsKnockoutSlug = 'knockout';
 
 let cupsState = {
-    cup: cupsStoredCup(),   // selected cup slug (checked against CupDraw.CUPS when drawn)
+    cup: cupsStoredCup(),   // selected pill: cupsKnockoutSlug or a cup slug (checked with cupsIsCup when drawn)
     loaded: false,          // a comp-draws response has arrived
     loadError: '',
     schemaReady: true,
@@ -1590,6 +1611,7 @@ let cupsState = {
     mutatedAt: {},          // "cup|division" -> mutSeq of its latest POST
     forms: {},              // open setup forms: "cup|division" -> { el, mode: 'new' | 'redraw' }
     busy: {},               // "cup|division" -> true while a POST for it runs
+    knockoutLive: {},       // division -> its Knockout Cup bracket still has matches to play
     shownCup: '',           // the cup whose three panels are in #cupsPanels
 };
 
@@ -1600,6 +1622,29 @@ function cupsRememberCup(slug) {
     try { localStorage.setItem('cdlAdminCupsCup', slug); } catch (e) { /* storage blocked: the choice just isn't remembered */ }
 }
 function cupsLib() { return window.CupDraw || null; }
+// A pill the picker can show: the Knockout Cup, or a cup cup-draw.js knows.
+function cupsIsCup(slug) {
+    const lib = cupsLib();
+    return slug === cupsKnockoutSlug || (!!lib && lib.CUPS.some(c => c.slug === slug));
+}
+// The Knockout Cup's draw previews and bracket status, from the Cup Draw code
+// above. Each loader shows its own errors, so this never rejects.
+function cupsKnockoutLoad() {
+    return Promise.all([loadDrawPreview('premier'), loadDrawPreview('a'), loadBracketStatus('premier'), loadBracketStatus('a')]);
+}
+// From loadBracketStatus: a division's Knockout Cup bracket still has matches
+// to play, which puts the in-progress dot on the Knockout Cup pill.
+function cupsSetKnockoutLive(division, live) {
+    cupsState.knockoutLive[division] = live;
+    cupsRenderPicker();
+}
+// Clears the Knockout Cup's last draw message, but not one still drawing.
+function cupsClearKnockoutStatus() {
+    ['drawPremierStatus', 'drawAStatus'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && el.textContent !== 'Drawing...') { el.textContent = ''; el.style.color = ''; }
+    });
+}
 function cupsKey(cup, division) { return cup + '|' + division; }
 function cupsMsgId(division) { return 'cupsMsg_' + division; }
 function cupsSameId(a, b) { return a != null && b != null && String(a) === String(b); }
@@ -1690,29 +1735,36 @@ function cupsRenderPane() {
     // while the pane is on screen; clicking the Cups tab draws it again.
     if (!cupsPaneShown()) return;
     const lib = cupsLib();
-    const picker = document.getElementById('cupsPicker');
     const panels = document.getElementById('cupsPanels');
+    // No remembered cup, or one that has gone: the Knockout Cup, first in the picker.
+    if (!cupsIsCup(cupsState.cup)) cupsState.cup = cupsKnockoutSlug;
+    const knockout = cupsState.cup === cupsKnockoutSlug;
+    cupsRenderPicker();
+    document.getElementById('cupsKnockout').hidden = !knockout;
+    document.getElementById('cupsIntro').hidden = knockout;
     let note = '', type = 'info';
     if (!lib) {
-        note = 'The cup draw script (cup-draw.js) did not load. Reload the page to try again.';
+        note = 'The cup draw script (cup-draw.js) did not load, so only the Knockout Cup is shown. Reload the page to try again.';
         type = 'error';
+    } else if (knockout) {
+        // The Knockout Cup section is static and has its own loaders.
     } else if (!cupsState.loaded) {
         note = cupsState.loadError || 'Loading the cup draws...';
         type = cupsState.loadError ? 'error' : 'info';
     } else if (!cupsState.schemaReady) {
         note = 'Run db/2026-add-individual-cups.sql in phpMyAdmin to switch on cup draws.';
     }
-    if (note) {
-        showMsg('cupsMsg', note, type);
-        picker.innerHTML = '';
+    if (note || knockout) {
+        // As when moving to another cup: the panels go, and open setup
+        // forms stay parked in cupsState.forms.
+        if (note) showMsg('cupsMsg', note, type);
+        else clearMsg('cupsMsg');
         panels.innerHTML = '';
         cupsState.shownCup = '';
         return;
     }
     if (cupsState.loadError) showMsg('cupsMsg', cupsState.loadError, 'error');
     else clearMsg('cupsMsg');
-    if (!lib.CUPS.some(c => c.slug === cupsState.cup)) cupsState.cup = lib.CUPS.length ? lib.CUPS[0].slug : '';
-    cupsRenderPicker();
     if (cupsState.shownCup !== cupsState.cup) {
         // Another cup: new panels. Open setup forms stay parked in cupsState.forms.
         panels.innerHTML = lib.DIVISIONS.map(d => `
@@ -1726,15 +1778,19 @@ function cupsRenderPane() {
     lib.DIVISIONS.forEach(d => cupsRenderPanel(d.key));
 }
 
-// The cup pills; a dot marks a cup with a draw still in progress.
+// The cup pills, the Knockout Cup first (the only one when cup-draw.js is
+// missing); a dot marks a cup with a draw still in progress.
 function cupsRenderPicker() {
     const lib = cupsLib();
     const picker = document.getElementById('cupsPicker');
-    if (!lib || !cupsPaneShown()) return;
+    if (!cupsPaneShown()) return;
     const hadFocus = picker.contains(document.activeElement);
-    picker.innerHTML = lib.CUPS.map(c => {
+    const cups = [{ slug: cupsKnockoutSlug, name: 'Knockout Cup' }].concat(lib ? lib.CUPS : []);
+    picker.innerHTML = cups.map(c => {
         const on = c.slug === cupsState.cup;
-        const live = cupsState.draws.some(d => d.cup_slug === c.slug && !d.complete);
+        const live = c.slug === cupsKnockoutSlug
+            ? Object.values(cupsState.knockoutLive).some(Boolean)
+            : cupsState.draws.some(d => d.cup_slug === c.slug && !d.complete);
         return `<button type="button" class="cups-pill${on ? ' cups-on' : ''}" data-cups-act="cup" data-cup="${escapeHtml(c.slug)}" aria-pressed="${on}">`
             + escapeHtml(c.name)
             + (live ? '<span class="cups-dot" title="Draw in progress"></span><span class="cups-sr"> (draw in progress)</span>' : '')
@@ -1894,8 +1950,7 @@ async function cupsDeleteDraw(division) {
 }
 
 function cupsSelectCup(slug) {
-    const lib = cupsLib();
-    if (!lib || slug === cupsState.cup || !lib.CUPS.some(c => c.slug === slug)) return;
+    if (slug === cupsState.cup || !cupsIsCup(slug)) return;
     cupsState.cup = slug;
     cupsRememberCup(slug);
     cupsRenderPane();
@@ -2380,8 +2435,9 @@ async function cupsOnRefresh() {
     document.querySelectorAll('#cupsPanels .cups-panel').forEach(panel => {
         if (!cupsState.forms[cupsKey(cupsState.shownCup, panel.dataset.division)]) clearMsg(cupsMsgId(panel.dataset.division));
     });
+    cupsClearKnockoutStatus();
     try {
-        await cupsLoad();
+        await Promise.all([cupsLoad(), cupsKnockoutLoad()]);
     } finally {
         btn.disabled = false;
         btn.textContent = 'Refresh';
@@ -2405,6 +2461,7 @@ if (document.querySelector('.admin-tab[data-pane="paneCups"]')) {
     document.querySelector('.admin-tab[data-pane="paneCups"]').addEventListener('click', () => {
         cupsRenderPane();
         cupsLoad();
+        cupsKnockoutLoad();
     });
 }
 
@@ -2739,6 +2796,7 @@ document.getElementById('seasonResetBtn').addEventListener('click', async () => 
         loadBracketStatus('a');
         loadDrawPreview('premier');
         loadDrawPreview('a');
+        cupsClearKnockoutStatus();
         loadAdjustments();
         cupsLoad(true);
     } else {
