@@ -920,7 +920,6 @@ function handleLogin() {
     try {
         // Get raw POST data
         $rawData = file_get_contents('php://input');
-        error_log("Login raw data: " . $rawData);
         
         // Parse JSON
         $data = json_decode($rawData, true);
@@ -965,6 +964,8 @@ function handleLogin() {
         if (password_verify($password, $captain['password_hash'])) {
             error_log("Password verified successfully");
             unset($captain['password_hash']);
+            // New session ID at login so a pre-login ID can't be reused (session fixation).
+            session_regenerate_id(true);
             // Set session so admin/team-aware endpoints know who is acting.
             $_SESSION['captain_id'] = (int)$captain['captain_id'];
             $_SESSION['team_id']    = (int)$captain['team_id'];
@@ -979,7 +980,7 @@ function handleLogin() {
         }
     } catch (Exception $e) {
         error_log("Login exception: " . $e->getMessage());
-        returnJson(['success' => false, 'error' => 'Login error: ' . $e->getMessage()]);
+        returnJson(['success' => false, 'error' => 'Login failed, please try again.']);
     }
 }
 
@@ -996,7 +997,6 @@ function submitMatch() {
     try {
         // Get raw POST data
         $rawData = file_get_contents('php://input');
-        error_log("Submit match raw data: " . $rawData);
         
         $data = json_decode($rawData, true);
         
@@ -1358,7 +1358,6 @@ function updateMatch() {
     try {
         // Get raw POST data
         $rawData = file_get_contents('php://input');
-        error_log("Update match raw data: " . $rawData);
 
         $data = json_decode($rawData, true);
 
@@ -1844,6 +1843,8 @@ function adminLogin() {
     if (!password_verify($password, $admin['password_hash'])) {
         returnJson(['success' => false, 'error' => 'Invalid credentials (wrong password)']);
     }
+    // New session ID at login so a pre-login ID can't be reused (session fixation).
+    session_regenerate_id(true);
     $_SESSION['admin_id'] = (int)$admin['admin_id'];
     $_SESSION['admin_username'] = $admin['username'];
     unset($_SESSION['captain_id'], $_SESSION['team_id'], $_SESSION['team_name'], $_SESSION['division']);
