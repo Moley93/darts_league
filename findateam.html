@@ -223,6 +223,15 @@ body {
     transform: translateY(0);
 }
 
+/* The last menu (Join) lines up with its item's right edge so it opens
+   to the left. Opening to the right it ran off the page at some widths
+   and gave the whole page a sideways scrollbar, even while closed (a
+   hidden menu still takes up space). */
+.nav-menu > li:last-child > .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+
 .dropdown-menu li {
     margin: 0;
 }
