@@ -188,6 +188,11 @@
         .dropdown-menu:hover {
             opacity: 1; visibility: visible; transform: translateY(0);
         }
+        /* The last menu (Join) lines up with its item's right edge so it
+           opens to the left. Opening to the right it ran off the page at
+           some widths and gave the whole page a sideways scrollbar, even
+           while closed (a hidden menu still takes up space). */
+        .nav-menu > li:last-child > .dropdown-menu { left: auto; right: 0; }
         .dropdown-menu li { margin: 0; }
         .dropdown-menu a { display: block; padding: 10px 15px; color: var(--primary); text-decoration: none; transition: all 0.3s ease; }
         .dropdown-menu a:hover { background-color: var(--light-gray); }
