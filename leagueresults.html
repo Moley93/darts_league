@@ -214,7 +214,7 @@
                         <dl class="key__list">
                             <div class="key__item"><dt class="key__term"><svg class="icon match__tick" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Tick</dt><dd class="key__desc">The team that won the match, also shown in bold.</dd></div>
                             <div class="key__item"><dt class="key__term"><span class="badge badge--warning">Walkover</span></dt><dd class="key__desc">One team did not play, so the other team was given the match. No games were played.</dd></div>
-                            <div class="key__item"><dt class="key__term">Week of</dt><dd class="key__desc">Results are grouped by week, Monday to Sunday. League matches are on Friday evenings, so each week is named after its Friday.</dd></div>
+                            <div class="key__item"><dt class="key__term">Week of</dt><dd class="key__desc">League matches are on Friday evenings, so results are grouped by match week, from Friday 6pm to the next Friday 6pm, and each week is named after its Friday. A score sent in a few days late still shows in the week the match was played.</dd></div>
                         </dl>
                     </aside>
                 </div>
@@ -302,14 +302,48 @@
             return opts && opts.year === false ? text : text + ' ' + d.getFullYear();
         }
 
-        // The Friday of the Monday-to-Sunday week a date falls in, as "YYYY-MM-DD".
-        // api.php stores the day a captain sent the score in (often the
-        // Saturday after a Friday match), so results are grouped by match week
-        // rather than shown with a misleading exact day.
-        function weekFriday(s) {
-            const d = parseDay(s);
+        // A match week runs from Friday 6pm to the next Friday 6pm, UK time.
+        const WEEK_START_HOUR = 18;
+
+        // UK calendar day ("YYYY-MM-DD") and hour (0-23) of a Unix time, or
+        // null when there is no time or the browser can't convert it.
+        let ukFormat = null;
+        function ukDayHour(ts) {
+            const n = Number(ts);
+            if (ts == null || ts === '' || !isFinite(n) || n <= 0) return null;
+            try {
+                ukFormat = ukFormat || new Intl.DateTimeFormat('en-GB', {
+                    timeZone: 'Europe/London', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', hour12: false
+                });
+                const p = {};
+                ukFormat.formatToParts(new Date(n * 1000)).forEach(x => { p[x.type] = x.value; });
+                const hour = Number(p.hour) % 24;
+                return /^\d{4}$/.test(p.year) && isFinite(hour) ? { day: p.year + '-' + p.month + '-' + p.day, hour: hour } : null;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        // The Friday that starts a result's match week, as "YYYY-MM-DD".
+        // api.php dates a result by the day the captain sent the score in,
+        // often days after the match, so a score sent on the Tuesday, or on
+        // the next Friday before 6pm, still lands in the week it was played.
+        // The exact send time decides a Friday; without it (or for a walkover,
+        // which the admin dates with the fixture day) a Friday is its own week.
+        function weekFriday(r) {
+            let d = parseDay(r.match_date);
             if (!d) return '';
-            const fri = new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7 + 4);
+            const sent = Number(r.is_walkover) === 1 ? null : ukDayHour(r.submitted_ts);
+            const sentDay = sent && parseDay(sent.day);
+            // Trust the send time only when it agrees with the stored date
+            // (the server may be on UTC, so allow a day either side); a date
+            // corrected by hand later wins.
+            const useSent = sentDay && Math.abs(sentDay - d) <= 36 * 3600 * 1000;
+            if (useSent) d = sentDay;
+            // Days back to the Friday on or before d: Fri 0, Sat 1 ... Thu 6
+            let back = (d.getDay() + 2) % 7;
+            if (back === 0 && useSent && sent.hour < WEEK_START_HOUR) back = 7;
+            const fri = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back);
             const two = n => (n < 10 ? '0' : '') + n;
             return fri.getFullYear() + '-' + two(fri.getMonth() + 1) + '-' + two(fri.getDate());
         }
@@ -386,7 +420,7 @@
             const weeks = {};
             const order = [];
             rows.forEach(r => {
-                const key = weekFriday(r.match_date);
+                const key = weekFriday(r);
                 if (!weeks[key]) { weeks[key] = []; order.push(key); }
                 weeks[key].push(r);
             });

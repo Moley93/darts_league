@@ -26,24 +26,10 @@
         body.page-knockoutcup .ko-round + .ko-round {
             margin-top: 2rem;
         }
-        /* The date after the round name: "Quarter Final, Tue 3 Nov 2026" */
-        body.page-knockoutcup .ko-when {
-            color: var(--color-text-muted);
-            font-weight: 400;
-        }
-        body.page-knockoutcup .ko-today {
-            font-size: var(--text-sm);
-            vertical-align: 0.125em;
-        }
         /* One card to a row on phones, two from 48em, each only as tall as
            itself (an opened card never stretches its neighbour) */
         body.page-knockoutcup .ko-list {
             grid-template-columns: minmax(0, 1fr);
-        }
-        body.page-knockoutcup .ko-date {
-            color: var(--color-text-muted);
-            font-weight: 600;
-            white-space: nowrap;
         }
         body.page-knockoutcup .ko-status {
             margin: 0.5rem 0.25rem 0;
@@ -349,16 +335,13 @@
 
         // The team Knockout Cup: one draw per division from api.php
         // (endpoint=cup-bracket), one division shown at a time. Each match card
-        // has its date and the home team's venue (tap to call, a map link);
+        // has the home team's venue (tap to call, a map link);
         // a played match opens to show its games (endpoint=match-details),
         // loaded the first time it opens.
         const API = 'api.php';
         const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
         const STORE_KEY = 'cdl-knockout-division';
         const ROUND_ORDER = ['Last 64', 'Last 32', 'Last 16', 'Quarter Final', 'Semi Final', 'Final'];
-        const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-        const NBSP = String.fromCharCode(160); // keeps a date on one line
         const ICON_PHONE = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 2.75h7a1.75 1.75 0 0 1 1.75 1.75v15a1.75 1.75 0 0 1-1.75 1.75h-7a1.75 1.75 0 0 1-1.75-1.75v-15A1.75 1.75 0 0 1 8.5 2.75z"/><path d="M11 18h2"/></svg>';
         const ICON_MAP = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
         const ICON_CHEVRON = '<svg class="icon ko-toggle__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg>';
@@ -388,13 +371,6 @@
             if (!d) return null;
             const day = ymd(d), today = ymd(new Date());
             return day < today ? -1 : (day === today ? 0 : 1);
-        }
-        // A date as HTML: "Tue 3 Nov 2026" on one line, or "Today" on the day itself
-        function dayHtml(s) {
-            const d = parseDay(s);
-            if (!d) return '';
-            if (fromToday(s) === 0) return '<span class="badge badge--gold ko-today">Today</span>';
-            return esc([DAY_NAMES[d.getDay()], d.getDate(), MONTH_NAMES[d.getMonth()], d.getFullYear()].join(NBSP));
         }
 
         // Loading, empty and error messages in plain words. message is text
@@ -463,14 +439,6 @@
             }
         }
 
-        // ", Tue 3 Nov 2026" after the round name when all its matches share a date
-        function roundDate(r) {
-            const dates = r.matches.map(m => String(m.match_date || '').slice(0, 10));
-            if (!dates[0] || dates.some(d => d !== dates[0])) return '';
-            const day = dayHtml(dates[0]);
-            return day ? '<span class="ko-when">, ' + day + '</span>' : '';
-        }
-
         function renderBracket(container, matches) {
             const list = matches.filter(m => m && typeof m === 'object');
             // Rounds in playing order; within a round, matches in the order they were drawn
@@ -506,7 +474,7 @@
                 + '</div>';
             if (champion) html += '<div class="cd-champ"><div class="cd-champ-name">' + esc('Winner: ' + champion) + '</div></div>';
             rounds.forEach(r => {
-                html += '<div class="ko-round"><h3 class="cd-rhead">' + esc(r.name) + roundDate(r) + '</h3><div class="cd-list ko-list"></div></div>';
+                html += '<div class="ko-round"><h3 class="cd-rhead">' + esc(r.name) + '</h3><div class="cd-list ko-list"></div></div>';
             });
             container.innerHTML = html + '</div>';
             const lists = container.querySelectorAll('.ko-list');
@@ -568,10 +536,9 @@
             } else if (isCompleted && !homeWon && !awayWon) {
                 status = '<span class="badge">Drawn</span>';
             }
-            const date = dayHtml(m.match_date);
-            const id = 'md-' + String(m.match_id).replace(/[^0-9A-Za-z_-]/g, '');
+            const id = 'md-' +String(m.match_id).replace(/[^0-9A-Za-z_-]/g, '');
             wrap.className = 'cd-mcard ko-card' + (isFinal ? ' cd-final' : '') + (isCompleted ? ' cd-done ko-card--done' : '');
-            wrap.innerHTML = '<div class="cd-mhead"><span class="cd-mnum">' + esc(label) + '</span>' + (date ? ' <span class="ko-date">' + date + '</span>' : '') + '</div>'
+            wrap.innerHTML = '<div class="cd-mhead"><span class="cd-mnum">' + esc(label) + '</span></div>'
                 + side(homeName, own.feed.home, homeWon, awayWon, h)
                 + side(awayName, own.feed.away, awayWon, homeWon, a)
                 + (status ? '<p class="ko-status">' + status + '</p>' : '')

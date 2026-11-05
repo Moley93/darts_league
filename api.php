@@ -574,10 +574,13 @@ function getLeagueResults() {
     $hasWo  = schemaHas('matches', 'is_walkover');
     $woCols = $hasWo ? ', m.is_walkover, ft.team_name AS forfeit_team' : ', 0 AS is_walkover, NULL AS forfeit_team';
     $woJoin = $hasWo ? 'LEFT JOIN teams ft ON m.forfeit_team_id = ft.team_id' : '';
-    
+    // When the score was sent in (Unix time), so the results page can put a
+    // score sent on a Friday before 6pm in the previous Friday's week.
+    $sentCol = schemaHas('matches', 'created_at') ? ', UNIX_TIMESTAMP(m.created_at) AS submitted_ts' : ', NULL AS submitted_ts';
+
     try {
         $stmt = $pdo->prepare("
-            SELECT 
+            SELECT
                 m.match_id,
                 m.match_date,
                 COALESCE(ht.team_name, 'TBD') as home_team,
@@ -586,6 +589,7 @@ function getLeagueResults() {
                 m.away_score,
                 m.status
                 $woCols
+                $sentCol
             FROM matches m
             LEFT JOIN teams ht ON m.home_team_id = ht.team_id
             LEFT JOIN teams at ON m.away_team_id = at.team_id
