@@ -1,5 +1,6 @@
 -- =====================================================================
--- Data update: venue addresses (November 2026)
+-- Data update: venue addresses, and the Dr Samuel Johnson's phone number
+-- (November 2026)
 --
 -- Run ONCE in phpMyAdmin on the live database: select the darts_league
 -- database, open the SQL tab, paste this file and click Go.
@@ -9,6 +10,10 @@
 -- address is still empty, so an address an admin has since typed in on the
 -- admin Venues tab is never overwritten. The addresses show on the
 -- Contacts & Venues page and on each Knockout Cup fixture.
+--
+-- Also swaps the Dr Samuel Johnson's phone number from the mobile
+-- 07940 328182 to the pub's landline 01293 456530, but only while it is
+-- still that mobile number.
 --
 -- Each address was checked against at least two independent sources
 -- (the venue's own website, CAMRA, Crawley Borough Council licensing, the
@@ -43,3 +48,7 @@ WHERE venue_name = 'New Moon Southgate' AND (address IS NULL OR address = '');
 
 UPDATE venues SET address = 'Langley Parade, Langley Green, Crawley RH11 7RS'
 WHERE venue_name = 'Dr Samuel Johnson Langley Green' AND (address IS NULL OR address = '');
+
+-- The Dr Samuel Johnson: show the pub's landline instead of the mobile.
+UPDATE venues SET phone = '01293 456530'
+WHERE venue_name = 'Dr Samuel Johnson Langley Green' AND phone = '07940 328182';
