@@ -1,697 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
     <title>CDL | AGM Minutes</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Additional styles for AGM minutes page */
-        .minutes-container {
-            max-width: 800px;
-            margin: 0 auto;
+    <meta name="description" content="Minutes of the Crawley Darts League Annual General Meeting (AGM): what was reported, voted on and agreed. Read them online or download a PDF.">
+    <link rel="canonical" href="https://crawleydartsleague.com/agm-minutes.html">
+    <meta property="og:title" content="CDL | AGM Minutes">
+    <meta property="og:description" content="Minutes of the Crawley Darts League Annual General Meeting (AGM): what was reported, voted on and agreed. Read them online or download a PDF.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* AGM Minutes page only. The document card (.doc) is in site.css;
+           this adds the read-only view's wrapper and caption, the admin hint
+           in the "not added yet" message and the help line. */
+        /* Side by side from 48em, the two buttons are the same height */
+        body.page-agm-minutes .doc__actions {
+            align-items: stretch;
         }
-        
-        .minutes-header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .minutes-header h2 {
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-        
-        .minutes-header p {
-            color: var(--dark-gray);
-            font-style: italic;
-        }
-        
-        .minutes-section {
-            margin-bottom: 30px;
-        }
-        
-        .minutes-section h3 {
-            color: var(--primary);
-            border-bottom: 2px solid var(--light-gray);
-            padding-bottom: 8px;
-            margin-bottom: 15px;
-        }
-        
-        .minutes-section p {
-            margin-bottom: 15px;
-            line-height: 1.6;
-        }
-        
-        .attendees-list {
-            list-style-type: none;
-            padding-left: 0;
-            column-count: 2;
-            column-gap: 30px;
-        }
-        
-        .attendees-list li {
-            margin-bottom: 8px;
-            break-inside: avoid;
-        }
-        
-        .position {
-            font-weight: bold;
-            color: var(--primary);
-        }
-        
-        .resolution {
-            background-color: #f5f5f5;
-            padding: 15px;
-            border-left: 4px solid var(--primary);
-            margin: 15px 0;
-        }
-        
-        .resolution-header {
-            font-weight: bold;
-            margin-bottom: 8px;
-        }
-        
-        .motion {
-            font-style: italic;
-            margin-bottom: 8px;
-        }
-        
-        .voting-result {
-            margin-top: 8px;
-        }
-        
-        .passed {
-            color: var(--success);
-            font-weight: bold;
-        }
-        
-        .not-passed {
-            color: var(--error);
-            font-weight: bold;
-        }
-        
-        .financial-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        
-        .financial-table th, .financial-table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid var(--light-gray);
-        }
-        
-        .financial-table th {
-            background-color: var(--light-gray);
-            font-weight: bold;
-        }
-        
-        .financial-table tr.total td {
-            font-weight: bold;
-            border-top: 2px solid var(--medium-gray);
-        }
-        
-        .amount {
-            text-align: right;
-        }
-        
-        .pdf-link {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 10px 15px;
-            background-color: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .pdf-link:hover {
-            background-color: var(--secondary);
-        }
-        
-        /* Basic dropdown styling - same as other pages */
-        .nav .dropdown {
-            position: relative;
-        }
-
-        .nav .dropdown-toggle {
-            cursor: pointer;
-        }
-
-        .nav .dropdown-menu {
+        /* The read-only view and its caption show from 48em, and only on a
+           screen at least 30em tall: a phone turned sideways is wider than
+           48em but too short, so it gets the buttons (no scroll inside a
+           scroll). The script uses the same media query. */
+        body.page-agm-minutes .doc__preview {
             display: none;
-            position: absolute;
-            background: white;
-            min-width: 200px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            z-index: 1000;
-            border-radius: 4px;
-            padding: 10px 0;
         }
-
-        .nav .dropdown:hover .dropdown-menu {
-            display: block;
+        body.page-agm-minutes .doc__caption {
+            margin-top: 1.5rem;
+            color: var(--color-text-muted);
         }
-
-        .nav .dropdown-menu li {
-            margin: 0;
-            padding: 0;
+        /* At least 70% of the screen height: no 60rem cap on tall screens */
+        body.page-agm-minutes .doc__preview .doc__view {
+            margin-top: 0.5rem;
+            max-height: none;
         }
-
-        .nav .dropdown-menu a {
-            display: block;
-            padding: 10px 20px;
-            color: var(--primary);
-            border-radius: 0;
+        body.page-agm-minutes .doc__hint {
+            margin-top: 0.5rem;
+            font-size: var(--text-sm);
         }
-
-        .nav .dropdown-menu a:hover {
-            background-color: var(--light-gray);
+        body.page-agm-minutes .doc__help {
+            margin-top: 1.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--color-divider);
         }
-
-        /* Mobile navigation */
-        .mobile-nav-toggle {
-            display: none;
-            cursor: pointer;
-            padding: 10px;
-            font-size: 1.5rem;
-        }
-
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .mobile-nav-toggle {
+        @media (min-width: 48em) and (min-height: 30em) {
+            body.page-agm-minutes .doc__preview {
                 display: block;
             }
-            
-            .nav-menu {
+        }
+        @media print {
+            body.page-agm-minutes .doc__preview {
                 display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: white;
-                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-                z-index: 1000;
-                padding: 0;
-                margin: 0;
-            }
-            
-            .nav-menu.active {
-                display: block;
-            }
-            
-            .nav-menu li {
-                margin: 0;
-                padding: 0;
-                display: block;
-                border-bottom: 1px solid var(--light-gray);
-            }
-            
-            .nav-menu a {
-                padding: 15px 20px;
-                display: block;
-            }
-            
-            .nav .dropdown-menu {
-                position: static;
-                box-shadow: none;
-                background: var(--light-gray);
-                width: 100%;
-                padding: 0;
-            }
-            
-            .nav .dropdown-menu li:first-child {
-                border-top: 1px solid var(--medium-gray);
-            }
-            
-            .nav .dropdown:hover .dropdown-menu {
-                display: none; /* Don't show on hover on mobile */
-            }
-            
-            /* Add a + icon to dropdowns */
-            .nav .dropdown-toggle::after {
-                content: "+";
-                margin-left: 5px;
-            }
-            
-            /* Toggle this class with JavaScript */
-            .nav .dropdown.active .dropdown-menu {
-                display: block;
-            }
-            
-            .nav .dropdown.active .dropdown-toggle::after {
-                content: "-";
-            }
-            
-            /* AGM specific mobile styles */
-            .attendees-list {
-                column-count: 1;
             }
         }
-        
-        /* Custom header style for logo positioning */
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
-        }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
-        }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
-        }
-        :root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-
-</style>
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="winnershistory.html">Winners History</a></li>
-            </ul>
-        </li>
-        
-        <li><a href="admin-login.html">Admin Login</a></li>
-
-        
-        <li><a href="team-login.html">Team Login</a></li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-        </li>
-    </ul>
-</nav>
-    <div class="container">
-        <div class="card" id="agmCard">
-            <h1>AGM Minutes</h1>
-            <p id="agmFallback" class="small-note" style="text-align:center;color:#757575;font-style:italic;padding:30px;">Loading AGM minutes...</p>
-            <div id="agmEmbedWrap" style="display:none; position:relative; width:100%; padding-bottom:120%; overflow:hidden; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.08);">
-                <iframe id="agmEmbed" loading="lazy" style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;"></iframe>
+<body class="page-agm-minutes">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
             </div>
-            <script>
-                (async () => {
-                    try {
-                        const r = await fetch('api.php?endpoint=settings');
-                        const j = await r.json();
-                        const url = j && j.settings && j.settings.agm_doc_url;
-                        const fallback = document.getElementById('agmFallback');
-                        const wrap = document.getElementById('agmEmbedWrap');
-                        const frame = document.getElementById('agmEmbed');
-                        if (url) {
-                            const embed = url.replace(/\/edit[^?]*/, '/preview').replace(/\?.*$/, '');
-                            frame.src = embed;
-                            wrap.style.display = 'block';
-                            fallback.style.display = 'none';
-                        } else {
-                            fallback.textContent = 'No AGM minutes document has been published yet. An admin can publish one from the Pages tab in the admin dashboard.';
-                        }
-                    } catch (e) {
-                        document.getElementById('agmFallback').textContent = 'Could not load the AGM minutes document.';
-                    }
-                })();
-            </script>
         </div>
-    </div><script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
+
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">AGM Minutes</h1>
+                <p class="page-header__intro">What was reported, voted on and agreed at the league's Annual General Meeting (AGM).</p>
+            </div>
+
+            <article class="card doc" id="agmCard" aria-labelledby="agm-title">
+                <h2 class="card__title" id="agm-title">Read the minutes</h2>
+                <p class="doc__intro">The minutes of the latest AGM, kept as a Google document. Open them to read on screen, or download a PDF to print or keep.</p>
+                <div id="agmFallback">
+                    <div class="state state--loading"><p>Loading the AGM minutes...</p></div>
+                </div>
+                <div class="doc__preview" id="agmEmbedWrap" hidden>
+                    <p class="doc__caption" id="agmEmbedStatus">Loading a read-only copy of the minutes...</p>
+                    <div class="doc__view">
+                        <!-- Out of the Tab order: inside Google's document Tab never comes back out
+                             (400 presses), so keyboard users take the Open button instead. Mouse, touch
+                             and screen readers still use the view. -->
+                        <iframe class="doc__frame" id="agmEmbed" title="AGM minutes, read only" tabindex="-1"></iframe>
+                    </div>
+                </div>
+                <p class="doc__help">Questions about the minutes? <a class="card__link" href="contactinfo.html#committee">Contact the committee<svg class="icon card__link-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></p>
+            </article>
+        </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
+
+    <script>
+    (function () {
+        // The AGM minutes are a Google document. A league admin sets its
+        // address on the Document links tab of Admin Login
+        // (settings.agm_doc_url), usually a sharing link ending
+        // /edit?usp=sharing. Visitors never get that editor page (it shows
+        // "Request edit access" and "Sign in"): the button and the view use
+        // the read-only /preview page (Google shows phones its own phone
+        // layout there) and the PDF comes from /export?format=pdf. Both work
+        // for a document shared as "Anyone with the link can view".
+        const SETTING = 'agm_doc_url';
+        const box = document.getElementById('agmFallback');
+        const preview = document.getElementById('agmEmbedWrap');
+        const frame = document.getElementById('agmEmbed');
+        const caption = document.getElementById('agmEmbedStatus');
+        const intro = document.querySelector('#agmCard .doc__intro');
+        // The view needs a tablet-sized screen: the same query as the page style
+        const VIEW_QUERY = '(min-width: 48em) and (min-height: 30em)';
+        const ICON_DOC = '<svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 2.75h7l4.75 4.75v13.75h-11.75z"/><path d="M13.5 2.75v4.75h4.75M9.5 12.5h5M9.5 16h5"/></svg>';
+        const ICON_NEW_TAB = '<svg class="icon btn__icon--end" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6M20 4l-9 9M18 14v5.25H4.75V6H10"/></svg>';
+        const ICON_DOWNLOAD = '<svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>';
+        let requests = 0;
+
+        // Escape any API string before it goes into HTML
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+
+        // Loading, empty and error messages in plain words; the error offers Try again
+        function stateHtml(kind, message, extra) {
+            const retry = kind === 'error'
+                ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>'
+                : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + (extra || '') + retry + '</div>';
         }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
+
+        // "Try again": keyboard focus moves to the box, which stays in place
+        // while it reloads (the button itself goes away)
+        function onRetry(el, reload) {
+            el.addEventListener('click', e => {
+                if (!e.target.closest('[data-retry]')) return;
+                el.setAttribute('tabindex', '-1');
+                el.focus();
+                reload();
             });
         }
-    });
-});
+
+        // The admin's link as the addresses this page needs, or null when
+        // there is no usable web address.
+        // - A Google Doc: /preview to open and to show, /export?format=pdf.
+        // - A Google Drive file (an uploaded PDF or Word file): it opens as
+        //   given; the view uses Drive's /preview (its /view page will not
+        //   show inside another site). No PDF button: it may not be a PDF.
+        // - Any other web address opens as given, with no view and no PDF.
+        function docLinks(raw) {
+            let url = String(raw == null ? '' : raw).trim();
+            if (/^(docs|drive)\.google\.com\//i.test(url)) url = 'https://' + url; // pasted without https://
+            if (!/^https?:\/\/[^\s"'<>]+$/i.test(url)) return null;
+            const doc = /^https?:\/\/docs\.google\.com\/document\/(?:u\/\d+\/)?d\/([\w-]{20,})(?:[\/?#]|$)/i.exec(url);
+            if (doc) {
+                const base = 'https://docs.google.com/document/d/' + doc[1];
+                return { open: base + '/preview', view: base + '/preview', pdf: base + '/export?format=pdf' };
+            }
+            const file = /^https?:\/\/drive\.google\.com\/file\/(?:u\/\d+\/)?d\/([\w-]{20,})(?:[\/?#]|$)/i.exec(url);
+            if (file) return { open: url, view: 'https://drive.google.com/file/d/' + file[1] + '/preview', pdf: null };
+            return { open: url, view: null, pdf: null };
+        }
+
+        function buttonsHtml(links) {
+            return '<div class="doc__actions cluster">'
+                + '<a class="btn btn--lg btn--block" href="' + esc(links.open) + '" target="_blank" rel="noopener">'
+                + ICON_DOC + 'Open the minutes<span class="visually-hidden"> (opens in a new tab)</span>' + ICON_NEW_TAB + '</a>'
+                + (links.pdf
+                    ? '<a class="btn btn--secondary btn--block" href="' + esc(links.pdf) + '">'
+                        + ICON_DOWNLOAD + 'Download as a PDF<span class="visually-hidden"> file of the AGM minutes</span></a>'
+                    : '')
+                + '</div>';
+        }
+
+        // The read-only view: the frame gets its address only while the view
+        // shows, so phones never download the document. The caption above it
+        // says "Loading" until the document has arrived.
+        function initDocView(url) {
+            const wide = window.matchMedia ? window.matchMedia(VIEW_QUERY) : { matches: true };
+            function place() {
+                if (wide.matches && !frame.getAttribute('src')) frame.setAttribute('src', url);
+            }
+            frame.addEventListener('load', () => {
+                if (frame.getAttribute('src')) caption.textContent = 'A read-only copy of the minutes. Scroll inside the box to read on.';
+            });
+            if (wide.addEventListener) wide.addEventListener('change', place);
+            else if (wide.addListener) wide.addListener(place);
+            preview.hidden = false;
+            place();
+        }
+
+        async function load() {
+            const mine = ++requests;
+            box.innerHTML = stateHtml('loading', 'Loading the AGM minutes...');
+            let settings = null;
+            try {
+                const res = await fetch('api.php?endpoint=settings', { credentials: 'same-origin' });
+                const data = await res.json();
+                if (data && data.success !== false && data.settings && typeof data.settings === 'object') settings = data.settings;
+            } catch (e) {
+                settings = null;
+            }
+            if (mine !== requests) return; // a newer request is on its way
+            if (!settings) {
+                box.innerHTML = stateHtml('error', 'Sorry, the AGM minutes could not be loaded just now. Please check your connection.');
+                return;
+            }
+            const links = docLinks(settings[SETTING]);
+            // "Open them to read on screen" only makes sense once there is a document
+            if (intro) intro.hidden = !links;
+            if (!links) {
+                box.innerHTML = stateHtml('empty', 'The AGM minutes have not been added yet. Please check back soon.',
+                    '<p class="doc__hint">League admins can add them in Admin Login, on the Document links tab.</p>');
+                return;
+            }
+            box.innerHTML = buttonsHtml(links);
+            if (links.view && preview.hidden) initDocView(links.view);
+        }
+
+        onRetry(box, load);
+        load();
+    })();
     </script>
 </body>
 </html>

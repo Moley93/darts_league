@@ -1,0 +1,498 @@
+/* ==========================================================================
+   Crawley Darts League: members.css (version 1, November 2026)
+   The shared look of the two logged-in pages, team-login.html and
+   admin-login.html. Link it straight after site.css:
+     <link rel="stylesheet" href="members.css?v=1">
+   Built only on the site.css tokens and components, and linked only by the
+   members pages, so nothing here can change a public page.
+
+   Same rules as site.css
+   - Mobile first. Breakpoints are written literally: 30em, 48em, 64em, 75em
+     ("below 48em" is written as not all and (min-width: 48em)).
+   - Sizes in rem, colours from the tokens, low specificity.
+   - Never style bare state classes (.active, .visible, .expanded): state
+     comes from ARIA attributes, the hidden attribute and --modifier classes.
+   - Kept out for older iPads: @layer, :has(), nesting, color-mix(), clamp(),
+     inset, flex gap for spacing that matters.
+
+   Contents
+    1. Member bar: who is logged in, and Log out
+    2. Sections: one .segmented--many group switches the panels
+    3. Buttons: --sm (44px, for dense lists) and --delete
+    4. Forms: narrow forms, the login card, disabled and invalid fields,
+       plain choice rows, messages next to their button, notices with buttons
+    5. Compact table: .table--compact
+    6. Lists that become cards below 48em: .table--cards, .row-actions
+    7. Sticky action bar and running score: .action-bar, .running-score
+    8. Score form: .game cards and .stat-entry rows
+    9. Dialogs: .modal (a form that opens over the page)
+   10. Print
+   ========================================================================== */
+
+
+/* 1. Member bar ===========================================================
+   Under the page header: who is logged in, and the Log out button.
+   <div class="member-bar">
+     <p class="member-bar__text">You are logged in as this team's captain.</p>
+     <button class="btn btn--secondary btn--sm" type="button">Log out</button>
+   </div> */
+
+.member-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin: -0.5rem 0 1.5rem;
+  padding: 0.5rem 0.5rem 0.5rem var(--card-pad);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+}
+.member-bar__text { flex: 1 1 12rem; margin: 0.25rem 1rem 0.25rem 0; }
+.member-bar__msg { flex: 1 1 100%; }
+.member-bar__msg .notice { margin: 0.5rem 0.5rem 0.25rem 0; }
+
+
+/* 2. Sections =============================================================
+   The members pages switch panels with ONE .segmented.segmented--many group
+   (site.css 8e): buttons with aria-pressed and data-panel, panels with the
+   hidden attribute. Add --sections for a grid that never leaves a lone
+   button: 2 a row on phones (1 on the narrowest), 3 a row from 48em. A page
+   with many sections can set 4 a row from 64em in its own style. Labels
+   may wrap onto two lines; the buttons in a row stay the same height. */
+
+.segmented.segmented--sections > .segmented__btn { padding-left: 0.75rem; padding-right: 0.75rem; line-height: 1.25; }
+@media (min-width: 22.5em) {
+  .segmented.segmented--sections { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 48em) {
+  .segmented.segmented--sections { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* One panel: starts with its own H2, so no "Showing:" line is needed */
+.member-panel { margin-top: 2rem; }
+.member-panel__help { max-width: var(--container-prose); margin-top: 0.5rem; padding-left: 1.25rem; }
+.member-panel__help li + li { margin-top: 0.375rem; }
+.member-panel__part { margin-top: 2rem; }
+.member-panel__part-title { margin-bottom: 0.75rem; color: var(--color-heading); font-size: var(--title-card); line-height: var(--leading-tight); }
+.member-panel__part-intro { max-width: var(--container-prose); margin: -0.375rem 0 0.75rem; color: var(--color-text-muted); }
+
+
+/* 3. Buttons ==============================================================
+   --sm: 44px tall with 16px text, for buttons inside dense lists and tables.
+   --delete: deleting or removing something. Outlined in dark red, so a list
+   of rows is not a wall of red; keep it 16px or more from other buttons. */
+
+.btn--sm { min-height: var(--tap-min); padding: 0.375rem 0.875rem; font-size: var(--text-sm); }
+.btn--delete { border-color: var(--red-700); background: var(--white); color: var(--color-danger); }
+@media (hover: hover) {
+  .btn--delete:hover { border-color: var(--red-800); background: var(--red-50); color: var(--red-800); }
+}
+
+
+/* 4. Forms ================================================================
+   Site fields (.field, .field__input, .choice) with a few members extras. */
+
+.form-narrow { max-width: 32rem; }
+
+/* The login card: a title, one line, the fields, a big Log in button with
+   its message right under it, then a help line ("No login yet? ...") */
+.login-card { max-width: 32rem; }
+.login-card__intro { margin: 0.375rem 0 1.25rem; color: var(--color-text-muted); }
+.login-card .choice { margin-top: 0.5rem; }
+.login-card__help { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--color-divider); }
+
+/* A field that cannot be used yet ("Choose the away team first") stays
+   readable: dark grey text on a pale grey field */
+.field__input:disabled {
+  border-color: var(--grey-500); /* 3:1 on white */
+  background-color: var(--grey-100);
+  color: var(--grey-700);
+  -webkit-text-fill-color: var(--grey-700);
+  opacity: 1;
+  cursor: not-allowed;
+}
+.field__input[aria-invalid="true"] { border-color: var(--red-700); }
+.field__input--short { max-width: 10rem; }
+
+/* A lone checkbox without a frame, such as "Show password" */
+.choice.choice--plain { padding-left: 0; padding-right: 0; border-color: transparent; background: transparent; }
+
+/* A message next to the button it answers: a .notice inside, or nothing.
+   Give it aria-live="polite" (role="alert" goes on an error notice). */
+.form-msg:empty { display: none; }
+.form-msg { margin-top: 1rem; }
+.form-msg:focus, .notice:focus { outline-offset: 2px; }
+
+/* Buttons inside a notice ("Cancel edit", "Start again", "View my matches") */
+.notice__actions { margin-top: 0.75rem; }
+.notice > p + p { margin-top: 0.25rem; }
+
+
+/* 5. Compact table ========================================================
+   For dense lists: 16px text and 44px rows at every width. Use with the
+   site .table (navy head row, zebra rows, .num cells). */
+
+.table--compact { font-size: var(--text-sm); }
+.table--compact th,
+.table--compact td { padding: 0.375rem 0.75rem; }
+.table--compact td,
+.table--compact tbody th { height: 2.75rem; }
+
+
+/* 6. Lists that become cards ==============================================
+   A table from 48em; below it every row is a card: its key facts, then
+   full-width buttons, with Delete set apart at the bottom. Put the table in
+   <div class="card card--flush card--rows">: below 48em that card steps
+   back (no frame) and each row gets its own. Mark the cells:
+     .cell--meta     short facts on one muted line (date, type), joined by a dot
+     .cell--main     the line that matters most (big on phones)
+     .cell--actions  holds a .row-actions group of buttons
+     td[data-label]  any other cell: shows "Label: value" on phones
+     .cell-label     words inside a cell shown on phones only, where the
+                     column headings are hidden: a second .cell--meta cannot
+                     use data-label (its ::before is the dot), so write
+                     <td class="cell--meta"><span class="cell-label">ID </span>16</td>
+   Write the row's cells with no spaces between them.
+   .row-actions: buttons in a row from 48em; .row-actions__danger (the
+   Delete button) sits 24px away from the others. */
+
+.row-actions { display: flex; flex-wrap: wrap; align-items: center; margin: -0.25rem; }
+.row-actions > * { margin: 0.25rem; }
+.row-actions > .row-actions__danger { margin-left: 1.5rem; }
+.row-note { color: var(--color-text-muted); }
+.cell--nowrap { white-space: nowrap; }
+@media (min-width: 48em) {
+  .cell-label { display: none; }
+}
+
+/* A result in a list: "Rugby Club 5 - 4 The Grasshopper A" */
+.mresult__score {
+  padding: 0 0.25rem;
+  color: var(--navy-900);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.mresult__v { padding: 0 0.25rem; color: var(--color-text-muted); }
+.mresult + .badge { margin-left: 0.5rem; }
+
+@media not all and (min-width: 48em) {
+  .table--cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .table--cards,
+  .table--cards tbody,
+  .table--cards tr,
+  .table--cards th,
+  .table--cards td {
+    display: block;
+    width: 100%;
+  }
+  .card.card--rows { border: 0; border-radius: 0; background: transparent; box-shadow: none; overflow: visible; }
+  .table--cards tbody tr {
+    margin-top: 0.75rem;
+    padding: 1rem var(--card-pad) 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-1);
+  }
+  .table--cards tbody tr:first-child { margin-top: 0; }
+  .table.table--cards tbody tr > * { height: auto; padding: 0; border: 0; background: transparent; }
+  .table--cards .cell--meta { display: inline; width: auto; color: var(--color-text-muted); font-size: var(--text-sm); }
+  .table--cards .cell--meta + .cell--meta::before { content: "\00b7"; margin: 0 0.5rem; }
+  .table--cards .cell--main { margin-top: 0.25rem; font-size: var(--text-lg); font-weight: 600; line-height: var(--leading-snug); }
+  .table--cards .cell--main .mresult__score { font-size: 1.5rem; }
+  .table--cards td[data-label]::before { content: attr(data-label) ": "; color: var(--color-text-muted); font-weight: 600; }
+  .table--cards .cell--actions { margin-top: 1rem; }
+  .table--cards .row-actions { display: block; margin: 0; }
+  .table--cards .row-actions > * { display: flex; width: 100%; margin: 0; }
+  .table--cards .row-actions > .btn { min-height: var(--control-height); font-size: var(--text-md); }
+  .table--cards .row-actions > * + * { margin-top: 0.5rem; }
+  .table--cards .row-actions > .row-actions__danger { margin: 1.5rem 0 0; }
+  .table--cards .row-actions > .row-note { display: block; }
+  .table--cards .table__state { margin: 0 calc(-1 * var(--card-pad)); }
+}
+
+
+/* 7. Sticky action bar ====================================================
+   The last thing in a long form: it stays at the bottom of the screen
+   while the form is on screen, and settles at the end of the form.
+   .action-bar__row holds the running score, a message next to the button
+   (.action-bar__msg, a .form-msg) and the main button: stacked in that
+   order on phones; from 48em the message takes its own line above the
+   score and the button. Full width on phones; a tray inside the content
+   column from 48em. Sits below the site header and menu (z-index 50). */
+
+.action-bar {
+  position: -webkit-sticky;
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  margin: 2rem calc(-1 * var(--gutter)) 0;
+  padding: 0.75rem var(--gutter);
+  border-top: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: 0 -6px 16px rgba(13, 22, 96, 0.14);
+}
+.action-bar__msg { margin: 0 0 0.75rem; }
+.action-bar__msg .notice { padding: 0.75rem 1rem; }
+
+/* The running score: the two teams and the score in a navy box. Phones:
+   home over away, the box on the right, so long team names never wrap.
+   From 30em: "Home [3 - 2] Away" on one line. */
+.running-score {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "home value" "away value";
+  grid-column-gap: 0.75rem;
+  column-gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.running-score__team { color: var(--color-text); font-size: var(--text-sm); font-weight: 700; line-height: 1.3; text-wrap: balance; }
+.running-score__team--home { grid-area: home; }
+.running-score__team--away { grid-area: away; }
+.running-score__value {
+  grid-area: value;
+  min-width: 4.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--navy-900);
+  color: var(--white);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: center;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Narrow screens (small phones, or larger text): the button's words stay on one line */
+@media not all and (min-width: 22.5em) {
+  .action-bar .btn--lg { padding-left: 0.75rem; padding-right: 0.75rem; font-size: var(--text-md); }
+}
+/* A short screen for the text size (small phones, very large text, phones
+   on their side): a sticky bar would cover too much of it, so it stays at
+   the end of the form. 45em: 720px at the usual text size, so a 390x844
+   phone keeps the bar at 16px text but not at 20px */
+@media (max-height: 45em) {
+  .action-bar { position: static; box-shadow: none; }
+}
+@media (min-width: 30em) {
+  .running-score { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "home value away"; }
+  .running-score__team--home { text-align: right; }
+}
+@media (min-width: 48em) {
+  .action-bar {
+    margin: 2rem 0 0;
+    padding: 0.875rem var(--card-pad);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+  .action-bar__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .action-bar__row > .action-bar__msg { order: -1; flex: 1 1 100%; }
+  .action-bar__row > .running-score { flex: 1 1 auto; max-width: 36rem; margin: 0 1.5rem 0 0; }
+  .action-bar__row > .btn { flex: none; }
+  .running-score__team { font-size: var(--text-md); }
+}
+
+
+/* 8. Score form ===========================================================
+   One compact card per game (.game) in a .game-grid: one column on phones,
+   two from 48em, three from 75em. Inside: a title (h4.game__title), an error box
+   (.game__error, hidden until needed) and .game__rows: a short label
+   (Home, Away, Score) beside the fields, or above them on the narrowest
+   screens. --invalid marks a game that needs fixing.
+   .stat-entry: one 180 or high finish row (player, number, Remove). */
+
+.game-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-gap: 1rem; gap: 1rem; }
+.game {
+  min-width: 0;
+  padding: 0.75rem 0.625rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+.game__title { margin-bottom: 0.5rem; color: var(--color-heading); font-size: var(--text-md); line-height: var(--leading-snug); }
+.game__rows { display: grid; grid-template-columns: minmax(0, 1fr); }
+.game__label { color: var(--color-text); font-size: var(--text-sm); font-weight: 700; line-height: 1.3; }
+.game__picks + .game__label { margin-top: 0.75rem; }
+.game__label + .game__picks { margin-top: 0.25rem; }
+.game__picks > * + * { margin-top: 0.5rem; }
+.game .field__input { min-height: var(--control-height); padding-top: 0.5rem; padding-bottom: 0.5rem; }
+/* Slimmer sides, so a long name such as "Bernadette Grantham" fits on a 360px phone */
+.game select.field__input { padding-left: 0.625rem; padding-right: 2.25rem; background-position: right 0.5rem center; }
+.game--invalid { border-color: var(--red-700); box-shadow: 0 0 0 1px var(--red-700), var(--shadow-1); }
+.game__error { margin-bottom: 0.75rem; }
+.game__error .btn { margin-top: 0.5rem; }
+
+/* Labels beside the fields from 20em (320px at the usual text size); above
+   them on narrower screens and with very large text */
+@media (min-width: 20em) {
+  .game__rows { grid-template-columns: 3.5rem minmax(0, 1fr); grid-gap: 0.5rem 0.375rem; gap: 0.5rem 0.375rem; }
+  .game__rows > .game__label,
+  .game__rows > .game__picks { margin-top: 0; }
+  .game__label { padding-top: 0.8125rem; }
+}
+@media (min-width: 22.5em) {
+  .game { padding-left: 0.75rem; padding-right: 0.75rem; }
+  .game__rows { grid-template-columns: 3.75rem minmax(0, 1fr); grid-column-gap: 0.5rem; column-gap: 0.5rem; }
+}
+@media (min-width: 30em) {
+  .game { padding-left: var(--card-pad); padding-right: var(--card-pad); }
+}
+@media (min-width: 48em) {
+  .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .game__rows { grid-template-columns: 4.25rem minmax(0, 1fr); grid-column-gap: 0.75rem; column-gap: 0.75rem; }
+}
+/* Wide screens: three games a row (the 3 doubles on one row, the 6 singles on two) */
+@media (min-width: 75em) {
+  .game-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* 180s and high finishes */
+.stat-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "player player" "value remove";
+  grid-gap: 0.75rem;
+  gap: 0.75rem;
+  align-items: end;
+  padding: 1rem 0;
+  border-top: 1px solid var(--color-divider);
+}
+.stat-entry:first-child { padding-top: 0; border-top: 0; }
+.stat-entry > .field { margin-bottom: 0; }
+.stat-entry__player { grid-area: player; }
+.stat-entry__value { grid-area: value; }
+.stat-entry__remove { grid-area: remove; }
+.stat-entry > .field__error { grid-column: 1 / -1; margin-top: -0.25rem; }
+.stat-list__add { margin-top: 1rem; }
+@media (min-width: 48em) {
+  .stat-entry { grid-template-columns: minmax(0, 28rem) 12rem auto; grid-template-areas: "player value remove"; justify-content: start; }
+}
+
+
+/* 9. Dialogs ==============================================================
+   A form that opens over the page (admin-login: edit a team, a player, a
+   venue or a match):
+   <div class="modal" id="..." hidden>                 the dark veil; it scrolls
+     <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="t">
+       <div class="modal__head">
+         <h2 class="modal__title" id="t" tabindex="-1">...</h2>
+         <button class="modal__close" type="button">(close icon) Close</button>
+       </div>
+       ...the form..., ending with <div class="modal__actions">Cancel, Save</div>
+   Full width on phones; 36rem from 48em (--wide: 60rem). Above the sticky
+   header (--z-modal). The page script moves focus in, keeps Tab inside,
+   closes it with Escape, Close or Cancel, puts focus back on the button that
+   opened it, and sets .is-dialog-open on <body> so the page behind it stays
+   still. Fieldsets inside get a heading look; game cards (section 8) go
+   two a row at most. */
+
+.modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: var(--z-modal);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 0.5rem;
+  background: rgba(13, 22, 96, 0.62);
+}
+.modal__dialog {
+  position: relative;
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 1rem var(--card-pad) 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-3);
+}
+.modal__dialog--wide { max-width: 60rem; }
+.modal__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-divider);
+}
+.modal__title {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0.625rem 1rem 0 0;
+  color: var(--color-heading);
+  font-size: var(--title-card);
+  line-height: var(--leading-tight);
+}
+.modal__title:focus { outline-offset: 2px; }
+.modal__close {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0 0.875rem 0 0.625rem;
+  border: 2px solid var(--navy-900);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--navy-900);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1;
+}
+.modal__close .icon { margin-right: 0.375rem; }
+@media (hover: hover) {
+  .modal__close:hover { background: var(--navy-50); }
+}
+/* Very narrow (small phones, or large text): Close above the title, which
+   then has the whole width */
+@media not all and (min-width: 22.5em) {
+  .modal__head { flex-direction: column-reverse; align-items: stretch; }
+  .modal__close { align-self: flex-end; }
+  .modal__title { margin: 0.75rem 0 0; }
+}
+.modal .fieldset { margin-bottom: 0.5rem; }
+.modal .fieldset__legend { margin-bottom: 0.75rem; color: var(--color-heading); font-size: var(--title-card); line-height: var(--leading-tight); }
+/* Game cards in a dialog: two a row at most, so player names fit */
+@media (min-width: 75em) {
+  .modal .game-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+.modal__actions {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--color-divider);
+}
+.modal__actions > .btn { display: flex; width: 100%; }
+.modal__actions > .btn + .btn { margin-top: 0.75rem; }
+@media (min-width: 30em) {
+  .modal__actions { display: flex; flex-wrap: wrap; justify-content: flex-end; }
+  .modal__actions > .btn { width: auto; }
+  .modal__actions > .btn + .btn { margin: 0 0 0 1rem; }
+}
+@media (min-width: 48em) {
+  .modal { padding: 2.5rem 1.5rem; }
+}
+.is-dialog-open { overflow: hidden; }
+
+
+/* 10. Print =============================================================== */
+
+@media print {
+  .member-bar,
+  .action-bar .btn { display: none !important; }
+  .action-bar { position: static; margin: 1rem 0 0; border: 1px solid #999; box-shadow: none; }
+  .game { box-shadow: none; break-inside: avoid; }
+  .modal { display: none !important; }
+}

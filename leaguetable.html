@@ -1,704 +1,517 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Current league standings for the Crawley Darts League. View the latest Premier and A Division tables with points, wins, and games statistics.">
-<meta property="og:title" content="CDL | League Table">
-<meta property="og:description" content="Current league standings for the Crawley Darts League. View the latest Premier and A Division tables with points, wins, and games statistics.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
     <title>CDL | League Table</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Additional styles for even table column spacing */
-        #league-table table {
-            table-layout: fixed;
-            width: 100%;
+    <meta name="description" content="Current league standings for the Crawley Darts League. View the latest Premier and A Division tables with points, wins, and games statistics.">
+    <link rel="canonical" href="https://crawleydartsleague.com/leaguetable.html">
+    <meta property="og:title" content="CDL | League Table">
+    <meta property="og:description" content="Current league standings for the Crawley Darts League. View the latest Premier and A Division tables with points, wins, and games statistics.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* League Table page only */
+        body.page-leaguetable .league-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 1.5rem;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
         }
-        
-        #league-table th, #league-table td {
-            text-align: center;
-            padding: 12px 8px;
+        body.page-leaguetable .league-table .team {
+            font-weight: 600;
         }
-        
-        /* Make team name left-aligned */
-        #league-table th:nth-child(2), 
-        #league-table td:nth-child(2) {
-            text-align: left;
-            width: 30%;
+        body.page-leaguetable .league-table .team__name {
+            display: block;
         }
-        
-        /* Position column is narrower */
-        #league-table th:first-child, 
-        #league-table td:first-child {
-            width: 10%;
+        body.page-leaguetable .league-table .pts {
+            color: var(--navy-900);
+            font-weight: 700;
         }
-        
-        /* Other columns get equal space */
-        #league-table th:not(:first-child):not(:nth-child(2)),
-        #league-table td:not(:first-child):not(:nth-child(2)) {
-            width: 10%;
+        /* The words "Promotion place" / "Relegation place" under the team name */
+        body.page-leaguetable .zone-label {
+            display: block;
+            margin-top: 0.125rem;
+            font-size: var(--text-sm);
+            font-weight: 700;
         }
-
-        /* Promotion zone styling (green tint for A Division top 1) */
-        #league-table tr.promotion-zone {
-            background-color: rgba(76, 175, 80, 0.1);
+        body.page-leaguetable .promotion-zone .zone-label {
+            color: var(--green-700);
         }
-
-        /* Relegation zone styling (red tint for Premier Division bottom 1) */
-        #league-table tr.relegation-zone {
-            background-color: rgba(244, 67, 54, 0.1);
+        body.page-leaguetable .relegation-zone .zone-label {
+            color: var(--color-danger);
         }
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* "Played 5, won 5, lost 0" under the team name: only where the P, W
+           and L columns would not fit (see the 23em block below) */
+        body.page-leaguetable .team__fold {
+            display: none;
+            margin-top: 0.125rem;
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+            font-weight: 400;
         }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
+        /* Phones: slim number columns leave the team names room, but P, W
+           and L stay 2rem apart so their digits never run together */
+        body.page-leaguetable .league-table .num {
+            padding-left: 0.375rem;
+            padding-right: 0.375rem;
         }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
+        body.page-leaguetable .league-table .col-pwl {
+            width: 2rem;
         }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
+        body.page-leaguetable .league-table th:first-child,
+        body.page-leaguetable .league-table td:first-child {
+            padding-left: var(--card-pad);
         }
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+        body.page-leaguetable .league-table th:last-child,
+        body.page-leaguetable .league-table td:last-child {
+            padding-right: var(--card-pad);
+        }
+        /* Keyboard focus rests on the table while it reloads after "Try again" */
+        body.page-leaguetable .league-table:focus {
+            outline-offset: -3px;
+        }
+        /* Promotion and relegation places: a tint, a coloured edge and a word */
+        body.page-leaguetable tr.promotion-zone > * {
+            background: var(--green-50);
+        }
+        body.page-leaguetable tr.relegation-zone > * {
+            background: var(--red-50);
+        }
+        body.page-leaguetable tr.promotion-zone > :first-child {
+            box-shadow: inset 4px 0 0 var(--green-600);
+        }
+        body.page-leaguetable tr.relegation-zone > :first-child {
+            box-shadow: inset 4px 0 0 var(--red-600);
+        }
+        /* F and A columns: from 30em (on small phones a note under the table
+           says where they went) */
+        body.page-leaguetable .col-wide {
+            display: none;
+        }
+        body.page-leaguetable .adjustments {
+            margin: var(--card-pad);
+        }
+        body.page-leaguetable .league-key__note {
+            padding: 0.75rem var(--card-pad);
+            border-top: 1px solid var(--color-divider);
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+        }
+        /* The narrowest screens (360px phones and smaller, page zoom, large
+           text): P, W and L move under the team name as words, so Pos, Team
+           and Pts always fit and names keep room. em, so it follows the
+           reader's text size. */
+        @media not all and (min-width: 23em) {
+            body.page-leaguetable .col-pwl {
+                display: none;
+            }
+            body.page-leaguetable .team__fold {
+                display: block;
+            }
+            /* Large text on a 320px phone: slimmer edges and no "Pos" word
+               (screen readers still hear it), so the Pts column stays inside
+               the card */
+            body.page-leaguetable .league-table th:first-child,
+            body.page-leaguetable .league-table td:first-child {
+                padding-left: 0.5rem;
+            }
+            body.page-leaguetable .league-table th:last-child,
+            body.page-leaguetable .league-table td:last-child {
+                padding-right: 0.5rem;
+            }
+            body.page-leaguetable .pos-word {
+                position: absolute;
+                width: 1px;
+                height: 1px;
+                overflow: hidden;
+                clip: rect(0 0 0 0);
+                white-space: nowrap;
+            }
+            body.page-leaguetable .adjustments {
+                margin-left: 0.5rem;
+                margin-right: 0.5rem;
+            }
+        }
+        @media (min-width: 30em) {
+            body.page-leaguetable .col-wide {
+                display: table-cell;
+            }
+            body.page-leaguetable .league-key__note {
+                display: none;
+            }
+            body.page-leaguetable .league-table .num {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            body.page-leaguetable .league-table .col-pwl {
+                width: 1%;
+            }
+        }
+        @media (min-width: 48em) {
+            body.page-leaguetable .league-table .num {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+        }
+        @media (min-width: 64em) {
+            body.page-leaguetable .league-layout {
+                grid-template-columns: minmax(0, 1fr) 20rem;
+                align-items: start;
+            }
+            body.page-leaguetable .key--columns .key__list {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-    <header class="header">
-        <div class="logo-container">
-            <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-        </div>
-        <h1>Crawley Darts League</h1>
-        <button class="mobile-toggle" aria-label="Toggle menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
-    </header>
-    
-    <nav class="nav">
-        <ul class="nav-menu">
-            <li><a href="index.html">Home</a></li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">League</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leagueresults.html">Results</a></li>
-                </ul>
-            </li>
-            
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Statistics</a>
-                <ul class="dropdown-menu">
-                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="playerrankings.html">Player Rankings</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Information</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
-                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                    <li><a href="rules.html">League Rules</a></li>
-                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                    <li><a href="winnershistory.html">Winners History</a></li>
-                </ul>
-            </li>
-            
-            <li><a href="admin-login.html">Admin Login</a></li>
-
-            
-            <li><a href="team-login.html">Team Login</a></li>
-    
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="container">
-        <!-- League Table Page -->
-        <div id="league-table" class="page">
-            <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Pos</th>
-                            <th>Team</th>
-                            <th>P</th>
-                            <th>W</th>
-                            <th>L</th>
-                            <th>F</th>
-                            <th>A</th>
-                            <th>Pts</th>
-                        </tr>
-                    </thead>
-                    <tbody id="league-table-body">
-                        <!-- Dynamic content will be loaded here -->
-                    </tbody>
-                </table>
-                <!-- Season-long points adjustments (forfeit deductions etc.) -->
-                <div id="adjustment-notes"></div>
+<body class="page-leaguetable">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
             </div>
         </div>
-    </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
+
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">League Table</h1>
+                <p class="page-header__intro">Where every team stands this season. Choose a division.</p>
+            </div>
+
+            <div id="league-table">
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
+                </div>
+                <p class="segmented-status" id="division-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <div class="league-layout">
+                    <div class="card card--flush">
+                        <!-- Scrolls instead of cutting off the Pts column if the table is ever wider than the card -->
+                        <div class="table-scroll">
+                            <table class="table league-table">
+                                <caption class="visually-hidden" id="league-table-caption">Premier Division table</caption>
+                                <thead>
+                                    <tr>
+                                        <th scope="col" class="num"><span class="pos-word">Pos</span></th>
+                                        <th scope="col">Team</th>
+                                        <th scope="col" class="num col-pwl">P</th>
+                                        <th scope="col" class="num col-pwl">W</th>
+                                        <th scope="col" class="num col-pwl">L</th>
+                                        <th scope="col" class="num col-wide">F</th>
+                                        <th scope="col" class="num col-wide">A</th>
+                                        <th scope="col" class="num">Pts</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="league-table-body">
+                                    <tr><td class="table__state" colspan="8"><p class="state state--loading">Loading the table...</p></td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="league-key__note">On small screens the F and A columns are left out. Turn your phone sideways to see them.</p>
+                        <!-- Season-long points adjustments (forfeit deductions etc.) -->
+                        <div id="adjustment-notes"></div>
+                    </div>
+
+                    <aside class="card key key--columns" aria-labelledby="key-title">
+                        <h2 class="key__title" id="key-title">Key</h2>
+                        <dl class="key__list">
+                            <div class="key__item"><dt class="key__term">Pos</dt><dd class="key__desc">Position</dd></div>
+                            <div class="key__item"><dt class="key__term">P</dt><dd class="key__desc">Played</dd></div>
+                            <div class="key__item"><dt class="key__term">W</dt><dd class="key__desc">Won</dd></div>
+                            <div class="key__item"><dt class="key__term">L</dt><dd class="key__desc">Lost</dd></div>
+                            <div class="key__item"><dt class="key__term">F</dt><dd class="key__desc">Games won (for)</dd></div>
+                            <div class="key__item"><dt class="key__term">A</dt><dd class="key__desc">Games lost (against)</dd></div>
+                            <div class="key__item"><dt class="key__term">Pts</dt><dd class="key__desc">Points: 1 for each game won</dd></div>
+                            <div class="key__item key__item--wide"><dt class="key__term"><span class="key__swatch key__swatch--promotion"></span><span class="visually-hidden">Green edge</span></dt><dd class="key__desc">Promotion place (top of the A Division)</dd></div>
+                            <div class="key__item key__item--wide"><dt class="key__term"><span class="key__swatch key__swatch--relegation"></span><span class="visually-hidden">Red edge</span></dt><dd class="key__desc">Relegation place (bottom of the Premier Division)</dd></div>
+                            <div class="key__item key__item--wide"><dt class="key__term">*</dt><dd class="key__desc">Points adjusted: see the note under the table</dd></div>
+                        </dl>
+                    </aside>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
         // API configuration
         const API_URL = 'api.php'; // Change this to your actual API endpoint
+        const DIVISION_NAMES = { premier: 'Premier Division', a: 'A Division' };
+        const STORE_KEY = 'cdl-table-division';
 
+        // The chosen division is the switch button with aria-pressed="true"
         function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
+            const chosen = document.querySelector('#league-table .segmented [aria-pressed="true"]');
+            return chosen ? chosen.dataset.division : 'premier';
+        }
+        function pressDivision(division) {
+            document.querySelectorAll('#league-table .segmented [data-division]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.dataset.division === division ? 'true' : 'false');
+            });
         }
 
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
+        // The last division chosen on this page is remembered on this device
+        function readSavedDivision() {
+            try {
+                const v = window.localStorage.getItem(STORE_KEY);
+                return v === 'premier' || v === 'a' ? v : null;
+            } catch (e) { return null; }
+        }
+        function saveDivision(v) {
+            try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* private mode: not remembered */ }
+        }
+
+        // Division switch. currentTarget, not target: the button holds a tick icon.
+        document.querySelectorAll('#league-table .segmented [data-division]').forEach(button => {
             button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
+                const division = e.currentTarget.dataset.division;
+                pressDivision(division);
+                saveDivision(division);
                 loadLeagueTable(division);
             });
         });
 
-        // API functions
+        // "Try again" after a failed load. Keyboard focus moves to the table,
+        // which stays in place while the rows reload.
+        document.getElementById('league-table-body').addEventListener('click', (e) => {
+            if (!e.target.closest('[data-retry]')) return;
+            const table = document.querySelector('#league-table .league-table');
+            table.setAttribute('tabindex', '-1');
+            table.focus();
+            loadLeagueTable(getCurrentDivision());
+        });
+
+        // API functions. Returns null when the request fails.
         async function fetchApi(endpoint, params = {}) {
             const queryString = new URLSearchParams(params).toString();
             const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
+
             try {
                 const response = await fetch(url);
                 return await response.json();
             } catch (error) {
                 console.error('API Error:', error);
-                return [];
+                return null;
             }
-        }
-
-        async function loadLeagueTable(division) {
-            const data = await fetchApi('league-table', { division });
-            const tbody = document.getElementById('league-table-body');
-            tbody.innerHTML = '';
-            
-            // Filter out the "Bye" teams
-            const filteredData = data.filter(team => team.team_name !== 'Bye');
-            
-            filteredData.forEach((team, index) => {
-                const row = document.createElement('tr');
-                const position = index + 1;
-
-                // Add promotion/relegation zone classes:
-                //   A Division: top 1 highlighted green (1 promotion)
-                //   Premier Division: bottom 1 highlighted red (1 relegation)
-                if (division === 'a' && position === 1) {
-                    row.classList.add('promotion-zone');
-                } else if (division === 'premier' && position === filteredData.length) {
-                    row.classList.add('relegation-zone');
-                }
-
-                row.innerHTML = `
-                    <td>${position}</td>
-                    <td>${team.team_name}</td>
-                    <td>${team.played}</td>
-                    <td>${team.won}</td>
-                    <td>${team.lost}</td>
-                    <td>${team.games_for}</td>
-                    <td>${team.games_against}</td>
-                    <td>${team.points}${Number(team.points_adjustment) ? '<sup title="Includes a points adjustment (see note below the table)">*</sup>' : ''}</td>
-                `;
-                tbody.appendChild(row);
-            });
-            renderAdjustmentNotes(division);
         }
 
         function escTbl(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
         }
 
-        // Footnotes explaining any points adjustments in this division, so
-        // a deduction is never a silent mystery on the public table.
-        async function renderAdjustmentNotes(division) {
-            const box = document.getElementById('adjustment-notes');
-            if (!box) return;
-            const res = await fetchApi('points-adjustments', { division });
-            if (division !== getCurrentDivision()) return; // user switched tabs meanwhile
-            const rows = (res && res.success && Array.isArray(res.adjustments)) ? res.adjustments : [];
+        // A loading, empty or error message in place of the rows
+        function showTableState(kind, message) {
+            const retry = kind === 'error' ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>' : '';
+            document.getElementById('league-table-body').innerHTML =
+                `<tr><td class="table__state" colspan="8"><div class="state state--${kind}" role="${kind === 'error' ? 'alert' : 'status'}"><p>${message}</p>${retry}</div></td></tr>`;
+        }
+
+        async function loadLeagueTable(division) {
+            const name = DIVISION_NAMES[division] || DIVISION_NAMES.premier;
+            document.getElementById('division-status').innerHTML = `Showing: <strong>${name}</strong>`;
+            document.getElementById('league-table-caption').textContent = `${name} table`;
+            document.getElementById('adjustment-notes').innerHTML = '';
+            showTableState('loading', `Loading the ${name} table...`);
+
+            const data = await fetchApi('league-table', { division });
+            if (division !== getCurrentDivision()) return; // another division was chosen meanwhile
+            if (!Array.isArray(data)) {
+                showTableState('error', 'Sorry, the table could not be loaded just now. Please check your connection.');
+                return;
+            }
+
+            // Filter out the "Bye" teams
+            const filteredData = data.filter(team => team.team_name !== 'Bye');
+            if (filteredData.length === 0) {
+                showTableState('empty', `There are no teams in the ${name} yet.`);
+                return;
+            }
+
+            const tbody = document.getElementById('league-table-body');
+            tbody.innerHTML = '';
+            filteredData.forEach((team, index) => {
+                const row = document.createElement('tr');
+                const position = index + 1;
+                let zone = '';
+
+                // Add promotion/relegation zone classes:
+                //   A Division: top 1 highlighted green (1 promotion)
+                //   Premier Division: bottom 1 highlighted red (1 relegation)
+                if (division === 'a' && position === 1) {
+                    row.classList.add('promotion-zone');
+                    zone = '<span class="zone-label">Promotion place</span>';
+                } else if (division === 'premier' && position === filteredData.length) {
+                    row.classList.add('relegation-zone');
+                    zone = '<span class="zone-label">Relegation place</span>';
+                }
+                const adjusted = Number(team.points_adjustment)
+                    ? '<span aria-hidden="true">*</span><span class="visually-hidden"> (includes a points adjustment)</span>'
+                    : '';
+
+                // P, W and L as words too, shown under the name on the narrowest screens
+                const fold = `<span class="team__fold">Played ${escTbl(team.played)}, won ${escTbl(team.won)}, lost ${escTbl(team.lost)}</span>`;
+
+                row.innerHTML = `
+                    <td class="num">${position}</td>
+                    <th scope="row" class="team"><span class="team__name">${escTbl(team.team_name)}</span>${zone}${fold}</th>
+                    <td class="num col-pwl">${escTbl(team.played)}</td>
+                    <td class="num col-pwl">${escTbl(team.won)}</td>
+                    <td class="num col-pwl">${escTbl(team.lost)}</td>
+                    <td class="num col-wide">${escTbl(team.games_for)}</td>
+                    <td class="num col-wide">${escTbl(team.games_against)}</td>
+                    <td class="num pts">${escTbl(team.points)}${adjusted}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            renderAdjustmentNotes(division, filteredData);
+        }
+
+        function pointsText(p) {
+            const n = Math.abs(p);
+            return `${n} ${n === 1 ? 'point' : 'points'} ${p < 0 ? 'deducted' : 'added'}`;
+        }
+
+        function drawAdjustmentNotes(box, rows) {
             if (!rows.length) { box.innerHTML = ''; return; }
             box.innerHTML = `
-                <div style="margin-top:15px;padding:10px 14px;background:#fff8e1;border-left:4px solid #ffb300;border-radius:4px;font-size:0.9rem;">
-                    <strong>* Points adjustments</strong>
-                    <ul style="margin:6px 0 0 18px;padding:0;">
+                <div class="notice notice--warning adjustments">
+                    <p class="notice__title">* Points adjustments</p>
+                    <ul>
                         ${rows.map(a => {
-                            const p = Number(a.points);
-                            return `<li><strong>${escTbl(a.team_name)}</strong>: ${p > 0 ? '+' : ''}${p} pts. ${escTbl(a.reason)}</li>`;
+                            const reason = a.reason ? ' ' + escTbl(a.reason) : '';
+                            return `<li><strong>${escTbl(a.team_name)}</strong>: ${pointsText(Number(a.points))}.${reason}</li>`;
                         }).join('')}
                     </ul>
                 </div>`;
         }
 
-        // Initially load the league table
+        // Footnotes explaining any points adjustments in this division, so
+        // a deduction is never a silent mystery on the public table. The
+        // table data says who was adjusted; the league's own list adds the
+        // reasons when it has them.
+        async function renderAdjustmentNotes(division, teams) {
+            const box = document.getElementById('adjustment-notes');
+            if (!box) return;
+            drawAdjustmentNotes(box, (teams || [])
+                .filter(t => Number(t.points_adjustment))
+                .map(t => ({ team_name: t.team_name, points: Number(t.points_adjustment), reason: '' })));
+            const res = await fetchApi('points-adjustments', { division });
+            if (division !== getCurrentDivision()) return; // user switched tabs meanwhile
+            const rows = (res && res.success && Array.isArray(res.adjustments)) ? res.adjustments : [];
+            if (rows.length) drawAdjustmentNotes(box, rows);
+        }
+
+        // Initially load the league table, in the division chosen last time
+        const savedDivision = readSavedDivision();
+        if (savedDivision) pressDivision(savedDivision);
         loadLeagueTable(getCurrentDivision());
     </script>
 </body>

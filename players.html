@@ -3,1014 +3,773 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Complete player directory for the Crawley Darts League. Browse all registered players by team and division.">
-<meta property="og:title" content="CDL | Players">
-<meta property="og:description" content="Complete player directory for the Crawley Darts League. Browse all registered players by team and division.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
     <title>CDL | Players</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" href="cdl.png">
-<style>
-        /* Players page specific styles */
-        .player-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 20px;
+    <meta name="description" content="Complete player directory for the Crawley Darts League. Browse all registered players by team and division.">
+    <link rel="canonical" href="https://crawleydartsleague.com/players.html">
+    <meta property="og:title" content="CDL | Players">
+    <meta property="og:description" content="Complete player directory for the Crawley Darts League. Browse all registered players by team and division.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* Players page only */
+        /* "Show the players": in one list or grouped by team */
+        body.page-players .players-view {
+            margin-top: 1.5rem;
         }
-        
-        .filter-group {
-            flex: 1;
-            min-width: 200px;
+        body.page-players .players-view__label {
+            margin-bottom: 0.5rem;
         }
-        
-        .filter-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: var(--text);
+        body.page-players .players-results {
+            margin-top: 1rem;
         }
-        
-        .filter-group select {
-            width: 100%;
-            padding: 8px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 4px;
-            font-size: 16px;
+        /* The line above the table that says how it is sorted */
+        body.page-players .players-sort {
+            padding: 0.875rem var(--card-pad);
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
         }
-        
-        .player-search {
-            width: 100%;
-            margin-bottom: 20px;
+        body.page-players .players-sort strong {
+            color: var(--color-text);
         }
-        
-        .player-search input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--medium-gray);
-            border-radius: 4px;
-            font-size: 16px;
-        }
-        
-        .players-table-container {
-            overflow-x: auto;
-        }
-        
-        .players-table th {
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .players-table th::after {
-            content: "";
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
-        .players-table th.sort-asc::after {
-            content: "↑";
-        }
-        
-        .players-table th.sort-desc::after {
-            content: "↓";
-        }
-        
-        .players-count {
-            margin-bottom: 15px;
-            color: var(--dark-gray);
-            font-style: italic;
-        }
-        
-        .no-players-message {
-            text-align: center;
-            padding: 30px;
-            color: var(--dark-gray);
-            font-style: italic;
-            background: var(--light-gray);
-            border-radius: 5px;
-        }
-        
-        /* Team badge style */
-        .team-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-weight: 500;
-            color: white;
-            background-color: var(--primary);
-        }
-        
-        .premier-team {
-            background-color: var(--primary);
-        }
-        
-        .a-team {
-            background-color: var(--secondary);
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            width: 40px;
-            height: 40px;
-            margin: 20px auto;
-            border: 4px solid rgba(0, 0, 0, 0.1);
-            border-radius: 50%;
-            border-left-color: var(--primary);
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        /* Header style for the index page to position logo left and title centered */
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
-        }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
-        }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
-        }
-        
-        /* Basic dropdown styling */
-        .nav .dropdown {
-            position: relative;
-        }
-        
-        .nav .dropdown-toggle {
-            cursor: pointer;
-        }
-        
-        .nav .dropdown-menu {
-            display: none;
-            position: absolute;
-            background: white;
-            min-width: 200px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-            z-index: 1000;
-            border-radius: 4px;
-            padding: 10px 0;
-        }
-        
-        .nav .dropdown:hover .dropdown-menu {
-            display: block;
-        }
-        
-        .nav .dropdown-menu li {
-            margin: 0;
+        /* Column headings are buttons that fill the whole cell, with the
+           arrow straight after the words */
+        body.page-players .players-table thead th {
             padding: 0;
         }
-        
-        .nav .dropdown-menu a {
-            display: block;
-            padding: 10px 20px;
-            color: var(--primary);
+        body.page-players .sort-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-height: 3rem;
+            padding: 0.625rem 0.5rem;
+            border: 0;
             border-radius: 0;
+            background: transparent;
+            color: var(--white);
+            font-weight: 700;
+            line-height: 1.25;
+            text-align: left;
+            white-space: nowrap;
         }
-        
-        .nav .dropdown-menu a:hover {
-            background-color: var(--light-gray);
+        body.page-players .players-table thead th:first-child .sort-btn {
+            padding-left: var(--card-pad);
         }
-        
-        /* Mobile navigation */
-        .mobile-nav-toggle {
+        body.page-players .players-table thead th:last-child .sort-btn {
+            padding-right: var(--card-pad);
+        }
+        /* Gold ring on the navy heading row, inside the cell so the card never clips it */
+        body.page-players .sort-btn:focus {
+            outline-color: var(--color-focus-on-dark);
+            outline-offset: -4px;
+        }
+        body.page-players .sort-btn__icon {
+            margin-left: 0.375rem;
+        }
+        body.page-players .sort-btn__asc,
+        body.page-players .sort-btn__desc,
+        body.page-players th[aria-sort] .sort-btn__any {
             display: none;
-            cursor: pointer;
-            padding: 10px;
-            font-size: 1.5rem;
         }
-        
-        /* Responsive adjustments */
-        @media (max-width: 768px) {
-            .mobile-nav-toggle {
+        body.page-players th[aria-sort="ascending"] .sort-btn__asc,
+        body.page-players th[aria-sort="descending"] .sort-btn__desc {
+            display: inline;
+        }
+        /* Phones: the division goes under the team name; from 30em it has its own column */
+        body.page-players .players-table .col-division {
+            display: none;
+        }
+        body.page-players .players-table__fold {
+            display: block;
+            color: var(--color-text-muted);
+        }
+        /* The letters that match the search */
+        body.page-players .players-mark {
+            padding: 0 0.0625rem;
+            border-radius: 2px;
+            background: var(--gold-100);
+            box-shadow: inset 0 -0.1875rem 0 var(--gold-500);
+            color: inherit;
+        }
+        /* Grouped by team: a card per team, two cards side by side from 64em;
+           the names inside run down as many 9rem columns as fit (two on
+           most phones, four on a tablet, three on a computer) */
+        body.page-players .players-division + .players-division {
+            margin-top: 2rem;
+        }
+        body.page-players .players-division__title {
+            margin-bottom: 1rem;
+        }
+        body.page-players .players-teams {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 1.25rem;
+            gap: 1.25rem;
+        }
+        body.page-players .players-team__list {
+            padding: 0.625rem var(--card-pad) 1rem;
+            border-top: 1px solid var(--color-divider);
+            list-style: none;
+            -webkit-column-width: 9rem;
+            column-width: 9rem;
+            -webkit-column-gap: 1.5rem;
+            column-gap: 1.5rem;
+        }
+        body.page-players .players-team__list li {
+            padding: 0.25rem 0;
+            -webkit-column-break-inside: avoid;
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        body.page-players .players-note {
+            max-width: var(--container-prose);
+            margin-top: 1.25rem;
+            color: var(--color-text-muted);
+        }
+        @media (hover: hover) {
+            body.page-players .sort-btn:hover {
+                background: var(--navy-800);
+                text-decoration: underline;
+            }
+        }
+        /* Phones: with the Division column folded away, Team is the last
+           column shown, so it keeps the card's inset on the right */
+        @media not all and (min-width: 30em) {
+            body.page-players .players-table th:nth-child(2) .sort-btn,
+            body.page-players .players-table td:nth-child(2) {
+                padding-right: var(--card-pad);
+            }
+        }
+        /* Very large text on a narrow phone (below 18em, so it follows the
+           reader's text size): two columns no longer fit, so each player
+           becomes a block (name, then team and division) under a bar of
+           the sort buttons. Nothing is cut off and nothing scrolls sideways. */
+        @media not all and (min-width: 18em) {
+            body.page-players .players-table,
+            body.page-players .players-table > tbody,
+            body.page-players .players-table > tbody > tr,
+            body.page-players .players-table > tbody > tr > * {
                 display: block;
             }
-            
-            .nav-menu {
+            body.page-players .players-table > thead {
+                display: block;
+            }
+            body.page-players .players-table > thead > tr {
+                display: flex;
+                flex-wrap: wrap;
+                background: var(--navy-900);
+            }
+            body.page-players .players-table > thead > tr > th {
+                display: block;
+                flex: 1 1 auto;
+            }
+            body.page-players .players-table > tbody > tr {
+                padding: 0.75rem var(--card-pad);
+                border-bottom: 1px solid var(--color-divider);
+            }
+            body.page-players .players-table > tbody > tr:nth-child(even) {
+                background: var(--navy-50);
+            }
+            body.page-players .players-table > tbody > tr > *,
+            body.page-players .players-table > tbody > tr > td:nth-child(2) {
+                height: auto;
+                padding: 0;
+                border: 0;
+                background: transparent;
+            }
+        }
+        @media (min-width: 30em) {
+            body.page-players .players-table .col-division {
+                display: table-cell;
+                width: 1%;
+                white-space: nowrap;
+            }
+            body.page-players .players-table__fold {
                 display: none;
-                position: absolute;
-                top: 100%;
-                left: 0;
-                width: 100%;
-                background: white;
-                box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-                z-index: 1000;
-                padding: 0;
-                margin: 0;
-            }
-            
-            .nav-menu.active {
-                display: block;
-            }
-            
-            .nav-menu li {
-                margin: 0;
-                padding: 0;
-                display: block;
-                border-bottom: 1px solid var(--light-gray);
-            }
-            
-            .nav-menu a {
-                padding: 15px 20px;
-                display: block;
-            }
-            
-            .nav .dropdown-menu {
-                position: static;
-                box-shadow: none;
-                background: var(--light-gray);
-                width: 100%;
-                padding: 0;
-            }
-            
-            .nav .dropdown-menu li:first-child {
-                border-top: 1px solid var(--medium-gray);
-            }
-            
-            .nav .dropdown:hover .dropdown-menu {
-                display: none; /* Don't show on hover on mobile */
-            }
-            
-            /* Add a + icon to dropdowns */
-            .nav .dropdown-toggle::after {
-                content: "+";
-                margin-left: 5px;
-            }
-            
-            /* Toggle this class with JavaScript */
-            .nav .dropdown.active .dropdown-menu {
-                display: block;
-            }
-            
-            .nav .dropdown.active .dropdown-toggle::after {
-                content: "-";
-            }
-            
-            .player-filters {
-                flex-direction: column;
-                gap: 10px;
             }
         }
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+        @media (min-width: 48em) {
+            body.page-players .sort-btn {
+                padding: 0.75rem 1rem;
+            }
+        }
+        @media (min-width: 64em) {
+            body.page-players .players-teams {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+        /* Paper: the headings print black on white (site.css), so the
+           buttons take that colour; the on-screen controls are left out */
+        @media print {
+            body.page-players .sort-btn {
+                color: inherit;
+            }
+            body.page-players .players-view,
+            body.page-players .players-sort {
+                display: none;
+            }
+        }
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="winnershistory.html">Winners History</a></li>
-            </ul>
-        </li>
-        
-        <li><a href="admin-login.html">Admin Login</a></li>
-
-        
-        <li><a href="team-login.html">Team Login</a></li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
+<body class="page-players">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
+            </div>
+        </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
                 </ul>
-        </li>
-    </ul>
-    </nav>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
 
-    <div class="container">
-        <div class="card">
-            <h1>Players</h1>
-            
-            <div class="player-filters">
-                <div class="filter-group">
-                    <label for="division-filter">Division</label>
-                    <select id="division-filter">
-                        <option value="all">All Divisions</option>
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Players</h1>
+                <p class="page-header__intro">Every registered player, with their team and division. Search by name, or choose a division or team.</p>
+            </div>
+
+            <div class="filters" role="search" aria-label="Find a player">
+                <div class="field filters__search">
+                    <label class="field__label" for="player-search">Find a player by name</label>
+                    <span class="field__hint" id="player-search-hint">Type any part of a first name or surname.</span>
+                    <div class="search">
+                        <input class="field__input search__input" type="search" id="player-search" aria-describedby="player-search-hint" autocomplete="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+                        <button class="search__clear" type="button" hidden><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg><span class="visually-hidden">Clear the search</span></button>
+                    </div>
+                </div>
+                <div class="field">
+                    <label class="field__label" for="division-filter">Division</label>
+                    <select class="field__input" id="division-filter">
+                        <option value="all">All divisions</option>
                         <option value="premier">Premier Division</option>
                         <option value="a">A Division</option>
                     </select>
                 </div>
-                
-                <div class="filter-group">
-                    <label for="team-filter">Team</label>
-                    <select id="team-filter">
-                        <option value="all">All Teams</option>
-                        <!-- Team options will be populated dynamically -->
+                <div class="field">
+                    <label class="field__label" for="team-filter">Team</label>
+                    <select class="field__input" id="team-filter">
+                        <option value="all">All teams</option>
                     </select>
                 </div>
             </div>
-            
-            <div class="player-search">
-                <input type="text" id="player-search" placeholder="Search for a player...">
-            </div>
-            
-            <div class="players-count">
-                Showing <span id="visible-count">0</span> of <span id="total-count">0</span> players
-            </div>
-            
-            <div class="players-table-container">
-                <div id="loading-spinner" class="spinner"></div>
-                <table id="players-table" class="players-table">
-                    <thead>
-                        <tr>
-                            <th data-sort="id">ID</th>
-                            <th data-sort="name">Player Name</th>
-                            <th data-sort="team">Team</th>
-                            <th data-sort="division">Division</th>
-                        </tr>
-                    </thead>
-                    <tbody id="players-table-body">
-                        <!-- Player data will be loaded dynamically -->
-                    </tbody>
-                </table>
-                <div id="no-players-message" class="no-players-message hidden">
-                    No players match your current filter settings.
+
+            <div class="players-view">
+                <p class="field__label players-view__label" id="players-view-label">Show the players</p>
+                <div class="segmented" role="group" aria-labelledby="players-view-label" id="players-view">
+                    <button class="segmented__btn" type="button" data-view="list" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>In one list</button>
+                    <button class="segmented__btn" type="button" data-view="team" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Grouped by team</button>
                 </div>
             </div>
+
+            <!-- "Showing X of Y players": written only once everything has loaded -->
+            <p class="filters__status" id="players-status" aria-live="polite"></p>
+
+            <div class="players-results" id="players-results">
+                <div id="players-state">
+                    <div class="state state--loading"><p>Loading the players...</p></div>
+                </div>
+
+                <div class="card card--flush players-list" id="players-list" hidden>
+                    <p class="players-sort"><span id="players-sort-status" aria-live="polite">Sorted by <strong>player name, A to Z</strong>.</span> Tap or click a column heading to sort.</p>
+                    <table class="table players-table" id="players-table">
+                        <caption class="visually-hidden" id="players-caption">Players, sorted by player name, A to Z</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col" aria-sort="ascending"><button class="sort-btn" type="button" data-sort="name">Player<svg class="icon sort-btn__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="sort-btn__any" d="M6.5 8L10 4.5 13.5 8M6.5 12L10 15.5 13.5 12"/><path class="sort-btn__asc" d="M10 16V4M5 9l5-5 5 5"/><path class="sort-btn__desc" d="M10 4v12M5 11l5 5 5-5"/></svg></button></th>
+                                <th scope="col"><button class="sort-btn" type="button" data-sort="team">Team<svg class="icon sort-btn__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="sort-btn__any" d="M6.5 8L10 4.5 13.5 8M6.5 12L10 15.5 13.5 12"/><path class="sort-btn__asc" d="M10 16V4M5 9l5-5 5 5"/><path class="sort-btn__desc" d="M10 4v12M5 11l5 5 5-5"/></svg></button></th>
+                                <th scope="col" class="col-division"><button class="sort-btn" type="button" data-sort="division">Division<svg class="icon sort-btn__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path class="sort-btn__any" d="M6.5 8L10 4.5 13.5 8M6.5 12L10 15.5 13.5 12"/><path class="sort-btn__asc" d="M10 16V4M5 9l5-5 5 5"/><path class="sort-btn__desc" d="M10 4v12M5 11l5 5 5-5"/></svg></button></th>
+                            </tr>
+                        </thead>
+                        <tbody id="players-table-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="players-groups" id="players-groups" hidden></div>
+            </div>
+
+            <p class="players-note" id="players-note" hidden>Not on the list? Team captains can ask for a new player to be added on the <a href="team-login.html">Team Login</a> page.</p>
         </div>
-    </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+    (function () {
+        'use strict';
+
+        // Players: one list of every player in the Premier and A Division
+        // teams, loaded with three requests (all players, and each
+        // division's teams for the divisions and the Team list). Search by
+        // name, filter by division or team, sort by any column, or show the
+        // players grouped by team.
+        const API_URL = 'api.php';
+        const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+        const DIVISION_WORDS = { premier: 'Premier', a: 'A Division' }; // in the list
+        const DIVISION_ORDER = { premier: 0, a: 1 };
+        const VIEW_KEY = 'cdl-players-view';
+        const SORT_WORDS = {
+            name: { asc: 'player name, A to Z', desc: 'player name, Z to A' },
+            team: { asc: 'team, A to Z', desc: 'team, Z to A' },
+            division: { asc: 'division, Premier first', desc: 'division, A Division first' }
+        };
+
+        // Escape any API string before it goes into HTML (names, titles, notes).
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
+
+        // Loading, empty and error messages in plain words. message is text
+        // written here: any API part of it goes through esc(). The error
+        // state offers Try again; extra is more markup (a button) after it.
+        function stateHtml(kind, message, extra) {
+            const retry = kind === 'error'
+                ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>'
+                : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + (extra || '') + retry + '</div>';
+        }
+
+        // A list from the API, or null when it could not be loaded (no
+        // network, a server error page, or an error object).
+        async function getList(url) {
+            try {
+                const res = await fetch(url, { credentials: 'same-origin' });
+                const data = await res.json();
+                return Array.isArray(data) ? data : null;
+            } catch (e) {
+                return null;
             }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
         }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-        
-        // Global variables
-        let allPlayers = [];
-        let allTeams = [];
-        let currentSortField = 'name';
-        let currentSortDirection = 'asc';
-        
-        // DOM Elements
-        const playersTableBody = document.getElementById('players-table-body');
+
+        // Names compared as people expect: no difference between capitals
+        // and small letters
+        const compareText = (typeof Intl !== 'undefined' && Intl.Collator)
+            ? new Intl.Collator('en-GB', { sensitivity: 'base', numeric: true }).compare
+            : (x, y) => {
+                const a = x.toLowerCase(), b = y.toLowerCase();
+                return a < b ? -1 : a > b ? 1 : 0;
+            };
+
+        const search = document.getElementById('player-search');
+        const clearButton = search.parentNode.querySelector('.search__clear');
         const divisionFilter = document.getElementById('division-filter');
         const teamFilter = document.getElementById('team-filter');
-        const playerSearch = document.getElementById('player-search');
-        const visibleCountElement = document.getElementById('visible-count');
-        const totalCountElement = document.getElementById('total-count');
-        const loadingSpinner = document.getElementById('loading-spinner');
-        const noPlayersMessage = document.getElementById('no-players-message');
-        const tableHeaders = document.querySelectorAll('.players-table th');
-        
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
+        const statusLine = document.getElementById('players-status');
+        const results = document.getElementById('players-results');
+        const stateBox = document.getElementById('players-state');
+        const listCard = document.getElementById('players-list');
+        const tableBody = document.getElementById('players-table-body');
+        const groupsBox = document.getElementById('players-groups');
+        const sortStatus = document.getElementById('players-sort-status');
+        const caption = document.getElementById('players-caption');
+        const note = document.getElementById('players-note');
+        const viewButtons = Array.prototype.slice.call(document.querySelectorAll('#players-view [data-view]'));
+        const sortButtons = Array.prototype.slice.call(document.querySelectorAll('#players-table .sort-btn'));
+
+        let players = [];   // { name, team }
+        let teams = [];     // { id, name, division, bye }, Premier first, then A to Z
+        let loaded = false;
+        let ticket = 0;     // the newest load; older answers are ignored
+        let sortField = 'name';
+        let sortDir = 'asc';
+        let view = 'list';
+        let typingTimer = null;
+        let statusHtml = '';
+
+        // The status line is read out when it changes, so it is only
+        // rewritten when its words change (not at every sort)
+        function setStatus(html) {
+            if (html === statusHtml) return;
+            statusHtml = html;
+            statusLine.innerHTML = html;
+        }
+
+        function readView() {
             try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
+                return window.localStorage.getItem(VIEW_KEY) === 'team' ? 'team' : 'list';
+            } catch (e) {
+                return 'list';
             }
         }
-        
-        // Fetch and display players data
-        async function loadPlayers() {
-            loadingSpinner.style.display = 'block';
-            playersTableBody.innerHTML = '';
-            
-            try {
-                // Fetch both Premier and A Division teams
-                const premierTeams = await fetchApi('teams', { division: 'premier' });
-                const aTeams = await fetchApi('teams', { division: 'a' });
-                
-                // Combine team lists and store globally
-                allTeams = [...premierTeams, ...aTeams];
-                
-                // Populate team filter dropdown
-                populateTeamFilter(allTeams);
-                
-                // Fetch players from all teams
-                const playerRequests = allTeams.map(team => fetchApi('players', { team_id: team.team_id }));
-                const playerResults = await Promise.all(playerRequests);
-                
-                // Flatten the array of player arrays and add team and division info
-                allPlayers = playerResults.flat().map(player => {
-                    const team = allTeams.find(t => t.team_id === player.team_id);
-                    return {
-                        ...player,
-                        team_name: team?.team_name || 'Unknown Team',
-                        division: team?.division || 'unknown'
-                    };
+        function saveView(v) {
+            try { window.localStorage.setItem(VIEW_KEY, v); } catch (e) { /* not remembered: fine */ }
+        }
+
+        // The Bye teams fill gaps in the fixtures: no one plays for them
+        function isBye(name) {
+            return /^\s*(division a\s+)?bye\s*$/i.test(String(name == null ? '' : name));
+        }
+        function tidy(s) {
+            return String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
+        }
+        function plural(n, word) {
+            return n + ' ' + word + (n === 1 ? '' : 's');
+        }
+
+        // Which part of the page shows: a message, the list or the groups
+        function show(part) {
+            stateBox.hidden = part !== 'state';
+            listCard.hidden = part !== 'list';
+            groupsBox.hidden = part !== 'groups';
+            note.hidden = !loaded;
+        }
+
+        async function load() {
+            const mine = ++ticket;
+            loaded = false;
+            setStatus('');
+            stateBox.innerHTML = stateHtml('loading', 'Loading the players...');
+            show('state');
+            const lists = await Promise.all([
+                getList(API_URL + '?endpoint=players'),
+                getList(API_URL + '?endpoint=teams&division=premier'),
+                getList(API_URL + '?endpoint=teams&division=a')
+            ]);
+            if (mine !== ticket) return; // a newer load has started meanwhile
+            if (!lists[0] || !lists[1] || !lists[2]) {
+                stateBox.innerHTML = stateHtml('error', 'Sorry, the players could not be loaded just now. Please check your connection.');
+                return;
+            }
+            const byId = {};
+            teams = [];
+            [['premier', lists[1]], ['a', lists[2]]].forEach(pair => {
+                pair[1].forEach(t => {
+                    if (!t || t.team_id == null || byId[String(t.team_id)]) return;
+                    const team = { id: String(t.team_id), name: tidy(t.team_name), division: pair[0], bye: isBye(t.team_name) };
+                    byId[team.id] = team;
+                    teams.push(team);
                 });
-                
-                // Update total count
-                totalCountElement.textContent = allPlayers.length;
-                
-                // Apply filters and sorting
-                filterAndSortPlayers();
-            } catch (error) {
-                console.error('Error loading players:', error);
-                playersTableBody.innerHTML = `<tr><td colspan="4">Error loading players. Please try again later.</td></tr>`;
-            } finally {
-                loadingSpinner.style.display = 'none';
-            }
-        }
-        
-        // Initialize the team filter dropdown (called once at page load)
-        function populateTeamFilter(teams) {
-            // Just call updateTeamFilter which handles building the dropdown
-            updateTeamFilter();
-        }
-        
-        // Filter and sort players based on current filter settings
-        function filterAndSortPlayers() {
-            const divisionValue = divisionFilter.value;
-            const teamValue = teamFilter.value;
-            const searchValue = playerSearch.value.toLowerCase().trim();
-            
-            // Apply filters
-            const filteredPlayers = allPlayers.filter(player => {
-                // Division filter
-                if (divisionValue !== 'all' && player.division !== divisionValue) {
-                    return false;
-                }
-                
-                // Team filter
-                if (teamValue !== 'all' && player.team_id !== parseInt(teamValue)) {
-                    return false;
-                }
-                
-                // Search filter
-                if (searchValue && !player.player_name.toLowerCase().includes(searchValue)) {
-                    return false;
-                }
-                
-                return true;
             });
-            
-            // Sort players
-            const sortedPlayers = sortPlayers(filteredPlayers, currentSortField, currentSortDirection);
-            
-            // Update visible count
-            visibleCountElement.textContent = sortedPlayers.length;
-            
-            // Display players or show "no players" message
-            if (sortedPlayers.length === 0) {
-                playersTableBody.innerHTML = '';
-                noPlayersMessage.classList.remove('hidden');
+            teams.sort((x, y) => DIVISION_ORDER[x.division] - DIVISION_ORDER[y.division] || compareText(x.name, y.name));
+            // Only players in a Premier or A Division team, as before
+            players = [];
+            lists[0].forEach(p => {
+                const team = p ? byId[String(p.team_id)] : null;
+                if (team) players.push({ name: tidy(p.player_name), team: team });
+            });
+            loaded = true;
+            fillTeams();
+            render();
+        }
+
+        // The Team list follows the Division choice: Premier Division and
+        // A Division groups, Bye teams left out. The chosen team stays
+        // chosen while it is still in the list.
+        function fillTeams() {
+            const division = divisionFilter.value;
+            const previous = teamFilter.value;
+            let html = '<option value="all">All teams</option>';
+            ['premier', 'a'].forEach(d => {
+                if (division !== 'all' && division !== d) return;
+                const list = teams.filter(t => t.division === d && !t.bye);
+                if (!list.length) return;
+                html += '<optgroup label="' + DIVISIONS[d] + '">'
+                    + list.map(t => '<option value="' + esc(t.id) + '">' + esc(t.name) + '</option>').join('')
+                    + '</optgroup>';
+            });
+            teamFilter.innerHTML = html;
+            teamFilter.value = previous;
+            if (teamFilter.value !== previous) teamFilter.value = 'all';
+        }
+
+        function currentFilters() {
+            const raw = tidy(search.value);
+            return { raw: raw, q: raw.toLowerCase(), division: divisionFilter.value, team: teamFilter.value };
+        }
+
+        function matches(p, f) {
+            if (f.division !== 'all' && p.team.division !== f.division) return false;
+            if (f.team !== 'all' && p.team.id !== f.team) return false;
+            return !f.q || p.name.toLowerCase().indexOf(f.q) !== -1;
+        }
+
+        // The chosen column first (A to Z or Z to A), then the others A to Z
+        function sorted(list) {
+            const dir = sortDir === 'desc' ? -1 : 1;
+            const first = sortField === 'team' ? (x, y) => compareText(x.team.name, y.team.name)
+                : sortField === 'division' ? (x, y) => DIVISION_ORDER[x.team.division] - DIVISION_ORDER[y.team.division]
+                : (x, y) => compareText(x.name, y.name);
+            return list.slice().sort((x, y) => dir * first(x, y)
+                || (sortField === 'division' ? compareText(x.team.name, y.team.name) : 0)
+                || compareText(x.name, y.name)
+                || compareText(x.team.name, y.team.name));
+        }
+
+        // The name with the letters that match the search marked
+        function nameHtml(name, q) {
+            const lower = name.toLowerCase();
+            const at = q ? lower.indexOf(q) : -1;
+            if (at === -1 || lower.length !== name.length) return esc(name);
+            return esc(name.slice(0, at)) + '<mark class="players-mark">' + esc(name.slice(at, at + q.length)) + '</mark>' + esc(name.slice(at + q.length));
+        }
+
+        function rowHtml(p, q) {
+            const division = DIVISION_WORDS[p.team.division];
+            return '<tr><th scope="row">' + nameHtml(p.name, q) + '</th>'
+                + '<td>' + esc(p.team.name) + '<span class="players-table__fold">' + division + '</span></td>'
+                + '<td class="col-division">' + division + '</td></tr>';
+        }
+
+        // Grouped by team: each division, then a card per team with its
+        // players A to Z. While searching, a team shows only its matches.
+        function groupsHtml(list, f) {
+            const totals = {};
+            players.forEach(p => { totals[p.team.id] = (totals[p.team.id] || 0) + 1; });
+            const byTeam = {};
+            list.forEach(p => { (byTeam[p.team.id] = byTeam[p.team.id] || []).push(p); });
+            let html = '';
+            ['premier', 'a'].forEach(d => {
+                const cards = teams.filter(t => t.division === d && byTeam[t.id]).map(t => {
+                    const mine = byTeam[t.id].slice().sort((x, y) => compareText(x.name, y.name));
+                    const total = totals[t.id] || 0;
+                    const meta = mine.length === total ? plural(total, 'player') : mine.length + ' of ' + plural(total, 'player');
+                    const id = 'team-' + t.id.replace(/[^A-Za-z0-9_-]/g, '');
+                    return '<article class="card card--flush players-team" aria-labelledby="' + id + '">'
+                        + '<div class="card__header"><h3 class="card__title" id="' + id + '">' + esc(t.name) + '</h3>'
+                        + '<p class="card__meta">' + meta + '</p></div>'
+                        + '<ul class="players-team__list" role="list">'
+                        + mine.map(p => '<li>' + nameHtml(p.name, f.q) + '</li>').join('')
+                        + '</ul></article>';
+                });
+                if (!cards.length) return;
+                html += '<section class="players-division" aria-labelledby="division-' + d + '">'
+                    + '<h2 class="section-title players-division__title" id="division-' + d + '">' + DIVISIONS[d] + '</h2>'
+                    + '<div class="players-teams">' + cards.join('') + '</div></section>';
+            });
+            return html;
+        }
+
+        // Nothing matches: say which choices left the list empty
+        function emptyText(f) {
+            const team = f.team !== 'all' ? teams.filter(t => t.id === f.team)[0] : null;
+            const where = team ? esc(team.name) : f.division !== 'all' ? 'the ' + DIVISIONS[f.division] : '';
+            if (f.q) {
+                return 'No players' + (where ? ' in ' + where : '') + ' match "' + esc(f.raw) + '". Check the spelling, or try fewer letters.';
+            }
+            return team ? where + ' has no players listed yet.' : 'There are no players in ' + where + ' yet.';
+        }
+
+        function render() {
+            if (!loaded) return;
+            const f = currentFilters();
+            const list = players.filter(p => matches(p, f));
+            const total = players.length;
+            if (!total) {
+                setStatus('');
+                stateBox.innerHTML = stateHtml('empty', 'No players have been listed yet.');
+                show('state');
+                return;
+            }
+            setStatus('Showing <strong id="visible-count">' + list.length + '</strong> of <strong id="total-count">' + total + '</strong> '
+                + (total === 1 ? 'player' : 'players') + (view === 'team' ? ', grouped by team.' : '.'));
+            if (!list.length) {
+                stateBox.innerHTML = stateHtml('empty', emptyText(f),
+                    '<button class="btn btn--secondary state__action" type="button" data-show-all>Show all players</button>');
+                show('state');
+                return;
+            }
+            if (view === 'team') {
+                groupsBox.innerHTML = groupsHtml(list, f);
+                show('groups');
             } else {
-                noPlayersMessage.classList.add('hidden');
-                displayPlayers(sortedPlayers);
+                tableBody.innerHTML = sorted(list).map(p => rowHtml(p, f.q)).join('');
+                show('list');
             }
         }
-        
-        // Sort players based on the given field and direction
-        function sortPlayers(players, field, direction) {
-            return [...players].sort((a, b) => {
-                let valueA, valueB;
-                
-                switch (field) {
-                    case 'id':
-                        valueA = a.player_id;
-                        valueB = b.player_id;
-                        break;
-                    case 'name':
-                        valueA = a.player_name;
-                        valueB = b.player_name;
-                        break;
-                    case 'team':
-                        valueA = a.team_name;
-                        valueB = b.team_name;
-                        break;
-                    case 'division':
-                        valueA = a.division;
-                        valueB = b.division;
-                        break;
-                    default:
-                        valueA = a.player_name;
-                        valueB = b.player_name;
-                }
-                
-                // Handle numeric and string comparisons
-                if (typeof valueA === 'number' && typeof valueB === 'number') {
-                    return direction === 'asc' ? valueA - valueB : valueB - valueA;
-                } else {
-                    const strA = String(valueA).toLowerCase();
-                    const strB = String(valueB).toLowerCase();
-                    return direction === 'asc' 
-                        ? strA.localeCompare(strB) 
-                        : strB.localeCompare(strA);
-                }
+
+        // The column headings say how the list is sorted (aria-sort and an arrow)
+        function markSort() {
+            sortButtons.forEach(btn => {
+                const cell = btn.parentNode;
+                if (btn.getAttribute('data-sort') === sortField) cell.setAttribute('aria-sort', sortDir === 'asc' ? 'ascending' : 'descending');
+                else cell.removeAttribute('aria-sort');
             });
+            const words = SORT_WORDS[sortField][sortDir];
+            sortStatus.innerHTML = 'Sorted by <strong>' + words + '</strong>.';
+            caption.textContent = 'Players, sorted by ' + words;
         }
-        
-        // Display the filtered and sorted players in the table
-        function displayPlayers(players) {
-            playersTableBody.innerHTML = '';
-            
-            players.forEach(player => {
-                const row = document.createElement('tr');
-                
-                // Determine team badge class based on division
-                const teamBadgeClass = player.division === 'premier' ? 'premier-team' : 'a-team';
-                
-                row.innerHTML = `
-                    <td>${player.player_id}</td>
-                    <td>${player.player_name}</td>
-                    <td>${player.team_name}</td>
-                    <td><span class="team-badge ${teamBadgeClass}">${player.division.toUpperCase()}</span></td>
-                `;
-                
-                playersTableBody.appendChild(row);
-            });
+
+        function markView() {
+            viewButtons.forEach(btn => btn.setAttribute('aria-pressed', btn.getAttribute('data-view') === view ? 'true' : 'false'));
         }
-        
-        // Update the team filter based on the selected division
-        function updateTeamFilter() {
-            const divisionValue = divisionFilter.value;
-            const currentTeamValue = teamFilter.value;
-            
-            // Store the currently selected team
-            const previousSelection = teamFilter.value;
-            
-            // Clear existing options except the first one
-            teamFilter.innerHTML = '<option value="all">All Teams</option>';
-            
-            // Filter teams based on the selected division
-            let filteredTeams = allTeams;
-            if (divisionValue !== 'all') {
-                filteredTeams = allTeams.filter(team => team.division === divisionValue);
-            }
-            
-            // Add Premier Division teams first (if they should be included)
-            const premierTeams = filteredTeams.filter(team => team.division === 'premier' && team.team_name !== 'Bye');
-            if (premierTeams.length > 0 && (divisionValue === 'all' || divisionValue === 'premier')) {
-                const premierOptgroup = document.createElement('optgroup');
-                premierOptgroup.label = 'Premier Division';
-                
-                premierTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_id;
-                    option.textContent = team.team_name;
-                    premierOptgroup.appendChild(option);
-                });
-                
-                teamFilter.appendChild(premierOptgroup);
-            }
-            
-            // Add A Division teams (if they should be included)
-            const aTeams = filteredTeams.filter(team => team.division === 'a' && team.team_name !== 'Division A Bye');
-            if (aTeams.length > 0 && (divisionValue === 'all' || divisionValue === 'a')) {
-                const aOptgroup = document.createElement('optgroup');
-                aOptgroup.label = 'A Division';
-                
-                aTeams.forEach(team => {
-                    const option = document.createElement('option');
-                    option.value = team.team_id;
-                    option.textContent = team.team_name;
-                    aOptgroup.appendChild(option);
-                });
-                
-                teamFilter.appendChild(aOptgroup);
-            }
-            
-            // Try to restore previous selection if it still exists
-            if (previousSelection !== 'all') {
-                // Find if the previous team is still in the filtered list
-                const teamExists = filteredTeams.some(team => team.team_id.toString() === previousSelection);
-                if (teamExists) {
-                    teamFilter.value = previousSelection;
-                } else {
-                    // Reset to "All Teams" if the previous selection no longer exists
-                    teamFilter.value = 'all';
-                }
-            }
+
+        function syncClear() {
+            clearButton.hidden = !search.value;
         }
-        
-        // Set up event listeners
-        function setupEventListeners() {
-            // Division filter change event
-            divisionFilter.addEventListener('change', () => {
-                updateTeamFilter(); // Update team filter options first
-                filterAndSortPlayers(); // Then filter and display players
-            });
-            
-            // Team filter change event
-            teamFilter.addEventListener('change', filterAndSortPlayers);
-            
-            // Search input event with debounce
-            let debounceTimeout;
-            playerSearch.addEventListener('input', () => {
-                clearTimeout(debounceTimeout);
-                debounceTimeout = setTimeout(filterAndSortPlayers, 300);
-            });
-            
-            // Sort column headers
-            tableHeaders.forEach(header => {
-                header.addEventListener('click', () => {
-                    const sortField = header.dataset.sort;
-                    
-                    // Toggle direction if clicking the same column
-                    if (sortField === currentSortField) {
-                        currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
-                    } else {
-                        currentSortField = sortField;
-                        currentSortDirection = 'asc';
-                    }
-                    
-                    // Update header styles
-                    tableHeaders.forEach(h => {
-                        h.classList.remove('sort-asc', 'sort-desc');
-                    });
-                    
-                    header.classList.add(`sort-${currentSortDirection}`);
-                    
-                    // Apply the new sort
-                    filterAndSortPlayers();
-                });
-            });
+
+        function applyNow() {
+            clearTimeout(typingTimer);
+            render();
         }
-        
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', () => {
-            setupEventListeners();
-            loadPlayers();
-            
-            // Set initial sort indicator
-            const defaultSortHeader = document.querySelector(`.players-table th[data-sort="${currentSortField}"]`);
-            if (defaultSortHeader) {
-                defaultSortHeader.classList.add(`sort-${currentSortDirection}`);
+
+        // Search as you type (a short pause first, so the list does not
+        // jump at every letter); Enter shows the matches at once
+        search.addEventListener('input', () => {
+            syncClear();
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(render, 300);
+        });
+        search.addEventListener('keydown', e => {
+            if (e.key === 'Enter') applyNow();
+        });
+        clearButton.addEventListener('click', () => {
+            search.value = '';
+            syncClear();
+            applyNow();
+            search.focus();
+        });
+        divisionFilter.addEventListener('change', () => {
+            fillTeams();
+            applyNow();
+        });
+        teamFilter.addEventListener('change', applyNow);
+
+        // currentTarget, not target: the buttons hold icons
+        sortButtons.forEach(btn => btn.addEventListener('click', e => {
+            const field = e.currentTarget.getAttribute('data-sort');
+            if (field === sortField) sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            else {
+                sortField = field;
+                sortDir = 'asc';
+            }
+            markSort();
+            applyNow();
+        }));
+        viewButtons.forEach(btn => btn.addEventListener('click', e => {
+            const chosen = e.currentTarget.getAttribute('data-view');
+            if (chosen === view) return;
+            view = chosen;
+            saveView(view);
+            markView();
+            applyNow();
+        }));
+
+        results.addEventListener('click', e => {
+            // "Try again": keyboard focus moves to the results, which stay
+            // in place while they reload (the button itself goes away)
+            if (e.target.closest('[data-retry]')) {
+                results.setAttribute('tabindex', '-1');
+                results.focus();
+                load();
+                return;
+            }
+            // "Show all players": every choice back to the start, then the search box
+            if (e.target.closest('[data-show-all]')) {
+                search.value = '';
+                divisionFilter.value = 'all';
+                fillTeams();
+                teamFilter.value = 'all';
+                syncClear();
+                applyNow();
+                search.focus();
             }
         });
+
+        view = readView();
+        markView();
+        markSort();
+        syncClear();
+        load();
+    })();
     </script>
 </body>
 </html>

@@ -1,771 +1,534 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
-
-        <!-- Existing meta tags -->
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <!-- Improved meta description with keywords -->
-        <meta name="description" content="Join the Crawley Darts League - Premier and A Division matches every Friday. View league tables, fixtures, results, and player statistics for competitive darts in Crawley, West Sussex.">
-        
-        <!-- Additional meta tags -->
-        <meta name="keywords" content="Crawley darts, darts league, dart competitions, Crawley sports, Sussex darts, Premier Division darts, A Division darts">
-        
-        <!-- Canonical URL -->
-        <link rel="canonical" href="https://crawleydartsleague.com/index.html">
-        
-        <!-- Existing OG tags -->
-        <meta property="og:title" content="Home - Crawley Darts League">
-        <meta property="og:description" content="The official website of the Crawley Darts League featuring Premier and A Divisions. View league tables, fixtures, results, and statistics for darts in Crawley.">
-        <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
-        
-        <!-- Additional OG tags -->
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="https://crawleydartsleague.com/index.html">
-        
-        <title>Crawley Darts League | Official Darts Competition in West Sussex</title>
-
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Custom header style for the index page to position logo left and title centered */
-        .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
-        }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
-        }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
-        }
-
-        
-        /* Homepage specific styles */
-        .welcome-section {
-            background: linear-gradient(rgba(26, 35, 126, 0.9), rgba(26, 35, 126, 0.7)), url('darts-bg.jpg');
-            background-size: cover;
-            background-position: center;
-            color: white;
-            text-align: center;
-            padding: 40px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        
-        .welcome-section h2 {
-            font-size: 1.8rem;
-            margin-bottom: 15px;
-        }
-        
-        .welcome-section p {
-            font-size: 1.1rem;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .quick-links {
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawley Darts League | Official Darts Competition in West Sussex</title>
+    <meta name="description" content="Join the Crawley Darts League - Premier and A Division matches every Friday. View league tables, fixtures, results, and player statistics for competitive darts in Crawley, West Sussex.">
+    <meta name="keywords" content="Crawley darts, darts league, dart competitions, Crawley sports, Sussex darts, Premier Division darts, A Division darts">
+    <link rel="canonical" href="https://crawleydartsleague.com/index.html">
+    <meta property="og:title" content="Home - Crawley Darts League">
+    <meta property="og:description" content="The official website of the Crawley Darts League featuring Premier and A Divisions. View league tables, fixtures, results, and statistics for darts in Crawley.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://crawleydartsleague.com/index.html">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* Home page only */
+        body.page-home .leaders-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 1.5rem;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
         }
-        
-        .quick-link {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            /* Column flex so the button can be pushed to the bottom no matter
-               how long or short each card's description text is – keeps every
-               button on the same baseline across the grid row. */
+        body.page-home .leaders-card {
             display: flex;
             flex-direction: column;
         }
-
-        .quick-link:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-
-        .quick-link h3 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-
-        .quick-link p {
-            /* Paragraph fills any leftover space so the button below it sits
-               at the bottom of the card. */
-            flex-grow: 1;
-            margin-bottom: 15px;
-        }
-
-        .quick-link a {
-            display: inline-block;
-            text-decoration: none;
-            color: var(--primary);
-            font-weight: 500;
-            padding: 8px 15px;
-            border-radius: 4px;
-            border: 1px solid var(--primary);
-            transition: all 0.3s ease;
-            /* Pin the button to the bottom of the card and centre it on the
-               horizontal axis (the flex container is column-oriented, so
-               cross-axis = horizontal here). */
+        body.page-home .leaders-card .card__footer {
             margin-top: auto;
-            align-self: center;
         }
-        
-        .quick-link a:hover {
-            background-color: var(--primary);
-            color: white;
+        body.page-home .leaders-card__body {
+            border-top: 1px solid var(--color-divider);
         }
-        
-        .announcements {
-            margin-bottom: 20px;
+        /* Focus rests on the list while it reloads after "Try again"; the
+           ring sits inside so the card's rounded edge never cuts it */
+        body.page-home .leaders-card__body:focus {
+            outline-offset: -3px;
         }
-        
-        .announcement {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 15px;
-            margin-bottom: 15px;
+        body.page-home .announcements {
+            margin-top: 2rem;
         }
-        
-        .announcement .date {
-            color: var(--dark-gray);
-            font-size: 0.9rem;
-            font-style: italic;
+        body.page-home .announcement {
+            padding: 1rem 0;
+            border-top: 1px solid var(--color-divider);
         }
-        
-        .announcement h3 {
-            color: var(--primary);
-            margin: 5px 0 10px;
+        body.page-home .announcement:first-child {
+            margin-top: 0.75rem;
         }
-        
-        .contact-info {
-            text-align: center;
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
+        body.page-home .announcement__date {
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
         }
-        
-        .contact-info h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
+        body.page-home .announcement__title {
+            margin: 0.125rem 0 0.375rem;
+            color: var(--color-heading);
+            font-size: var(--text-md);
         }
-        
-        .contact-info p {
-            margin-bottom: 10px;
+        body.page-home .announcement__body {
+            max-width: var(--container-prose);
+            white-space: pre-wrap;
         }
-        
-        .contact-info a {
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 500;
+        body.page-home .announcements .state {
+            padding-left: 2rem;
+            padding-right: 0;
         }
-        
-        .contact-info a:hover {
-            text-decoration: underline;
+        body.page-home .announcements .state::before {
+            left: 0;
         }
-
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+        @media (min-width: 48em) {
+            body.page-home .leaders-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            body.page-home .leaders-card--top {
+                grid-column: 1 / -1;
+            }
+        }
+        @media (min-width: 64em) {
+            body.page-home .leaders-grid {
+                grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+                align-items: start;
+            }
+            body.page-home .leaders-card--top {
+                grid-column: 1;
+                grid-row: 1 / span 2;
+            }
+        }
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-    <header class="header">
-        <div class="logo-container">
-            <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
+<body class="page-home">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
+            </div>
         </div>
-        <h1>Crawley Darts League</h1>
-        <button class="mobile-toggle" aria-label="Toggle menu">
-            <span class="bar"></span>
-            <span class="bar"></span>
-            <span class="bar"></span>
-        </button>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
     </header>
-    
-    <nav class="nav">
-        <ul class="nav-menu">
-            <li><a href="index.html">Home</a></li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">League</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leagueresults.html">Results</a></li>
-                </ul>
-            </li>
-            
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Statistics</a>
-                <ul class="dropdown-menu">
-                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="playerrankings.html">Player Rankings</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Information</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
-                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                    <li><a href="rules.html">League Rules</a></li>
-                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                    <li><a href="winnershistory.html">Winners History</a></li>
-                </ul>
-            </li>
-            
-            <li><a href="admin-login.html">Admin Login</a></li>
+    <!-- site-header:end -->
 
-            
-            <li><a href="team-login.html">Team Login</a></li>
-    
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-    
+    <main id="main" class="site-main">
         <div class="container">
-        <!-- Welcome Section -->
-        <section class="welcome-section">
-            <h2>Welcome to the Crawley Darts League</h2>
-            <p>Established local darts league featuring Premier and A Divisions. Matches played on Friday evenings at venues across Crawley.</p>
-        </section>
-        
-        <!-- Quick Links -->
-        <section class="quick-links">
-            <div class="quick-link">
-                <h3>League Tables</h3>
-                <p>View the current standings in both Premier and A Divisions.</p>
-                <br>
-                <a href="leaguetable.html">View Tables</a>
+            <div class="page-header page-header--band">
+                <h1 class="page-header__title">Welcome to the Crawley Darts League</h1>
+                <p class="page-header__intro">Premier and A Division darts on Friday evenings at venues across Crawley.</p>
             </div>
-            <div class="quick-link">
-                <h3>Latest Results</h3>
-                <p>Catch up on the most recent league match results.</p>
-                <br>
-                <a href="leagueresults.html">View Results</a>
+
+            <section class="section" aria-labelledby="leaders-title">
+                <div class="section__head">
+                    <h2 class="section-title" id="leaders-title">League leaders</h2>
+                    <p class="section__intro">The best players so far this season. Choose a division to see its leaders.</p>
+                </div>
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
+                </div>
+                <p class="segmented-status" id="leaders-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <div class="leaders-grid" id="leaders">
+                    <article class="card card--flush leaders-card leaders-card--top" aria-labelledby="top10-title">
+                        <div class="card__header">
+                            <h3 class="card__title" id="top10-title">Top 10 players</h3>
+                            <p class="card__meta"><span data-division-name>Premier Division</span>, league singles</p>
+                        </div>
+                        <div class="leaders-card__body" id="leaders-top10" data-kind="top10">
+                            <p class="state state--loading">Loading the player rankings...</p>
+                        </div>
+                        <div class="card__footer">
+                            <a class="card__link" href="playerrankings.html">See all player rankings<svg class="icon card__link-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a>
+                        </div>
+                    </article>
+
+                    <article class="card card--flush leaders-card" aria-labelledby="oneeighties-title">
+                        <div class="card__header">
+                            <h3 class="card__title" id="oneeighties-title">Most 180s</h3>
+                            <p class="card__meta"><span data-division-name>Premier Division</span>, league and cup</p>
+                        </div>
+                        <div class="leaders-card__body" id="leaders-180s" data-kind="oneEighties">
+                            <p class="state state--loading">Loading the 180s...</p>
+                        </div>
+                        <div class="card__footer">
+                            <a class="card__link" href="180sfinishes.html">See all 180s<svg class="icon card__link-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a>
+                        </div>
+                    </article>
+
+                    <article class="card card--flush leaders-card" aria-labelledby="finishes-title">
+                        <div class="card__header">
+                            <h3 class="card__title" id="finishes-title">Highest finishes</h3>
+                            <p class="card__meta"><span data-division-name>Premier Division</span>, league and cup</p>
+                        </div>
+                        <div class="leaders-card__body" id="leaders-finishes" data-kind="finishes">
+                            <p class="state state--loading">Loading the high finishes...</p>
+                        </div>
+                        <div class="card__footer">
+                            <a class="card__link" href="180sfinishes.html">See all high finishes<svg class="icon card__link-icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a>
+                        </div>
+                    </article>
+                </div>
+            </section>
+
+            <section class="card announcements" aria-labelledby="announcements-title">
+                <h2 class="card__title" id="announcements-title">League announcements</h2>
+                <div id="announcements-container">
+                    <p class="state state--loading">Loading announcements...</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
             </div>
-            <div class="quick-link">
-                <h3>Player Rankings</h3>
-                <p>See who's leading the individual rankings this season.</p>
-                <br>
-                <a href="playerrankings.html">View Rankings</a>
-            </div>
-            <div class="quick-link">
-                <h3>Submit Score</h3>
-                <p>Captains: log in to submit, edit, and view your team's match results.</p>
-                <br>
-                <a href="team-login.html">Team Login</a>
-            </div>
-        </section>
-        
-        <!-- Announcements Section -->
-        <section class="announcements card">
-            <h2>League Announcements</h2>
-            <div id="announcements-container">
-                <p class="small-note" style="color:#757575;font-style:italic;">Loading announcements...</p>
-            </div>
-        </section>
-                    
-    </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-        // Fetch league announcements from the API and render them into the
-        // page in newest-first order. Falls back to a friendly message if
-        // the API is unreachable or returns nothing.
+        // League announcements: fetched from the API and shown newest first,
+        // with a friendly message if there are none or the API is unreachable.
         function escapeAnnouncementHtml(s) {
             return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
         }
+        // "Fri 23 Oct 2026", like every other date on the site
         function formatAnnouncementDate(s) {
-            if (!s) return '';
-            const d = new Date(String(s).replace(' ', 'T'));
-            if (isNaN(d.getTime())) return String(s);
-            return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+            const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ''));
+            if (!m) return '';
+            const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            if (isNaN(d.getTime())) return '';
+            return ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][d.getDay()] + ' ' + d.getDate() + ' '
+                + ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()] + ' ' + d.getFullYear();
         }
         async function loadAnnouncements() {
             const container = document.getElementById('announcements-container');
             if (!container) return;
+            container.innerHTML = '<p class="state state--loading" role="status">Loading announcements...</p>';
             try {
                 const res = await fetch('api.php?endpoint=announcements');
                 const data = await res.json();
-                if (!data.success || !Array.isArray(data.announcements) || data.announcements.length === 0) {
-                    container.innerHTML = '<p class="small-note" style="color:#757575;font-style:italic;">No announcements yet. Check back soon!</p>';
+                if (!data || !data.success || !Array.isArray(data.announcements)) throw new Error('Unexpected reply');
+                if (data.announcements.length === 0) {
+                    container.innerHTML = '<p class="state state--empty" role="status">No announcements yet.</p>';
                     return;
                 }
                 container.innerHTML = data.announcements.map(a => `
-                    <div class="announcement">
-                        <div class="date">${escapeAnnouncementHtml(formatAnnouncementDate(a.created_at))}</div>
-                        <h3>${escapeAnnouncementHtml(a.title)}</h3>
-                        <p style="white-space: pre-wrap;">${escapeAnnouncementHtml(a.body)}</p>
-                    </div>
+                    <article class="announcement">
+                        <p class="announcement__date">${escapeAnnouncementHtml(formatAnnouncementDate(a.created_at))}</p>
+                        <h3 class="announcement__title">${escapeAnnouncementHtml(a.title)}</h3>
+                        <p class="announcement__body">${escapeAnnouncementHtml(a.body)}</p>
+                    </article>
                 `).join('');
             } catch (e) {
-                container.innerHTML = '<p class="small-note" style="color:#c62828;">Couldn\'t load announcements right now.</p>';
+                container.innerHTML = '<div class="state state--error" role="alert"><p>Sorry, the announcements could not be loaded just now.</p>'
+                    + '<button class="btn btn--secondary state__action" type="button" data-retry-announcements>Try again</button></div>';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', function() {
-            loadAnnouncements();
-            const mobileToggle = document.querySelector('.mobile-toggle');
-            const navMenu = document.querySelector('.nav-menu');
-            const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-            
-            // Toggle mobile menu
-            mobileToggle.addEventListener('click', function() {
-                navMenu.classList.toggle('active');
-                
-                // Animate hamburger to X
-                this.classList.toggle('active');
-                const bars = this.querySelectorAll('.bar');
-                if (this.classList.contains('active')) {
-                    bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-                    bars[1].style.opacity = '0';
-                    bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-                } else {
-                    bars[0].style.transform = 'none';
-                    bars[1].style.opacity = '1';
-                    bars[2].style.transform = 'none';
-                }
-            });
-            
-            // Handle dropdown menus on mobile
-            dropdownToggles.forEach(toggle => {
-                toggle.addEventListener('click', function(e) {
-                    // Only apply this behavior on mobile
-                    if (window.innerWidth <= 768) {
-                        e.preventDefault();
-                        const parentLi = this.parentElement;
-                        
-                        // Close all other open dropdowns
-                        document.querySelectorAll('.dropdown.active').forEach(item => {
-                            if (item !== parentLi) {
-                                item.classList.remove('active');
-                            }
+        // League leaders: one division switch drives three cards (top 10 in
+        // the singles rankings, most 180s, highest finishes). The Top 10 uses
+        // the same scoring and order as playerrankings.html.
+        const Leaders = (function () {
+            const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+            const STORE_KEY = 'cdl-leaders-division';
+            const SOURCES = {
+                top10: d => 'api.php?endpoint=singles-ranking&division=' + d + '&match_type=league',
+                oneEighties: d => 'api.php?endpoint=one-eighties&division=' + d,
+                finishes: d => 'api.php?endpoint=high-finishes&division=' + d
+            };
+            const NOUNS = { top10: 'the player rankings', oneEighties: 'the 180s', finishes: 'the high finishes' };
+            const cache = {};
+            let current = 'premier';
+
+            const esc = escapeAnnouncementHtml;
+
+            function readSaved() {
+                try {
+                    const v = window.localStorage.getItem(STORE_KEY);
+                    return v === 'premier' || v === 'a' ? v : null;
+                } catch (e) { return null; }
+            }
+            function save(v) {
+                try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* private mode: not remembered */ }
+            }
+
+            // Fetch once per division and kind; a failed request is forgotten
+            // so "Try again" asks the server again.
+            function load(kind, division) {
+                const key = kind + '|' + division;
+                if (!cache[key]) {
+                    cache[key] = fetch(SOURCES[kind](division))
+                        .then(res => res.json())
+                        .then(data => {
+                            if (!Array.isArray(data)) throw new Error('Unexpected reply');
+                            return data;
                         });
-                        
-                        // Toggle this dropdown
-                        parentLi.classList.toggle('active');
-                    }
+                    cache[key].catch(() => { delete cache[key]; });
+                }
+                return cache[key];
+            }
+
+            // Same scoring as recalculatePlayerPoints() in playerrankings.html
+            function rankingPoints(player, division) {
+                let points = 0;
+                if (division === 'premier') {
+                    points += (player.win_3_0 || 0) * 5;
+                    points += (player.win_3_1 || 0) * 4;
+                    points += (player.win_3_2 || 0) * 3;
+                    points += (player.loss_2_3 || 0) * 2;
+                    points += (player.loss_1_3 || 0) * 1;
+                } else {
+                    points += (player.win_2_0 || 0) * 3;
+                    points += (player.win_2_1 || 0) * 2;
+                    points += (player.loss_1_2 || 0) * 1;
+                }
+                return points;
+            }
+
+            // Same order as playerrankings.html: points, then games won. The
+            // position shown is the one on that page; players who have not
+            // played yet are left out.
+            function topPlayers(data, division) {
+                const ranked = data.map(p => ({ player: p, points: rankingPoints(p, division) }));
+                ranked.sort((a, b) => {
+                    if (b.points !== a.points) return b.points - a.points;
+                    return b.player.won - a.player.won;
                 });
-            });
-            
-            // Close menu when clicking outside
-            document.addEventListener('click', function(e) {
-                const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-                if (!isClickInsideNav && navMenu.classList.contains('active')) {
-                    navMenu.classList.remove('active');
-                    mobileToggle.classList.remove('active');
-                    const bars = mobileToggle.querySelectorAll('.bar');
-                    bars[0].style.transform = 'none';
-                    bars[1].style.opacity = '1';
-                    bars[2].style.transform = 'none';
+                const top = [];
+                for (let i = 0; i < ranked.length && top.length < 10; i++) {
+                    if (Number(ranked[i].player.played) > 0) top.push({ rank: i + 1, player: ranked[i].player, points: ranked[i].points });
                 }
-            });
-            
-            // Handle resize events
-            window.addEventListener('resize', function() {
-                if (window.innerWidth > 768) {
-                    navMenu.classList.remove('active');
-                    mobileToggle.classList.remove('active');
-                    const bars = mobileToggle.querySelectorAll('.bar');
-                    bars[0].style.transform = 'none';
-                    bars[1].style.opacity = '1';
-                    bars[2].style.transform = 'none';
-                    
-                    // Reset all dropdowns
-                    document.querySelectorAll('.dropdown.active').forEach(item => {
-                        item.classList.remove('active');
+                return top;
+            }
+
+            // Equal values share a rank: 1, =2, =2, 4
+            function sharedRanks(values) {
+                const ranks = [];
+                values.forEach((v, i) => ranks.push(i > 0 && v === values[i - 1] ? ranks[i - 1] : i + 1));
+                return ranks.map((r, i) => ({ rank: r, joint: ranks.filter(x => x === r).length > 1 }));
+            }
+
+            function rankCell(rank, joint) {
+                return '<span class="list-ranked__rank"><span aria-hidden="true">' + (joint ? '=' : '') + rank + '</span>'
+                    + '<span class="visually-hidden">' + (joint ? 'Joint position ' : 'Position ') + rank + '</span></span>';
+            }
+            function personCell(name, team, extra) {
+                return '<span class="list-ranked__main"><span class="list-ranked__name">' + esc(name) + '</span>'
+                    + '<span class="list-ranked__meta">' + esc(team || '') + '</span>' + (extra || '') + '</span>';
+            }
+            function head(cells) {
+                return '<div class="list-ranked__head" aria-hidden="true"><span></span><span>Player</span>' + cells + '</div>';
+            }
+
+            function renderTop10(data, division) {
+                const top = topPlayers(data, division);
+                if (!top.length) return '<p class="state state--empty" role="status">No league singles have been played in the ' + DIVISIONS[division] + ' yet.</p>';
+                return '<div class="list-ranked list-ranked--stats">'
+                    + head('<span class="list-ranked__num list-ranked__wide">Played</span><span class="list-ranked__num list-ranked__wide">Won</span><span class="list-ranked__num">Points</span>')
+                    + '<ol class="list-ranked__list" role="list">' + top.map(r => {
+                        const played = Number(r.player.played) || 0;
+                        const won = Number(r.player.won) || 0;
+                        return '<li class="list-ranked__item' + (r.rank === 1 ? ' list-ranked__item--top' : '') + '">'
+                            + rankCell(r.rank, false)
+                            + personCell(r.player.player_name, r.player.team_name, '<span class="list-ranked__meta list-ranked__fold">Played ' + played + ', won ' + won + '</span>')
+                            + '<span class="list-ranked__num list-ranked__wide"><span class="visually-hidden">Played </span>' + played + '</span>'
+                            + '<span class="list-ranked__num list-ranked__wide"><span class="visually-hidden">Won </span>' + won + '</span>'
+                            + '<span class="list-ranked__value">' + r.points + '<span class="list-ranked__label"> points</span></span>'
+                            + '</li>';
+                    }).join('') + '</ol></div>';
+            }
+
+            function renderTopFive(data, division, opts) {
+                if (!data.length) return '<p class="state state--empty" role="status">' + opts.empty + ' ' + DIVISIONS[division] + ' yet.</p>';
+                const values = data.map(opts.value);
+                const ranks = sharedRanks(values);
+                const shown = data.slice(0, 5);
+                const last = values[shown.length - 1];
+                const more = values.slice(5).filter(v => v === last).length;
+                // No column heads here: the card title already says what the number is
+                return '<div class="list-ranked">'
+                    + '<ol class="list-ranked__list" role="list">' + shown.map((row, i) => {
+                        return '<li class="list-ranked__item' + (ranks[i].rank === 1 ? ' list-ranked__item--top' : '') + '">'
+                            + rankCell(ranks[i].rank, ranks[i].joint)
+                            + personCell(row.player_name, row.team_name)
+                            + '<span class="list-ranked__value"><span class="list-ranked__label">' + opts.column + ': </span>' + values[i] + '</span>'
+                            + '</li>';
+                    }).join('') + '</ol>'
+                    + (more ? '<p class="list-ranked__note">' + opts.more(more, last) + '</p>' : '')
+                    + '</div>';
+            }
+
+            const RENDER = {
+                top10: renderTop10,
+                oneEighties: (data, division) => renderTopFive(data, division, {
+                    column: '180s',
+                    empty: 'No 180s recorded in the',
+                    value: row => Number(row.total_180s) || 0,
+                    more: (n, v) => n + ' more ' + (n === 1 ? 'player also has ' : 'players also have ') + v + '.'
+                }),
+                finishes: (data, division) => renderTopFive(data, division, {
+                    column: 'Finish',
+                    empty: 'No high finishes recorded in the',
+                    value: row => Number(row.finish_value) || 0,
+                    more: (n, v) => n + ' more ' + (n === 1 ? 'finish' : 'finishes') + ' of ' + v + '.'
+                })
+            };
+
+            function fill(kind) {
+                const box = document.querySelector('[data-kind="' + kind + '"]');
+                if (!box) return;
+                const division = current;
+                box.innerHTML = '<p class="state state--loading" role="status">Loading ' + NOUNS[kind] + '...</p>';
+                load(kind, division).then(data => {
+                    if (division !== current) return; // another division was chosen meanwhile
+                    box.innerHTML = RENDER[kind](data, division);
+                }).catch(() => {
+                    if (division !== current) return;
+                    box.innerHTML = '<div class="state state--error" role="alert"><p>Sorry, ' + NOUNS[kind] + ' could not be loaded just now.</p>'
+                        + '<button class="btn btn--secondary state__action" type="button" data-retry="' + kind + '">Try again</button></div>';
+                });
+            }
+
+            function show(division) {
+                current = DIVISIONS[division] ? division : 'premier';
+                document.querySelectorAll('.segmented [data-division]').forEach(btn => {
+                    btn.setAttribute('aria-pressed', btn.dataset.division === current ? 'true' : 'false');
+                });
+                const name = DIVISIONS[current];
+                document.querySelectorAll('[data-division-name]').forEach(el => { el.textContent = name; });
+                const status = document.getElementById('leaders-status');
+                if (status) status.innerHTML = 'Showing: <strong>' + name + '</strong>';
+                Object.keys(RENDER).forEach(fill);
+            }
+
+            function init() {
+                const grid = document.getElementById('leaders');
+                if (!grid) return;
+                document.querySelectorAll('.segmented [data-division]').forEach(btn => {
+                    btn.addEventListener('click', e => {
+                        const division = e.currentTarget.dataset.division;
+                        if (division === current) return;
+                        save(division);
+                        show(division);
                     });
-                }
-            });
+                });
+                // "Try again": keyboard focus moves to the card's list, which
+                // stays in place while it reloads
+                grid.addEventListener('click', e => {
+                    const retry = e.target.closest('[data-retry]');
+                    if (!retry) return;
+                    const box = retry.closest('[data-kind]');
+                    if (box) {
+                        box.setAttribute('tabindex', '-1');
+                        box.focus();
+                    }
+                    fill(retry.getAttribute('data-retry'));
+                });
+                show(readSaved() || 'premier');
+            }
+
+            return { init, topPlayers, rankingPoints };
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // "Try again" on the announcements: keyboard focus waits on the
+            // box while it reloads
+            const announcements = document.getElementById('announcements-container');
+            if (announcements) {
+                announcements.addEventListener('click', e => {
+                    if (!e.target.closest('[data-retry-announcements]')) return;
+                    announcements.setAttribute('tabindex', '-1');
+                    announcements.focus();
+                    loadAnnouncements();
+                });
+            }
+            loadAnnouncements();
+            Leaders.init();
         });
-        </script>
+    </script>
 </body>
 </html>

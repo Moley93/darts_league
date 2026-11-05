@@ -1,734 +1,405 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Upcoming fixtures for the Crawley Darts League. Find match dates, venues and teams for both Premier and A Divisions.">
-<meta property="og:title" content="CDL | League Fixtures">
-<meta property="og:description" content="Upcoming fixtures for the Crawley Darts League. Find match dates, venues and teams for both Premier and A Divisions.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
     <title>CDL | League Fixtures</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Additional styles for fixtures display */
-        .fixtures-container {
-            margin-top: 20px;
-            width: 100%;
+    <meta name="description" content="Upcoming fixtures for the Crawley Darts League. Find match dates, venues and teams for both Premier and A Divisions.">
+    <link rel="canonical" href="https://crawleydartsleague.com/leaguefixtures.html">
+    <meta property="og:title" content="CDL | League Fixtures">
+    <meta property="og:description" content="Upcoming fixtures for the Crawley Darts League. Find match dates, venues and teams for both Premier and A Divisions.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* Fixtures page only: every selector starts body.page-leaguefixtures */
+        body.page-leaguefixtures .fixtures-doc {
+            margin-top: 1.5rem;
         }
-
-        /* Make the container and card full width for fixtures */
-        #league-fixtures .container {
-            max-width: 100% !important;
-            padding: 0 10px;
+        body.page-leaguefixtures .fixtures-doc__body {
+            margin-top: 0.5rem;
         }
-
-        #league-fixtures .card {
-            max-width: 100% !important;
-            width: 100% !important;
+        /* Loading, empty and error messages line up with the card's own text */
+        body.page-leaguefixtures .fixtures-doc__body .state {
+            padding-left: 2rem;
+            padding-right: 0;
         }
-
-        /* Responsive iframe container */
-        .fixtures-container iframe {
-            width: 100%;
-            height: 80vh;
-            min-height: 600px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        body.page-leaguefixtures .fixtures-doc__body .state::before {
+            left: 0;
         }
-
-        /* Mobile landscape optimization */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .fixtures-container iframe {
-                height: 90vh;
-                min-height: 400px;
+        /* The buttons sit where the message was, so the space above them
+           matches the space above a message */
+        body.page-leaguefixtures .fixtures-doc__body .doc__actions {
+            margin-top: 0.75rem;
+        }
+        body.page-leaguefixtures .fixtures-more {
+            margin-top: 1rem;
+        }
+        /* The read-only view stays at least 70% of the screen height on tall
+           monitors too (site.css caps .doc__view at 60rem: 67% of a 1440px
+           screen) */
+        @media (min-width: 48em) {
+            body.page-leaguefixtures .doc__view {
+                max-height: none;
             }
         }
-
-        /* Tablet and larger screens */
-        @media (min-width: 769px) {
-            .fixtures-container iframe {
-                height: 85vh;
-                min-height: 700px;
+        /* Small phones: the long button label gets the room. The new-tab
+           icon at the end stays (it says where the list opens); the
+           document icon in front goes. */
+        @media not all and (min-width: 30em) {
+            body.page-leaguefixtures .fixtures-doc .btn--lg {
+                padding-left: 1rem;
+                padding-right: 1rem;
+            }
+            body.page-leaguefixtures .fixtures-doc .btn--lg .btn__icon {
+                display: none;
             }
         }
-
-        /* Very large screens */
-        @media (min-width: 1200px) {
-            .fixtures-container iframe {
-                height: 80vh;
-                min-height: 800px;
-            }
-        }
-        
-        .fixture-date-header {
-            background: var(--light-gray);
-            padding: 10px 15px;
-            margin: 15px 0 10px;
-            border-radius: 5px;
-            font-size: 1.1em;
-            color: var(--primary);
-            border-left: 4px solid var(--secondary);
-        }
-        
-        .fixture-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            transition: background 0.3s ease;
-        }
-        
-        .fixture-item:hover {
-            background: var(--light-gray);
-        }
-        
-        .fixture-item:last-child {
-            border-bottom: none;
-        }
-        
-        .team-name {
-            flex: 2;
-            text-align: center;
-        }
-        
-        .team-name.home {
-            text-align: right;
-            padding-right: 15px;
-        }
-        
-        .team-name.away {
-            text-align: left;
-            padding-left: 15px;
-        }
-        
-        .versus {
-            padding: 0 10px;
-            color: var(--primary);
-            font-weight: bold;
-            font-size: 1.2em;
-        }
-        
-        .venue {
-            flex: 1;
-            text-align: right;
-            color: var(--dark-gray);
-            font-size: 0.9em;
-            padding-left: 10px;
-        }
-        
-        .venue-badge {
-            background-color: var(--primary);
-            color: white;
-            font-size: 0.8em;
-            padding: 3px 8px;
-            border-radius: 12px;
-            margin-left: 8px;
-        }
-        
-        .no-fixtures {
-            text-align: center;
-            padding: 30px;
-            color: var(--dark-gray);
-            font-style: italic;
-        }
-        
-        @media (max-width: 768px) {
-            .fixture-item {
-                flex-direction: column;
-                text-align: center;
-                gap: 10px;
-            }
-            
-            .team-name.home, .team-name.away {
-                text-align: center;
-                padding: 0;
-            }
-            
-            .venue {
-                text-align: center;
-                padding-left: 0;
-                margin-top: 5px;
-            }
-        }
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
-        }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
-        }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
-        }
-
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="winnershistory.html">Winners History</a></li>
-            </ul>
-        </li>
-        
-        <li><a href="admin-login.html">Admin Login</a></li>
-
-        
-        <li><a href="team-login.html">Team Login</a></li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-        </li>
-    </ul>
-    </nav>    <div class="container">
-        <!-- League Fixtures Page -->
-        <div id="league-fixtures" class="page">
-            <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
-                </div>
-                
-                <div id="premier-fixtures" class="fixtures-container">
-                    <!-- Premier Division Fixtures (src overridden from admin Pages tab if set) -->
-                    <iframe id="premierFixturesFrame" loading="lazy" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vRvaKAVXshrs_nlBbMv40hu54NSfpsTdKXOz194AsmycDMFFTT8jh7JR_28u2yU18AlkhqV1tK01xS6/pubhtml?gid=783407159&single=true&widget=true&headers=false"></iframe>
-                </div>
-
-                <div id="a-fixtures" class="fixtures-container hidden">
-                    <!-- A Division Fixtures (src overridden from admin Pages tab if set) -->
-                    <iframe id="aFixturesFrame" loading="lazy" src="https://docs.google.com/spreadsheets/d/e/2PACX-1vSP12SFWbeNW0DlaNKwpGVeLatjKu9zUEkvYyYRkC03wgv09n9BaKTJj2ZOA4EsfEScq_fkM_wBlYWu/pubhtml?gid=0&single=true&widget=true&headers=false"></iframe>
-                </div>
-
-                <script>
-                    // If the admin has set custom URLs in admin-login.html → Pages tab,
-                    // swap the iframe srcs to those (otherwise keep the hardcoded
-                    // fallback above so the page still works on an unmigrated DB).
-                    (async () => {
-                        try {
-                            const r = await fetch('api.php?endpoint=settings');
-                            const j = await r.json();
-                            const s = j && j.settings ? j.settings : {};
-                            if (s.fixtures_premier_url) document.getElementById('premierFixturesFrame').src = s.fixtures_premier_url;
-                            if (s.fixtures_a_url)       document.getElementById('aFixturesFrame').src       = s.fixtures_a_url;
-                        } catch (e) { /* fall back to hardcoded */ }
-                    })();
-                </script>
+<body class="page-leaguefixtures">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
             </div>
         </div>
-    </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
+
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Fixtures</h1>
+                <p class="page-header__intro">Who plays whom on each match night this season. Choose a division.</p>
+            </div>
+
+            <div id="league-fixtures">
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
+                </div>
+                <p class="segmented-status" id="fixtures-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <!-- One document card per division; the one not chosen carries the hidden attribute.
+                     The buttons and the read-only view are filled in from api.php?endpoint=settings
+                     (fixtures_premier_url and fixtures_a_url, set in admin-login.html, Pages).
+                     The frames have tabindex="-1": Google's page keeps keyboard focus once it is
+                     inside (60 Tab or Shift+Tab presses never leave it), so Tab goes from the
+                     buttons to the next link; the Open button is the keyboard route to the list. -->
+                <article class="card doc fixtures-doc" id="premier-fixtures" aria-labelledby="premier-fixtures-title">
+                    <h2 class="card__title" id="premier-fixtures-title">Premier Division fixtures</h2>
+                    <p class="doc__intro">Every match night of the season. Teams are shown by number: the key at the bottom of the list says which team is which.</p>
+                    <div class="fixtures-doc__body">
+                        <p class="state state--loading">Loading the Premier Division fixtures...</p>
+                    </div>
+                    <div class="doc__view" hidden>
+                        <iframe class="doc__frame" id="premierFixturesFrame" title="Premier Division fixtures, read only" loading="lazy" tabindex="-1"></iframe>
+                    </div>
+                </article>
+
+                <article class="card doc fixtures-doc" id="a-fixtures" aria-labelledby="a-fixtures-title" hidden>
+                    <h2 class="card__title" id="a-fixtures-title">A Division fixtures</h2>
+                    <p class="doc__intro">Every match night of the season. Teams are shown by number: the key at the bottom of the list says which team is which.</p>
+                    <div class="fixtures-doc__body">
+                        <p class="state state--loading">Loading the A Division fixtures...</p>
+                    </div>
+                    <div class="doc__view" hidden>
+                        <iframe class="doc__frame" id="aFixturesFrame" title="A Division fixtures, read only" loading="lazy" tabindex="-1"></iframe>
+                    </div>
+                </article>
+
+                <p class="fixtures-more"><a class="icon-link" href="contactinfo.html"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Venue addresses and phone numbers</a></p>
+            </div>
+        </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
+    (function () {
+        // The fixture lists are the league's own documents (today uploaded Word
+        // files opened in Google Docs). Admins set their links in
+        // admin-login.html (Pages); api.php?endpoint=settings returns them as
+        // fixtures_premier_url and fixtures_a_url. Those are Google's /edit
+        // links, which show the editor with "Request edit access" and "Sign in",
+        // so visitors get a read-only address built from the document's id.
+        const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+        const SETTING_KEYS = { premier: 'fixtures_premier_url', a: 'fixtures_a_url' };
+        const PANEL_IDS = { premier: 'premier-fixtures', a: 'a-fixtures' };
+        const STORE_KEY = 'cdl-fixtures-division';
+        const ICON_DOC = '<svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6.5 2.75h7l4.75 4.75v13.75h-11.75z"/><path d="M13.5 2.75v4.75h4.75M9.5 12.5h5M9.5 16h5"/></svg>';
+        const ICON_NEW_TAB = '<svg class="icon btn__icon--end" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 4h6v6M20 4l-9 9M18 14v5.25H4.75V6H10"/></svg>';
+        const ICON_DOWNLOAD = '<svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></svg>';
+        let current = 'premier';
+        let links = null; // per division: { open, embed, pdf } or null, once the settings are in
+        let loadSeq = 0;
+
+        // Escape any API string before it goes into HTML
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
+
+        // Loading, empty and error messages in plain words; errors offer Try again
+        function stateHtml(kind, message) {
+            const retry = kind === 'error'
+                ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>'
+                : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + retry + '</div>';
+        }
+
+        // The site settings, or null when they could not be loaded
+        async function getSettings() {
+            try {
+                const res = await fetch('api.php?endpoint=settings', { credentials: 'same-origin' });
+                const data = await res.json();
+                return data && data.success && data.settings && typeof data.settings === 'object' ? data.settings : null;
+            } catch (e) {
+                return null;
             }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
         }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
+
+        // Read-only addresses for a document link, built from its id so any
+        // link an admin pastes keeps working (checked in Edge, November 2026):
+        //   docs.google.com/document/d/<id>/...      -> .../document/d/<id>/preview
+        //     (also for uploaded Word files; on phones Google shows its mobile
+        //     reading view) and .../export?format=pdf for a printable copy
+        //   docs.google.com/spreadsheets/d/<id>/...  -> .../spreadsheets/d/<id>/preview
+        //   docs.google.com/presentation/d/<id>/...  -> .../presentation/d/<id>/preview
+        //   docs.google.com/.../d/e/<id>/pub...      -> as given (published, read-only)
+        //   drive.google.com/file/d/<id>/... or open?id=<id> -> drive.google.com/file/d/<id>/preview
+        // Any other web address: a link to it as given, with no view on the page.
+        // Returns null for an empty setting or one that is not a web address.
+        function docLinks(raw) {
+            const url = String(raw == null ? '' : raw).trim();
+            if (!/^https?:\/\/[^\s]+$/i.test(url)) return null;
+            let m = /^https?:\/\/docs\.google\.com\/(?:document|spreadsheets|presentation)\/(?:u\/\d+\/)?d\/e\//i.exec(url);
+            if (m) return { open: url, embed: url, pdf: '' };
+            m = /^https?:\/\/docs\.google\.com\/(document|spreadsheets|presentation)\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]{10,})/i.exec(url);
+            if (m) {
+                const kind = m[1].toLowerCase();
+                const base = 'https://docs.google.com/' + kind + '/d/' + m[2];
+                const gid = kind === 'spreadsheets' ? /[#?&]gid=(\d+)/.exec(url) : null;
+                const view = base + '/preview' + (gid ? '#gid=' + gid[1] : '');
+                return { open: view, embed: view, pdf: kind === 'document' ? base + '/export?format=pdf' : '' };
+            }
+            m = /^https?:\/\/drive\.google\.com\/file\/(?:u\/\d+\/)?d\/([A-Za-z0-9_-]{10,})/i.exec(url)
+                || /^https?:\/\/drive\.google\.com\/(?:open|uc)\?(?:[^#]*&)?id=([A-Za-z0-9_-]{10,})/i.exec(url);
+            if (m) {
+                const view = 'https://drive.google.com/file/d/' + m[1] + '/preview';
+                return { open: view, embed: view, pdf: '' };
+            }
+            return { open: url, embed: '', pdf: '' };
         }
-    });
-});
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                // Toggle fixture display based on division
-                if (division === 'premier') {
-                    document.getElementById('premier-fixtures').classList.remove('hidden');
-                    document.getElementById('a-fixtures').classList.add('hidden');
-                } else {
-                    document.getElementById('premier-fixtures').classList.add('hidden');
-                    document.getElementById('a-fixtures').classList.remove('hidden');
-                }
+
+        function actionsHtml(name, link) {
+            let html = '<div class="doc__actions cluster">'
+                + '<a class="btn btn--lg btn--block" href="' + esc(link.open) + '" target="_blank" rel="noopener">' + ICON_DOC
+                + 'Open the ' + name + ' fixtures<span class="visually-hidden"> (opens in a new tab)</span>' + ICON_NEW_TAB + '</a>';
+            if (link.pdf) {
+                html += '<a class="btn btn--secondary btn--block" href="' + esc(link.pdf) + '">' + ICON_DOWNLOAD + 'Download a printable copy (PDF)</a>';
+            }
+            return html + '</div>';
+        }
+
+        // One division's card: kind is 'loading', 'error' or 'ready'
+        function fill(division, kind) {
+            const card = document.getElementById(PANEL_IDS[division]);
+            const body = card.querySelector('.fixtures-doc__body');
+            const view = card.querySelector('.doc__view');
+            const name = DIVISIONS[division];
+            const link = kind === 'ready' && links ? links[division] : null;
+            // The line about team numbers describes the list: left out while there is none
+            card.querySelector('.doc__intro').hidden = kind === 'ready' && !link;
+            if (kind === 'loading') {
+                body.innerHTML = stateHtml('loading', 'Loading the ' + name + ' fixtures...');
+            } else if (kind === 'error') {
+                body.innerHTML = stateHtml('error', 'Sorry, the fixtures could not be loaded just now. Please check your connection.');
+            } else if (!link) {
+                body.innerHTML = stateHtml('empty', 'The ' + name + ' fixtures have not been added yet. Please check back soon.');
+            } else {
+                body.innerHTML = actionsHtml(name, link);
+            }
+            view.hidden = !(link && link.embed);
+        }
+
+        // The read-only view shows from 48em only (site.css hides it below).
+        // The frame gets its address only while its division is chosen and
+        // the screen is wide enough, so phones never download the document.
+        const wide = window.matchMedia ? window.matchMedia('(min-width: 48em)') : { matches: true };
+        function placeFrame() {
+            const link = links ? links[current] : null;
+            if (!link || !link.embed || !wide.matches) return;
+            const frame = document.querySelector('#' + PANEL_IDS[current] + ' .doc__frame');
+            if (frame && frame.getAttribute('src') !== link.embed) frame.setAttribute('src', link.embed);
+        }
+        if (wide.addEventListener) wide.addEventListener('change', placeFrame);
+        else if (wide.addListener) wide.addListener(placeFrame);
+
+        async function load() {
+            const seq = ++loadSeq;
+            Object.keys(DIVISIONS).forEach(d => fill(d, 'loading'));
+            const settings = await getSettings();
+            if (seq !== loadSeq) return; // a newer load was started meanwhile
+            if (!settings) {
+                links = null;
+                Object.keys(DIVISIONS).forEach(d => fill(d, 'error'));
+                return;
+            }
+            links = {};
+            Object.keys(DIVISIONS).forEach(d => {
+                links[d] = docLinks(settings[SETTING_KEYS[d]]);
+                fill(d, 'ready');
+            });
+            placeFrame();
+        }
+
+        // The division switch: the choice is remembered (localStorage can
+        // throw: private mode, blocked storage)
+        function readSaved() {
+            try {
+                const v = window.localStorage.getItem(STORE_KEY);
+                return v === 'premier' || v === 'a' ? v : null;
+            } catch (e) {
+                return null;
+            }
+        }
+        function save(v) {
+            try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* not remembered: fine */ }
+        }
+
+        function show(division) {
+            current = division === 'a' ? 'a' : 'premier';
+            document.querySelectorAll('#league-fixtures .segmented [data-division]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.dataset.division === current ? 'true' : 'false');
+            });
+            document.getElementById('fixtures-status').innerHTML = 'Showing: <strong>' + DIVISIONS[current] + '</strong>';
+            Object.keys(PANEL_IDS).forEach(d => { document.getElementById(PANEL_IDS[d]).hidden = d !== current; });
+            placeFrame();
+        }
+
+        document.querySelectorAll('#league-fixtures .segmented [data-division]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const division = e.currentTarget.dataset.division; // currentTarget: the button holds a tick icon
+                if (division === current) return;
+                save(division);
+                show(division);
             });
         });
+
+        // "Try again": keyboard focus moves to the message area, which stays
+        // in place while the settings load again
+        document.getElementById('league-fixtures').addEventListener('click', e => {
+            if (!e.target.closest('[data-retry]')) return;
+            const body = document.querySelector('#' + PANEL_IDS[current] + ' .fixtures-doc__body');
+            body.setAttribute('tabindex', '-1');
+            body.focus();
+            load();
+        });
+
+        show(readSaved() || 'premier');
+        load();
+    })();
     </script>
 </body>
 </html>

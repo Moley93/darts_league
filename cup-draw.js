@@ -3,8 +3,20 @@
  * Pairs, Good Friday, Paul/Terry, Memorial and Cap/Sec Cups).
  *
  * Shared by the seven public cup pages and admin-login.html, so it defines a
- * single global (window.CupDraw) and has no nav code: every page keeps its own
- * nav script. Plain browser JavaScript, no libraries and no build step.
+ * single global (window.CupDraw) and has no menu code. Plain browser
+ * JavaScript (ES2017 at most: no optional chaining, no nullish operator), no
+ * libraries and no build step.
+ *
+ * Version 2 (November 2026, the new site design):
+ * - By round cards say "Match 9" and "Winner of match 5" in words. The tree
+ *   keeps the short codes (M9, L4) and has a one-line key under it.
+ * - In the tree each entrant takes two lines, the name and then the team,
+ *   instead of one line cut short.
+ * - Draw dates stay on one line, and say "today" on the day of the draw.
+ * - Public page only: the Combined draw is headed "Combined draw (both
+ *   divisions)", a "Showing:" line follows the division switch, division
+ *   headings are H2 and round headings H3, and a draw that cannot be loaded
+ *   offers Try again.
  */
 (function () {
     'use strict';
@@ -26,18 +38,23 @@
         { key: 'combined', label: 'Combined' }
     ];
 
+    // The public page says a little more than the short label the admin page uses
+    const PAGE_LABELS = { combined: 'Combined draw (both divisions)' };
+
     const FORMAT_NAMES = { singles: 'Singles', pairs: 'Pairs', trebles: 'Trebles' };
     const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const DOT = ' \u00b7 ';             // middle dot between items on one line
+    const NBSP = '\u00a0';              // keeps a date on one line
     const AUTO_BRACKET_WIDTH = 760;     // view 'auto': the tree from this container width, by round below it
     const REFRESH_MS = 60000;           // public pages re-check an unfinished draw once a minute
+    const PAGE_HEADING_LEVEL = 3;       // round headings on the public page, under its H2 division headings
 
     const PLATE_NOTE = 'First-round losers play on for the losers bracket.';
     const NO_PLATE_NOTE = 'No losers bracket: there was only one first-round match.';
     const MSG_LOADING = 'Loading the draw...';
     const MSG_EMPTY = 'No draw has been made yet. Once the league admin makes the draw it will appear here.';
-    const MSG_FAILED = 'The draw could not be loaded right now. Please try again later.';
+    const MSG_FAILED = 'Sorry, the draw could not be loaded just now. Please check your connection.';
 
     // render() state per container (draw, view, selected round, tree scroll), so
     // re-rendering the same draw keeps whatever the viewer was looking at
@@ -70,6 +87,11 @@
         return d ? d.label : (key == null ? '' : String(key));
     }
 
+    // Division names on the public page: the switch, its "Showing:" line and the headings
+    function pageLabel(key) {
+        return PAGE_LABELS[key] || divisionLabel(key);
+    }
+
     function roundNameForSize(n) {
         if (n === 2) return 'Final';
         if (n === 4) return 'Semi Final';
@@ -77,14 +99,22 @@
         return 'Last ' + n;
     }
 
-    // "2026-11-03" -> "Tue 3 Nov 2026" (fixed English names, no time zone shift)
+    // "2026-11-03" -> "Tue 3 Nov 2026" with non-breaking spaces, so it never splits
+    // across two lines (fixed English names, no time zone shift)
     function formatDrawDate(ymd) {
         const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(ymd == null ? '' : ymd));
         if (!m) return '';
         const y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
         const dt = new Date(Date.UTC(y, mo - 1, d));
         if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo - 1 || dt.getUTCDate() !== d) return '';
-        return DAY_NAMES[dt.getUTCDay()] + ' ' + d + ' ' + MONTH_NAMES[mo - 1] + ' ' + y;
+        return [DAY_NAMES[dt.getUTCDay()], d, MONTH_NAMES[mo - 1], y].join(NBSP);
+    }
+
+    // Today on the viewer's own calendar, as "2026-11-03"
+    function todayYmd() {
+        const t = new Date(Date.now());
+        const two = n => (n < 10 ? '0' : '') + n;
+        return t.getFullYear() + '-' + two(t.getMonth() + 1) + '-' + two(t.getDate());
     }
 
     function entryName(entry) {
@@ -136,7 +166,7 @@
     }
 
     // e.g. "Pairs, Best of 5 legs, 12 entries, Random partners, Losers bracket, Drawn Tue 3 Nov 2026",
-    // with a middle dot between the items
+    // with a middle dot between the items, and "Drawn today" on the day of the draw
     function formatLine(draw) {
         if (!draw || typeof draw !== 'object') return '';
         const parts = [];
@@ -149,7 +179,7 @@
         const plateBuilt = toNum(draw.plate_rounds) > 0 || (Array.isArray(draw.matches) && draw.matches.some(m => m && m.bracket === 'plate'));
         if (isOn(draw.has_plate) && plateBuilt) parts.push('Losers bracket');
         const drawn = formatDrawDate(draw.draw_date);
-        if (drawn) parts.push('Drawn ' + drawn);
+        if (drawn) parts.push('Drawn ' + (String(draw.draw_date).slice(0, 10) === todayYmd() ? 'today' : drawn));
         return parts.join(DOT);
     }
 
@@ -184,6 +214,7 @@
                 loserNext: toNum(raw.loser_next_match_id),
                 loserSlot: raw.loser_next_slot,
                 roundName: typeof raw.round_name === 'string' ? raw.round_name : '',
+                num: 0,
                 label: '',
                 isFinal: false,
                 feed: { home: null, away: null }
@@ -195,7 +226,8 @@
         const byId = new Map();
         let mainNo = 0, plateNo = 0;
         matches.forEach(m => {
-            m.label = m.bracket === 'main' ? 'M' + (++mainNo) : 'L' + (++plateNo);
+            m.num = m.bracket === 'main' ? ++mainNo : ++plateNo;
+            m.label = (m.bracket === 'main' ? 'M' : 'L') + m.num;
             if (m.id !== null) byId.set(m.id, m);
         });
         matches.forEach(m => {
@@ -255,19 +287,30 @@
         };
     }
 
+    // A match in words, for the by round cards: "Match 9", "Losers bracket match 4"
+    function longLabel(m) {
+        return (m.bracket === 'main' ? 'Match ' : 'Losers bracket match ') + m.num;
+    }
+
+    // A match named inside a sentence: "M5" in the tree (the key under it explains
+    // the codes), "match 5" or "losers bracket match 2" in the by round cards
+    function matchRef(m, long) {
+        return long ? (m.bracket === 'main' ? 'match ' : 'losers bracket match ') + m.num : m.label;
+    }
+
     // Text for a slot that has no entrant yet
-    function emptySlotText(m, side, depth) {
+    function emptySlotText(m, side, depth, long) {
         if (m.bye && side === 'away') return 'Bye';
         const feed = m.feed[side];
         if (!feed) return 'To be decided';
-        if (feed.kind === 'loser') return 'Loser of ' + feed.from.label;
+        if (feed.kind === 'loser') return 'Loser of ' + matchRef(feed.from, long);
         // A losers bracket bye only passes its entrant on, so name where that entrant comes from
         const src = feed.from;
-        if (src.bye && src.winner === null && src.home === null && depth < 4) return emptySlotText(src, 'home', depth + 1);
-        return 'Winner of ' + src.label;
+        if (src.bye && src.winner === null && src.home === null && depth < 4) return emptySlotText(src, 'home', depth + 1, long);
+        return 'Winner of ' + matchRef(src, long);
     }
 
-    function sideInfo(model, m, side) {
+    function sideInfo(model, m, side, long) {
         const id = side === 'home' ? m.home : m.away;
         const entry = id === null ? null : (model.entries.get(id) || { name: 'Unknown entry', team_name: null });
         const decided = m.winner !== null && !m.bye;
@@ -278,7 +321,7 @@
             won: decided && id !== null && id === m.winner,
             lost: decided && id !== null && id !== m.winner,
             legs: legs,
-            empty: entry ? '' : emptySlotText(m, side, 0)
+            empty: entry ? '' : emptySlotText(m, side, 0, !!long)
         };
     }
 
@@ -291,6 +334,13 @@
     function gridPlace(round, pos) {
         const span = Math.pow(2, round - 1);
         return { col: round, row: 2 + pos * span, span: span };
+    }
+
+    // Heading level for the round and losers bracket headings: 4 (the admin page)
+    // unless the caller asks for another
+    function headingLevel(opts) {
+        const n = toNum(opts && opts.level);
+        return n !== null && n >= 2 && n <= 6 ? Math.floor(n) : 4;
     }
 
     // ---------- HTML pieces ----------
@@ -317,7 +367,8 @@
             `</div>`;
     }
 
-    // Tree card row: one line (name, then the team after a middle dot), ellipsis, full text in the title
+    // Tree card row: the name, then the team on a line of its own. Both wrap, so
+    // nothing is cut short; screen readers hear "name, team"
     function treeRow(model, m, side, canPick) {
         const s = sideInfo(model, m, side);
         const pos = side === 'home' ? ' cd-r1' : ' cd-r2';
@@ -325,9 +376,9 @@
         const name = entryName(s.entry);
         const team = entryTeam(s.entry);
         const full = team ? name + DOT + team : name;
-        const inner = `<span class="cd-line"><span class="cd-n">${esc(name)}</span>${team ? `<span class="cd-t">${esc(DOT + team)}</span>` : ''}</span>` +
+        const inner = `<span class="cd-line"><span class="cd-n">${esc(name)}</span>${team ? `<span class="cd-sr">, </span><span class="cd-t">${esc(team)}</span>` : ''}</span>` +
             (s.won ? '<span class="cd-sr"> (winner)</span>' : '') +
-            (s.legs !== null ? `<span class="cd-legs">${s.legs}</span>` : '');
+            (s.legs !== null ? ` <span class="cd-legs">${s.legs}</span>` : '');
         const cls = 'cd-row' + pos + stateClass(s);
         // The current winner is not a button: clicking it again would only wipe the leg score
         if (canPick && !s.won) return pickButton(m, side, cls, name, full, inner);
@@ -365,24 +416,26 @@
         return html + '</div></div>';
     }
 
-    function bracketHtml(model, admin) {
+    function bracketHtml(model, admin, level) {
         let html = treeHtml(model, model.mainRounds, 'main', admin);
         if (model.plateRounds.length) {
-            html += `<h4 class="cd-plate-head">Losers Bracket</h4><p class="cd-note">${PLATE_NOTE}</p>` +
+            html += `<h${level} class="cd-plate-head">Losers bracket</h${level}><p class="cd-note">${PLATE_NOTE}</p>` +
                 treeHtml(model, model.plateRounds, 'plate', admin);
         }
-        return html || '<p class="cd-empty">This draw has no matches.</p>';
+        if (!html) return '<p class="cd-empty">This draw has no matches.</p>';
+        // The codes on the tree cards, in words
+        return html + '<p class="cd-key"><strong>Key:</strong> M = match' + (model.plateRounds.length ? ', L = losers bracket match' : '') + '</p>';
     }
 
     // By-round card row: the name wraps, the team sits on its own muted line
     function listSide(model, m, side, canPick) {
-        const s = sideInfo(model, m, side);
+        const s = sideInfo(model, m, side, true);
         if (!s.entry) return `<div class="cd-side cd-tbd"><span class="cd-who">${esc(s.empty)}</span></div>`;
         const name = entryName(s.entry);
         const team = entryTeam(s.entry);
         const inner = `<span class="cd-who"><span class="cd-n">${esc(name)}</span>${team ? `<span class="cd-t">${esc(team)}</span>` : ''}` +
             (s.won ? '<span class="cd-sr"> (winner)</span>' : '') + '</span>' +
-            (s.legs !== null ? `<span class="cd-legs">${s.legs}</span>` : '');
+            (s.legs !== null ? ` <span class="cd-legs">${s.legs}</span>` : '');
         const cls = 'cd-side' + stateClass(s);
         if (canPick && !s.won) return pickButton(m, side, cls, name, team ? name + DOT + team : name, inner);
         return `<div class="${cls}">${inner}</div>`;
@@ -390,22 +443,22 @@
 
     function listItem(model, m, admin) {
         if (m.bye) {
-            const s = sideInfo(model, m, 'home');
+            const s = sideInfo(model, m, 'home', true);
             const who = s.entry ? entryName(s.entry) : s.empty;
             const team = s.entry ? entryTeam(s.entry) : '';
-            return `<div class="cd-byerow" title="${esc(team ? who + DOT + team : who)}"><span class="cd-mnum">${esc(m.label)}</span><span class="cd-byetext">${esc(who + ': bye')}</span></div>`;
+            return `<div class="cd-byerow" title="${esc(team ? who + DOT + team : who)}"><span class="cd-mnum">${esc(longLabel(m))}</span> <span class="cd-byetext">${esc(who + ': bye')}</span></div>`;
         }
         const canPick = admin && m.home !== null && m.away !== null;
         const hint = canPick && m.winner === null ? '<span class="cd-hint">Pick the winner</span>' : '';
         let cls = 'cd-mcard';
         if (m.winner !== null) cls += ' cd-done';
         if (m.isFinal) cls += ' cd-final';
-        return `<div class="${cls}"><div class="cd-mhead"><span class="cd-mnum">${esc(m.label)}</span>${hint}</div>` +
+        return `<div class="${cls}"><div class="cd-mhead"><span class="cd-mnum">${esc(longLabel(m))}</span>${hint ? ' ' + hint : ''}</div>` +
             listSide(model, m, 'home', canPick) + listSide(model, m, 'away', canPick) +
             (admin ? controlsHtml(model, m) : '') + '</div>';
     }
 
-    function roundsHtml(st, admin) {
+    function roundsHtml(st, admin, level) {
         const model = st.model;
         const all = model.mainRounds.concat(model.plateRounds);
         if (!all.length) return '<p class="cd-empty">This draw has no matches.</p>';
@@ -415,9 +468,9 @@
             const label = r.bracket === 'plate' ? 'Losers: ' + r.name : r.name;
             return `<button type="button" class="cd-rchip${r.bracket === 'plate' ? ' cd-rchip-plate' : ''}${on ? ' cd-on' : ''}" data-cd-act="round" data-cd-round="${r.key}" data-cd-key="round-${r.key}" aria-pressed="${on}">${esc(label)}</button>`;
         }).join('');
-        const title = current.bracket === 'plate' ? 'Losers Bracket: ' + current.name : current.name;
+        const title = current.bracket === 'plate' ? 'Losers bracket: ' + current.name : current.name;
         return `<div class="cd-chips" role="group" aria-label="Rounds">${chips}</div>` +
-            `<h4 class="cd-rhead">${esc(title)}</h4>` +
+            `<h${level} class="cd-rhead">${esc(title)}</h${level}>` +
             (current.bracket === 'plate' ? `<p class="cd-note">${PLATE_NOTE}</p>` : '') +
             `<div class="cd-list">${current.matches.map(m => listItem(model, m, admin)).join('')}</div>`;
     }
@@ -445,7 +498,7 @@
             viewButton('bracket', 'Bracket', st.view) + viewButton('rounds', 'By round', st.view) +
             '</div></div>';
         html += winnerBanner(model, model.championId, 'Winner: ', '');
-        html += winnerBanner(model, model.plateChampionId, 'Losers Bracket winner: ', ' cd-champ-sm');
+        html += winnerBanner(model, model.plateChampionId, 'Losers bracket winner: ', ' cd-champ-sm');
         if (isOn(draw.has_plate) && !model.plateRounds.length) html += `<p class="cd-note">${NO_PLATE_NOTE}</p>`;
         return html;
     }
@@ -496,8 +549,9 @@
 
     function paint(container, st) {
         const admin = !!st.opts.admin;
+        const level = headingLevel(st.opts);
         container.innerHTML = `<div class="cd-ui${admin ? ' cd-admin' : ''}">` + headHtml(st) +
-            (st.view === 'bracket' ? bracketHtml(st.model, admin) : roundsHtml(st, admin)) + '</div>';
+            (st.view === 'bracket' ? bracketHtml(st.model, admin, level) : roundsHtml(st, admin, level)) + '</div>';
         if (st.view === 'bracket') {
             Array.prototype.forEach.call(container.querySelectorAll('[data-cd-scroll]'), el => {
                 const x = st.scroll[el.getAttribute('data-cd-scroll')];
@@ -578,6 +632,8 @@
 
     // Renders one draw into container (replacing its content). Safe to call again
     // and again: the same draw_id keeps its view, selected round and tree scroll.
+    // opts: admin, view ('auto' | 'bracket' | 'rounds'), level (heading level of the
+    // round headings, 4 unless given), onPick, onScore, onClear
     function render(container, draw, opts) {
         if (!container) return;
         opts = opts || {};
@@ -646,21 +702,25 @@
         return h;
     }
 
+    // The empty and error messages. The error offers Try again (see onRootClick).
     function showPageMessage(page, text, isError) {
         page.wrap = null;
         page.tabs = null;
+        page.showing = null;
         page.keys = '';
         page.sections = new Map();
         page.active = null;
-        page.root.innerHTML = `<p class="cd-empty${isError ? ' cd-error' : ''}"${isError ? ' role="alert"' : ''}>${esc(text)}</p>`;
+        page.root.innerHTML = isError
+            ? `<div class="cd-empty cd-error" role="alert"><p>${esc(text)}</p><button type="button" class="cd-retry" data-cd-retry>Try again</button></div>`
+            : `<p class="cd-empty">${esc(text)}</p>`;
     }
 
     function makeSection(key) {
         const el = document.createElement('section');
         el.className = 'cd-section';
-        const heading = document.createElement('h3');
+        const heading = document.createElement('h2');
         heading.className = 'cd-divhead';
-        heading.textContent = divisionLabel(key);
+        heading.textContent = pageLabel(key);
         const meta = document.createElement('p');
         meta.className = 'cd-meta';
         const box = document.createElement('div');
@@ -677,8 +737,19 @@
         btn.className = 'cd-tab';
         btn.setAttribute('data-cd-tab', key);
         btn.setAttribute('aria-pressed', 'false');
-        btn.textContent = divisionLabel(key);
+        btn.textContent = pageLabel(key);
         return btn;
+    }
+
+    // "Showing: Premier Division" under the division switch, read out when it changes
+    function makeShowing() {
+        const el = document.createElement('p');
+        el.className = 'cd-showing';
+        el.setAttribute('aria-live', 'polite');
+        el.textContent = 'Showing: ';
+        const name = document.createElement('strong');
+        el.appendChild(name);
+        return { el: el, name: name };
     }
 
     // Puts els into parent in this order. An element already in parent is left exactly
@@ -705,18 +776,22 @@
             page.wrap = document.createElement('div');
             page.wrap.className = 'cd-page';
             page.tabs = null;
+            page.showing = null;
             page.root.innerHTML = '';
             page.root.appendChild(page.wrap);
         }
-        // Division tabs only when there is more than one draw
+        // The division switch and its "Showing:" line only when there is more than one draw
         if (keys.length > 1) {
             if (!page.tabs) {
+                page.showing = makeShowing();
+                page.wrap.insertBefore(page.showing.el, page.wrap.firstChild);
                 page.tabs = document.createElement('div');
-                page.tabs.className = 'cd-tabs';
                 page.tabs.setAttribute('role', 'group');
                 page.tabs.setAttribute('aria-label', 'Choose a division');
                 page.wrap.insertBefore(page.tabs, page.wrap.firstChild);
             }
+            // Three choices wrap as separate buttons instead of one joined bar
+            page.tabs.className = keys.length > 2 ? 'cd-tabs cd-tabs-many' : 'cd-tabs';
             const oldTabs = Array.prototype.slice.call(page.tabs.children);
             oldTabs.forEach(btn => {
                 if (keys.indexOf(btn.getAttribute('data-cd-tab')) === -1) page.tabs.removeChild(btn);
@@ -724,7 +799,9 @@
             placeInOrder(page.tabs, keys.map(key => oldTabs.find(btn => btn.getAttribute('data-cd-tab') === key) || makeTab(key)));
         } else if (page.tabs) {
             page.wrap.removeChild(page.tabs);
+            if (page.showing) page.wrap.removeChild(page.showing.el);
             page.tabs = null;
+            page.showing = null;
         }
         page.sections.forEach((sec, key) => {
             if (!sections.has(key) && sec.el.parentNode) sec.el.parentNode.removeChild(sec.el);
@@ -746,13 +823,14 @@
                 btn.setAttribute('aria-pressed', on ? 'true' : 'false');
             });
         }
+        if (page.showing && page.showing.name.textContent !== pageLabel(key)) page.showing.name.textContent = pageLabel(key);
         const sec = page.sections.get(key);
         if (!sec || !sec.draw) return;
         const json = JSON.stringify(sec.draw);
         if (json === sec.shownJson) return;
         sec.shownJson = json;
         sec.meta.textContent = formatLine(sec.draw);
-        render(sec.box, sec.draw, { admin: false, view: 'auto' });
+        render(sec.box, sec.draw, { admin: false, view: 'auto', level: PAGE_HEADING_LEVEL });
     }
 
     function applyDraws(page, draws) {
@@ -818,8 +896,22 @@
 
     function onRootClick(root, e) {
         const page = pageStates.get(root);
-        const tab = e.target && typeof e.target.closest === 'function' ? e.target.closest('[data-cd-tab]') : null;
-        if (!page || !tab || !root.contains(tab)) return;
+        const target = e.target && typeof e.target.closest === 'function' ? e.target : null;
+        if (!page || !target) return;
+        // Try again after a failed load. The button goes away, so keyboard focus
+        // waits on the draw area while it loads again.
+        const retry = target.closest('[data-cd-retry]');
+        if (retry && root.contains(retry)) {
+            root.setAttribute('tabindex', '-1');
+            if (typeof root.focus === 'function') root.focus();
+            if (!page.loading) {
+                root.innerHTML = `<p class="cd-status" role="status">${MSG_LOADING}</p>`;
+                loadPage(page, true);
+            }
+            return;
+        }
+        const tab = target.closest('[data-cd-tab]');
+        if (!tab || !root.contains(tab)) return;
         const key = tab.getAttribute('data-cd-tab');
         if (!page.sections.has(key) || key === page.active) return;
         showSection(page, key);
@@ -837,12 +929,12 @@
         if (old) old.stop();
 
         const page = {
-            root: rootEl, cup: cupSlug || '', wrap: null, tabs: null, keys: '',
+            root: rootEl, cup: cupSlug || '', wrap: null, tabs: null, showing: null, keys: '',
             sections: new Map(), active: null, json: null, draws: [],
             loading: false, stopped: false, lastFetch: 0, timer: null, stop: null
         };
         const onHash = () => {
-            // The nav's dropdown toggles use href="#", so an empty hash means nothing
+            // An empty hash (a plain "#" link) means nothing
             const wanted = hashDivision();
             if (wanted && wanted !== page.active && page.sections.has(wanted)) showSection(page, wanted);
         };

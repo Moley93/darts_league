@@ -1,0 +1,1217 @@
+/* ==========================================================================
+   Crawley Darts League: site.css (version 1, November 2026)
+   The shared look of every page that has moved to the new page shell.
+
+   Rules for this file
+   - Every page links it. styles.css is the old look and no page links it.
+   - Mobile first. Breakpoints are written literally (custom properties do not
+     work inside @media). "Below 48em" is written as not all and (min-width: 48em).
+       30em (480px)   larger phones: switches side by side, extra table columns
+       48em (768px)   tablets: bigger headings, wider gutter, real tables
+       64em (1024px)  desktop menu bar; below it the header has a Menu button
+       75em (1200px)  widest content
+   - Sizes in rem so the reader's own text size setting is respected. The html
+     font size is never set in px.
+   - Low specificity: one class per selector where possible, no IDs.
+   - Never style bare state classes (.active, .visible, .expanded): page
+     scripts use them with other meanings. State comes from ARIA attributes
+     (aria-expanded, aria-pressed, aria-current) and .is-* classes.
+   - Kept out for older iPads: @layer, :has(), nesting, color-mix(), clamp(),
+     inset, flex gap for spacing. Focus rings use :focus, not :focus-visible
+     alone.
+
+   Contents
+    1. Fonts                 6. Site menu
+    2. Tokens                7. Site footer
+    3. Base                  8. Components
+    4. Layout                9. Utilities
+    5. Site header          10. Print
+   ========================================================================== */
+
+
+/* 1. Fonts ================================================================
+   Atkinson Hyperlegible Next, self-hosted (no third-party requests), latin
+   subset. 400 is preloaded by every page. Licence: fonts/OFL.txt */
+
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-next-latin-400.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-next-latin-600.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Atkinson Hyperlegible Next";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("fonts/atkinson-hyperlegible-next-latin-700.woff2") format("woff2");
+}
+
+
+/* 2. Tokens ===============================================================
+   Components use the role tokens (--color-*). Contrast ratios are against
+   white unless stated. */
+
+:root {
+  /* Brand navy: #1a237e and #3949ab keep their old roles */
+  --navy-950: #0d1660;
+  --navy-900: #1a237e;   /* 13.2:1. Header, primary buttons, table heads */
+  --navy-800: #283593;
+  --navy-700: #3949ab;   /* 7.7:1. Links, header gradient end */
+  --navy-200: #c5cae9;
+  --navy-100: #e8eaf6;
+  --navy-50: #f3f4fb;
+  --gold-500: #ffb300;   /* accents only, never text on white */
+  --gold-100: #fff4d1;
+  --gradient-brand: linear-gradient(135deg, #1a237e 0%, #3949ab 100%);
+
+  /* Cool greys */
+  --grey-900: #1c2033;   /* body text, 16:1 */
+  --grey-700: #4a5068;   /* muted text, 8:1 (7.3:1 on the page background) */
+  --grey-600: #6d7390;   /* form field borders, 4.6:1 */
+  --grey-500: #8c93ad;
+  --grey-400: #c9cedb;   /* card borders */
+  --grey-300: #d5d9e6;
+  --grey-200: #e6e8f0;   /* row lines */
+  --grey-100: #f4f5fa;   /* page background */
+  --white: #ffffff;
+
+  /* Status: text colours reach 7:1 on white and on their own tint; the 200s
+     are the pale frames of notices and badges */
+  --green-700: #1b5e20; --green-600: #2e7d32; --green-200: #a5d6a7; --green-50: #e8f5e9;
+  --red-800: #8e1515;   --red-700: #b71c1c;   --red-600: #c62828;   --red-200: #ef9a9a; --red-50: #ffebee;
+  --amber-800: #7a4100; --amber-600: #ef6c00; --amber-200: #ffcc80; --amber-50: #fff3e0;
+  --blue-800: #0d47a1;  --blue-600: #1565c0;  --blue-200: #90caf9;  --blue-50: #e3f2fd;
+
+  /* Roles */
+  --color-bg: var(--grey-100);
+  --color-surface: var(--white);
+  --color-surface-muted: var(--navy-50);
+  --color-text: var(--grey-900);
+  --color-text-muted: var(--grey-700);
+  --color-text-inverse: var(--white);
+  --color-heading: var(--navy-900);
+  --color-link: var(--navy-700);
+  --color-link-hover: var(--navy-900);
+  --color-primary: var(--navy-900);
+  --color-primary-hover: var(--navy-950);
+  --color-accent: var(--navy-700);
+  --color-selected-bg: var(--navy-100);
+  --color-border: var(--grey-400);
+  --color-border-strong: var(--grey-600);
+  --color-divider: var(--grey-200);
+  --color-focus: var(--navy-900);
+  --color-focus-on-dark: var(--gold-500);
+  --color-success: var(--green-700); --color-success-bg: var(--green-50); --color-success-border: var(--green-600);
+  --color-danger: var(--red-800);    --color-danger-bg: var(--red-50);    --color-danger-border: var(--red-600);
+  --color-warning: var(--amber-800); --color-warning-bg: var(--amber-50); --color-warning-border: var(--amber-600);
+  --color-info: var(--blue-800);     --color-info-bg: var(--blue-50);     --color-info-border: var(--blue-600);
+
+  /* Type: 14 / 16 / 18 / 22 / 28 / 36. Body 18px. Nothing under 14px.
+     On phones the two title roles step down to 24 and 20 so section
+     titles still stand above card titles (as the header and menu do). */
+  --font-sans: "Atkinson Hyperlegible Next", "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --text-xs: 0.875rem;   /* 14px, minor notes only */
+  --text-sm: 1rem;       /* 16px, meta lines, table text on phones */
+  --text-md: 1.125rem;   /* 18px, body, buttons, menu */
+  --text-lg: 1.375rem;   /* 22px, card titles from 48em */
+  --text-xl: 1.75rem;    /* 28px, page titles on phones, section titles from 48em */
+  --text-2xl: 2.25rem;   /* 36px, page titles from 48em */
+  --title-section: 1.5rem; /* 24px on phones, --text-xl from 48em */
+  --title-card: 1.25rem;   /* 20px on phones, --text-lg from 48em */
+  --leading-tight: 1.2; --leading-snug: 1.35; --leading-body: 1.6;
+
+  /* Space (4px grid) */
+  --space-1: 0.25rem; --space-2: 0.5rem; --space-3: 0.75rem; --space-4: 1rem; --space-5: 1.25rem;
+  --space-6: 1.5rem;  --space-8: 2rem;   --space-10: 2.5rem;  --space-12: 3rem;
+  --gutter: 1rem;        /* 16px on phones, 24px from 48em */
+  --card-pad: 1rem;      /* the one side inset inside cards, bands, lists and tables: 16px, 24px from 48em */
+
+  /* Shape and depth */
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px; --radius-pill: 999px;
+  --shadow-1: 0 1px 2px rgba(13, 22, 96, 0.06), 0 2px 8px rgba(13, 22, 96, 0.06);
+  --shadow-2: 0 6px 16px rgba(13, 22, 96, 0.16);
+  --shadow-3: 0 12px 32px rgba(13, 22, 96, 0.28);
+
+  /* Layout and controls */
+  --container-max: 75rem;
+  --container-prose: 38rem; /* about 70 characters of 18px text */
+  --tap-min: 2.75rem;    /* 44px absolute minimum */
+  --control-height: 3rem;/* 48px buttons, switches, menu rows */
+  --header-height: 4rem; /* phone and tablet header, gold line included */
+
+  /* Layers and motion */
+  --z-dropdown: 100; --z-header: 200; --z-menu: 300; --z-modal: 1000; --z-skip: 1100;
+  --duration: 160ms; --ease: cubic-bezier(0.2, 0, 0.2, 1);
+
+  /* Legacy aliases: cup-draw.css, inline styles written by page scripts and
+     old page CSS use these names. The last six were never defined before. */
+  --primary: var(--color-primary); --secondary: var(--color-accent); --light-gray: var(--color-surface-muted);
+  --medium-gray: var(--grey-300); --dark-gray: var(--color-text-muted); --card-bg: var(--color-surface);
+  --bg: var(--color-bg); --text: var(--color-text); --accent: var(--color-accent);
+  --success: var(--green-600); --error: var(--red-600); --warning: var(--amber-600);
+}
+
+@media (min-width: 48em) {
+  :root { --gutter: 1.5rem; --card-pad: 1.5rem; --title-section: var(--text-xl); --title-card: var(--text-lg); }
+}
+
+
+/* 3. Base ================================================================= */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The old reset is kept so page CSS written for it keeps its spacing. */
+* { margin: 0; padding: 0; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 5rem; /* keeps jump targets clear of the sticky header */
+}
+
+body {
+  min-height: 100vh;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  font-size: var(--text-md);
+  line-height: var(--leading-body);
+  overflow-wrap: break-word;
+}
+
+/* Headings take their colour only through classes: white banner titles rely on it */
+h1, h2, h3, h4 { font-weight: 700; line-height: 1.25; color: inherit; }
+h1 { font-size: var(--text-xl); }
+h2 { font-size: var(--text-lg); }
+h3, h4 { font-size: var(--text-md); }
+a { color: var(--color-link); text-decoration: underline; text-underline-offset: 0.15em; }
+a:hover { color: var(--color-link-hover); text-decoration-thickness: 2px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+img, svg { max-width: 100%; }
+img { height: auto; }
+
+/* Line icons (inline SVG with class="icon"); size them with a second class */
+.icon {
+  display: inline-block; flex: none; width: 1.25rem; height: 1.25rem; vertical-align: middle;
+  fill: none; stroke: currentColor; stroke-width: 2.25; stroke-linecap: round; stroke-linejoin: round;
+}
+
+table { border-collapse: collapse; border-spacing: 0; }
+strong, b { font-weight: 700; }
+
+/* One focus ring everywhere: 3px navy, 3px away from the edge (gold on dark
+   surfaces). Mouse clicks do not show it where :focus-visible is known; older
+   browsers simply always show it. */
+:focus { outline: 3px solid var(--color-focus); outline-offset: 3px; }
+:focus:not(:focus-visible) { outline: none; }
+[hidden] { display: none !important; }
+
+.skip-link {
+  position: absolute; top: -10rem; left: var(--gutter); z-index: var(--z-skip);
+  padding: 0.75rem 1rem; border-radius: var(--radius-md); box-shadow: var(--shadow-2);
+  background: var(--white); color: var(--navy-900); font-weight: 700; text-decoration: none;
+}
+/* The ring sits inside the white box: outside it would run past the header */
+.skip-link:focus { top: 0.5rem; outline-color: var(--color-focus); outline-offset: -6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important; animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important; scroll-behavior: auto !important;
+  }
+}
+
+
+/* 4. Layout ===============================================================
+   .container sets the width and side gutters; .site-main spaces the page;
+   .page-header opens every page; .section, .stack, .cluster and .grid
+   space things out. .grid--aside: main column plus a 20rem side column
+   (a key, notes) from 64em, stacked below. */
+
+.container {
+  width: 100%; max-width: var(--container-max); margin-left: auto; margin-right: auto;
+  padding-left: var(--gutter); padding-right: var(--gutter);
+}
+
+.site-main { display: block; padding: 1.5rem 0 3rem; }
+/* Running text: the reset above removes all margins, so prose puts them back */
+.prose { max-width: var(--container-prose); }
+.prose p + p, .prose p + ul, .prose ul + p, .prose p + ol, .prose ol + p { margin-top: 1rem; }
+.prose ul, .prose ol { padding-left: 1.5rem; }
+.prose li + li { margin-top: 0.375rem; }
+.prose h2, .prose h3 { color: var(--color-heading); line-height: var(--leading-tight); }
+.prose h2 { margin: 2rem 0 0.75rem; }
+.prose h3 { margin: 1.5rem 0 0.5rem; }
+.prose h2:first-child, .prose h3:first-child { margin-top: 0; }
+
+/* Titles share one look; each sets its own size */
+.page-header__title, .section-title, .subsection-title, .card__title, .key__title {
+  color: var(--color-heading); font-weight: 700; line-height: var(--leading-tight);
+}
+
+/* Page header: the H1 naming the page and a one-line intro */
+.page-header { margin-bottom: 1.5rem; }
+.page-header__title { font-size: var(--text-xl); }
+.page-header__intro { max-width: var(--container-prose); margin-top: 0.5rem; color: var(--color-text-muted); }
+/* Welcome band (home page): white on the brand gradient, text on the card inset */
+.page-header--band {
+  padding: 1.25rem var(--card-pad);
+  border-radius: var(--radius-lg);
+  background-color: var(--navy-900);
+  background-image: var(--gradient-brand);
+  box-shadow: var(--shadow-1);
+}
+.page-header--band .page-header__title, .page-header--band .page-header__intro { color: var(--white); }
+.section { margin-top: 2rem; }
+.section__head { margin-bottom: 1rem; }
+.section-title { font-size: var(--title-section); }
+.section__intro { max-width: var(--container-prose); margin-top: 0.25rem; color: var(--color-text-muted); }
+.subsection-title { margin: 1.5rem 0 0.75rem; font-size: var(--text-md); }
+.stack > * + * { margin-top: 1rem; }
+
+/* A row of things that wraps; negative margins instead of flex gap */
+.cluster { display: flex; flex-wrap: wrap; align-items: center; margin: -0.375rem; }
+.cluster > * { margin: 0.375rem; }
+.grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-gap: 1.5rem; gap: 1.5rem; }
+
+@media (min-width: 48em) {
+  .site-main { padding: 2rem 0 4rem; }
+  .page-header { margin-bottom: 2rem; }
+  .page-header__title { font-size: var(--text-2xl); }
+  .page-header--band { padding: 2rem var(--card-pad); }
+  .section { margin-top: 2.5rem; }
+  .grid--2, .grid--3, .grid--auto { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 64em) {
+  html { scroll-padding-top: 1rem; }
+  .grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .grid--auto { grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr)); }
+  .grid--aside { grid-template-columns: minmax(0, 1fr) 20rem; align-items: start; }
+}
+
+
+/* 5. Site header ==========================================================
+   Navy bar with the site name (a link home), the league badge and, below
+   64em, the Menu button. Sticky and 64px tall (gold line included) on
+   phones and tablets. */
+
+.site-header { position: -webkit-sticky; position: sticky; top: 0; z-index: var(--z-header); }
+.site-header__bar {
+  border-bottom: 0.25rem solid var(--gold-500);
+  background-color: var(--navy-900);
+  background-image: var(--gradient-brand);
+  color: var(--white);
+}
+.site-header__inner { display: flex; align-items: center; justify-content: space-between; min-height: 3.75rem; }
+.site-name {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  margin-right: 0.75rem;
+  color: var(--white);
+  font-size: var(--text-md);
+  font-weight: 700;
+  line-height: var(--leading-tight);
+  text-decoration: none;
+}
+.site-name:hover { color: var(--white); text-decoration: underline; }
+.site-header :focus, .site-footer :focus, .page-header--band :focus { outline-color: var(--color-focus-on-dark); }
+
+/* The league badge (decorative, alt=""): at the right-hand end of the bar,
+   just left of the Menu button below 64em, so the two form one group.
+   Left out below 20em (320px at the default text size, wider screens with
+   larger text), where the name and the Menu button need all the room. */
+.site-header__badge { display: none; flex: none; width: 2.75rem; height: 2.75rem; margin: 0 0.625rem 0 auto; }
+@media (min-width: 20em) { .site-header__badge { display: block; } }
+
+.menu-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  min-width: 3rem;
+  min-height: 3rem;
+  padding: 0 0.5rem;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--white);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1;
+}
+.menu-toggle__icon { width: 1.375rem; height: 1.375rem; margin-right: 0.25rem; stroke-width: 2.5; }
+.menu-toggle__icon--close,
+.menu-toggle__label--close,
+.menu-toggle[aria-expanded="true"] .menu-toggle__icon--menu,
+.menu-toggle[aria-expanded="true"] .menu-toggle__label--menu {
+  display: none;
+}
+.menu-toggle[aria-expanded="true"] .menu-toggle__icon--close { display: block; }
+.menu-toggle[aria-expanded="true"] .menu-toggle__label--close { display: inline; }
+.menu-toggle[aria-expanded="true"] { background: rgba(255, 255, 255, 0.16); }
+@media (min-width: 30em) {
+  .site-name { font-size: 1.25rem; }
+  .site-header__badge { width: 3rem; height: 3rem; margin-right: 0.75rem; }
+}
+/* A short screen (a phone on its side, or large text on a small phone):
+   the header scrolls away with the page, so it never covers much of it */
+@media (max-height: 30em) {
+  .site-header { position: relative; }
+  html { scroll-padding-top: 1rem; }
+}
+@media (min-width: 64em) {
+  .site-header { position: relative; }
+  .site-header__inner { min-height: 4.5rem; }
+  .site-name { font-size: 1.5rem; }
+  .site-header__badge { width: 3.5rem; height: 3.5rem; margin-right: 0; }
+  .menu-toggle { display: none; }
+}
+
+
+/* 6. Site menu ============================================================
+   Same markup everywhere. Below 64em: a full-height panel under the sticky
+   header (opened by the Menu button), groups are accordions. From 64em: a
+   white bar under the header, groups open a dropdown on click or tap.
+   site.js sets aria-expanded, aria-current="page" and .is-current. */
+
+.site-nav { display: none; background: var(--white); }
+.site-header.is-open .site-nav {
+  display: block;
+  position: fixed;
+  top: var(--header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: var(--z-menu);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow-3);
+}
+.site-nav__inner { padding-left: 0; padding-right: 0; }
+.site-nav__list, .site-nav__sub { list-style: none; }
+.site-nav__list { padding-bottom: 2rem; }
+.site-nav__item { border-bottom: 1px solid var(--color-divider); }
+
+.site-nav__link,
+.site-nav__toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 3.5rem;
+  padding: 0.75rem var(--gutter);
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--navy-900);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  text-align: left;
+  text-decoration: none;
+}
+.site-nav__chevron { margin-left: 0.75rem; transition: transform var(--duration) var(--ease); }
+.site-nav__toggle[aria-expanded="true"] .site-nav__chevron { transform: rotate(180deg); }
+.site-nav__sub { display: none; background: var(--navy-50); }
+.site-nav__toggle[aria-expanded="true"] + .site-nav__sub { display: block; }
+.site-nav__sublink {
+  display: flex;
+  align-items: center;
+  min-height: 3.5rem;
+  padding: 0.625rem var(--gutter) 0.625rem 2.25rem;
+  border-top: 1px solid var(--color-divider);
+  color: var(--navy-900);
+  font-size: var(--text-md);
+  line-height: var(--leading-snug);
+  text-decoration: none;
+}
+
+/* Rings sit inside menu rows so the panel edges never clip them */
+.site-nav__link:focus,
+.site-nav__toggle:focus,
+.site-nav__sublink:focus {
+  outline-color: var(--color-focus);
+  outline-offset: -3px;
+}
+
+/* Current page: bold plus a 4px bar */
+.site-nav__link[aria-current="page"],
+.site-nav__toggle.is-current,
+.site-nav__sublink[aria-current="page"] {
+  font-weight: 700;
+  box-shadow: inset 4px 0 0 var(--navy-900);
+}
+.site-nav__sublink[aria-current="page"] { background: var(--navy-100); }
+
+@media (hover: hover) {
+  .site-nav__link:hover, .site-nav__toggle:hover { background: var(--navy-50); color: var(--navy-950); }
+  .site-nav__sublink:hover { background: var(--navy-100); color: var(--navy-950); text-decoration: underline; }
+}
+
+@media (min-width: 64em) {
+  .site-nav,
+  .site-header.is-open .site-nav {
+    display: block;
+    position: static;
+    overflow: visible;
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-1);
+  }
+  .site-nav__inner { padding-left: var(--gutter); padding-right: var(--gutter); }
+  /* One row; it only wraps when wider letter spacing or text needs it.
+     site.js keeps each open dropdown inside the screen. */
+  .site-nav__list { display: flex; flex-wrap: wrap; margin-left: -0.875rem; padding-bottom: 0; }
+  .site-nav__item { position: relative; border-bottom: 0; }
+  .site-nav__link,
+  .site-nav__toggle {
+    width: auto;
+    min-height: 3.5rem;
+    padding: 0 0.875rem;
+    font-size: var(--text-md);
+    white-space: nowrap;
+  }
+  .site-nav__chevron { margin-left: 0.375rem; }
+  .site-nav__toggle[aria-expanded="true"] { background: var(--navy-50); }
+  .site-nav__link[aria-current="page"], .site-nav__toggle.is-current { box-shadow: inset 0 -4px 0 var(--navy-900); }
+  .site-nav__sub {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: var(--z-dropdown);
+    min-width: 16rem;
+    padding: 0.5rem 0;
+    border: 1px solid var(--color-border);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+    background: var(--white);
+    box-shadow: var(--shadow-2);
+  }
+  /* The last group opens leftwards so it never runs off the screen */
+  .site-nav__group--end .site-nav__sub { left: auto; right: 0; }
+  .site-nav__sublink { min-height: 3rem; padding: 0.5rem 1.25rem; border-top: 0; white-space: nowrap; }
+}
+
+/* High contrast mode drops box shadows, so the current page is underlined too */
+@media (forced-colors: active) {
+  .site-nav__link[aria-current="page"], .site-nav__toggle.is-current, .site-nav__sublink[aria-current="page"] {
+    text-decoration: underline; text-decoration-thickness: 0.2em; text-underline-offset: 0.3em;
+  }
+}
+
+
+/* 7. Site footer ========================================================== */
+
+.site-footer { padding: 2.5rem 0 1.5rem; background: var(--navy-950); color: var(--white); }
+.site-footer__nav { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-gap: 1.5rem 1rem; gap: 1.5rem 1rem; }
+.site-footer__heading { margin-bottom: 0.25rem; color: var(--navy-200); font-size: var(--text-md); font-weight: 700; }
+.site-footer__list { list-style: none; }
+.site-footer__link,
+.site-footer__top {
+  display: inline-flex;
+  align-items: center;
+  min-height: 3rem;
+  color: var(--white);
+  text-decoration: none;
+}
+.site-footer__link:hover, .site-footer__top:hover { color: var(--white); text-decoration: underline; }
+.site-footer__bottom {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.25);
+}
+.site-footer__about { margin: 0.5rem 1.5rem 0.5rem 0; color: var(--navy-100); font-size: var(--text-sm); }
+.site-footer__top { font-weight: 600; }
+.site-footer__icon { margin-right: 0.5rem; }
+/* Phones: two groups side by side, the last one across the full width */
+@media not all and (min-width: 48em) { .site-footer__group:last-child { grid-column: 1 / -1; } }
+@media (min-width: 48em) { .site-footer__nav { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+
+/* 8. Components ===========================================================
+
+   8a. Button: primary (navy). Variants --secondary (outlined), --danger,
+   --ghost (looks like a link), --block (full width on phones), --lg (56px,
+   20px text: the one main action, such as "Open the league rules").
+   48px tall. __icon before the words, __icon--end after them. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--control-height);
+  padding: 0.625rem 1.25rem;
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: var(--white);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: center;
+  text-decoration: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.btn--secondary { background: var(--white); color: var(--color-primary); }
+.btn--danger { border-color: var(--red-700); background: var(--red-700); }
+.btn--ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--color-link);
+  text-decoration: underline;
+}
+.btn--block { display: flex; width: 100%; }
+.btn--lg { min-height: 3.5rem; padding: 0.75rem 1.5rem; font-size: 1.25rem; }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  border-color: var(--grey-300);
+  background: var(--grey-200);
+  color: var(--grey-700);
+  cursor: not-allowed;
+}
+.btn__icon { margin-right: 0.5rem; }
+.btn__icon--end { margin-right: 0; margin-left: 0.5rem; }
+
+@media (hover: hover) {
+  .btn:hover { border-color: var(--navy-950); background: var(--navy-950); color: var(--white); }
+  .btn--secondary:hover { border-color: var(--navy-950); background: var(--navy-50); color: var(--navy-950); }
+  .btn--danger:hover { border-color: #8e1515; background: #8e1515; color: var(--white); }
+  .btn--ghost:hover { border-color: transparent; background: var(--navy-50); color: var(--navy-900); }
+  .btn:disabled:hover { border-color: var(--grey-300); background: var(--grey-200); color: var(--grey-700); }
+}
+@media (min-width: 48em) { .btn--block { display: inline-flex; width: auto; } }
+
+/* 8b. Card: white, 1px border, 12px corners, soft shadow.
+   __header, __title, __meta, __footer, __link; --flush for edge-to-edge
+   lists and tables (the parts then carry their own padding). Every card
+   part, list row and table edge cell uses the same side inset (--card-pad),
+   so text lines up down the page. */
+
+.card {
+  padding: 1.25rem var(--card-pad);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-1);
+}
+.card__header { margin-bottom: 1rem; }
+.card__title { font-size: var(--title-card); }
+.card__meta { margin-top: 0.25rem; color: var(--color-text-muted); font-size: var(--text-sm); }
+.card__footer { margin-top: 1rem; padding-top: 0.25rem; border-top: 1px solid var(--color-divider); }
+.card__link { display: inline-flex; align-items: center; min-height: var(--control-height); font-weight: 600; }
+.card__link-icon { margin-left: 0.375rem; }
+.card--flush { padding: 0; overflow: hidden; }
+.card--flush > .card__header { margin: 0; padding: 1.25rem var(--card-pad) 0.75rem; }
+.card--flush > .card__body { padding: 0 var(--card-pad) 1.25rem; }
+/* 8px above and below the link keeps its focus ring inside the card's clip */
+.card--flush > .card__footer { margin: 0; padding: 0.5rem var(--card-pad); }
+
+@media (min-width: 48em) {
+  .card { padding: 1.5rem var(--card-pad); }
+  .card--flush { padding: 0; }
+  .card--flush > .card__header { padding-top: 1.5rem; }
+  .card--flush > .card__body { padding-bottom: 1.5rem; }
+}
+
+/* 8c. Notice: info, success, warning, danger. Dark text on a pale tint
+   with a pale frame and a strong coloured edge on the left; the title
+   says what it is in words. */
+
+.notice {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--blue-200);
+  border-left: 0.375rem solid var(--color-info-border);
+  border-radius: var(--radius-md);
+  background: var(--color-info-bg);
+  color: var(--color-text);
+}
+.notice__title { margin-bottom: 0.25rem; font-weight: 700; }
+.notice ul { margin-top: 0.25rem; padding-left: 1.25rem; }
+.notice--success { border-color: var(--green-200); border-left-color: var(--color-success-border); background: var(--color-success-bg); }
+.notice--warning { border-color: var(--amber-200); border-left-color: var(--color-warning-border); background: var(--color-warning-bg); }
+.notice--danger  { border-color: var(--red-200);   border-left-color: var(--color-danger-border);  background: var(--color-danger-bg); }
+
+/* 8d. Badge / chip: a short status word, dark text on a pale tint */
+
+.badge,
+.chip {
+  display: inline-block;
+  padding: 0.0625rem 0.625rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: var(--navy-100);
+  color: var(--navy-900);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  line-height: 1.5;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.badge--success { border-color: var(--green-200); background: var(--green-50); color: var(--green-700); }
+.badge--warning { border-color: var(--amber-200); background: var(--amber-50); color: var(--amber-800); }
+.badge--danger  { border-color: var(--red-200); background: var(--red-50); color: var(--red-800); }
+.badge--info    { border-color: var(--blue-200); background: var(--blue-50); color: var(--blue-800); }
+.badge--gold    { border-color: #ffd54f; background: var(--gold-100); color: #5c4400; }
+
+/* 8e. Segmented switch: THE division or view switcher. Buttons with
+   aria-pressed; the chosen one is navy with white bold text and a tick.
+   Stacked on small phones, side by side from 30em; add --many for three
+   or more choices. Follow it with a .segmented-status line ("Showing:
+   Premier Division"). */
+
+.segmented { display: flex; flex-direction: column; }
+.segmented__btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: var(--control-height);
+  margin: 0;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--navy-900);
+  border-radius: 0;
+  background: var(--white);
+  color: var(--navy-900);
+  font-size: var(--text-md);
+  font-weight: 600;
+  line-height: 1.25;
+  text-align: left;
+}
+.segmented__btn + .segmented__btn { margin-top: -2px; }
+.segmented__btn:first-child { border-radius: var(--radius-md) var(--radius-md) 0 0; }
+.segmented__btn:last-child { border-radius: 0 0 var(--radius-md) var(--radius-md); }
+.segmented__btn[aria-pressed="true"] { z-index: 1; background: var(--navy-900); color: var(--white); font-weight: 700; }
+/* The ring sits inside the button (white on the chosen one, navy on the
+   others): outside it, one side would vanish against the navy neighbour */
+.segmented__btn:focus { z-index: 2; outline-color: currentColor; outline-offset: -6px; }
+.segmented__check { margin-right: 0.5rem; stroke-width: 2.5; visibility: hidden; }
+.segmented__btn[aria-pressed="true"] .segmented__check { visibility: visible; }
+.segmented-status { margin-top: 0.75rem; color: var(--color-text-muted); }
+.segmented-status strong { color: var(--color-text); }
+
+@media (hover: hover) {
+  .segmented__btn[aria-pressed="false"]:hover { background: var(--navy-50); }
+}
+@media (min-width: 30em) {
+  .segmented { display: inline-flex; flex-direction: row; }
+  /* The space kept for the tick is balanced on the right so labels stay centred */
+  .segmented__btn { justify-content: center; padding: 0.5rem 3rem 0.5rem 1.25rem; }
+  .segmented__btn + .segmented__btn { margin-top: 0; margin-left: -2px; }
+  .segmented__btn:first-child { border-radius: var(--radius-md) 0 0 var(--radius-md); }
+  .segmented__btn:last-child { border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+}
+
+/* --many: THE way to offer three or more choices, including tabs that
+   switch panels (seasons, rounds, dashboard sections). The same buttons,
+   tick and colours as separate buttons in a grid that wraps, so a long row
+   never runs off the screen and the chosen one is always a filled button,
+   never just an underline. One column on phones; a page may set two there
+   in its own style when it has many short labels. */
+.segmented.segmented--many { display: grid; grid-template-columns: minmax(0, 1fr); grid-gap: 0.5rem; gap: 0.5rem; }
+.segmented.segmented--many > .segmented__btn { margin: 0; padding: 0.5rem 1rem; border-radius: var(--radius-md); justify-content: flex-start; }
+@media (min-width: 30em) { .segmented.segmented--many { grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr)); } }
+
+/* 8f. Table: navy header row, 52px rows, zebra, tabular numbers in .num
+   cells. .table-scroll around any table that could outgrow its box (very
+   narrow or zoomed screens): it then scrolls instead of being cut off.
+   .table--stack turns rows into labelled blocks below 48em (cells need
+   data-label; .num cells share a line). */
+
+.table-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table { width: 100%; font-size: var(--text-sm); line-height: var(--leading-snug); }
+.table th,
+.table td {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid var(--color-divider);
+  text-align: left;
+  vertical-align: middle;
+}
+.table td, .table tbody th { height: 3.25rem; }
+.table th:first-child, .table td:first-child { padding-left: var(--card-pad); }
+.table th:last-child, .table td:last-child { padding-right: var(--card-pad); }
+.table thead th {
+  border-bottom: 0;
+  background: var(--navy-900);
+  color: var(--white);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.table tbody th { font-weight: 700; }
+.table tbody tr:nth-child(even) > * { background: var(--navy-50); }
+.table tbody tr:last-child > * { border-bottom: 0; }
+.table .num { width: 1%; text-align: center; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.table .table__state, .table .table__state:first-child { height: auto; padding: 0; background: var(--white); }
+
+@media (min-width: 48em) {
+  .table { font-size: var(--text-md); }
+  .table th, .table td { padding: 0.75rem 1rem; }
+}
+
+@media not all and (min-width: 48em) {
+  .table--stack thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .table--stack,
+  .table--stack tbody,
+  .table--stack tr,
+  .table--stack th,
+  .table--stack td {
+    display: block;
+    width: 100%;
+  }
+  .table--stack tbody tr { padding: 0.875rem var(--card-pad); border-bottom: 1px solid var(--color-divider); }
+  .table--stack tbody tr:last-child { border-bottom: 0; }
+  .table--stack tbody tr:nth-child(even) { background: var(--navy-50); }
+  .table.table--stack tbody tr > * { height: auto; padding: 0.125rem 0; border: 0; background: transparent; }
+  .table--stack tbody th { font-size: var(--text-md); margin-bottom: 0.125rem; }
+  .table--stack td[data-label]::before {
+    content: attr(data-label) ": ";
+    color: var(--color-text-muted);
+    font-weight: 600;
+  }
+  /* Numbers share one line: "Played: 5  Won: 4  Lost: 1" */
+  .table--stack td.num { display: inline-block; width: auto; margin-right: 1.25rem; }
+}
+
+/* 8g. Key: a visible legend for abbreviations, colours and symbols */
+
+.key__title { margin-bottom: 0.5rem; font-size: var(--text-md); }
+.key__list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-gap: 0 1.5rem;
+  gap: 0 1.5rem;
+  font-size: var(--text-sm);
+}
+.key__item { display: flex; align-items: baseline; padding: 0.25rem 0; }
+.key__term { flex: none; min-width: 2.75rem; color: var(--navy-900); font-weight: 700; }
+.key__item--wide { grid-column: 1 / -1; }
+.key__swatch {
+  display: inline-block;
+  flex: none;
+  width: 1.75rem;
+  height: 1.125rem;
+  margin-right: 1rem;
+  border: 1px solid var(--grey-400);
+  border-left-width: 4px;
+  border-radius: 3px;
+  vertical-align: -0.125em;
+}
+.key__swatch--promotion { border-left-color: var(--green-600); background: var(--green-50); }
+.key__swatch--relegation { border-left-color: var(--red-600); background: var(--red-50); }
+@media (min-width: 30em) { .key--columns .key__list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 8h. Forms: .field (label above, hint, input, error), .choice (24px radio
+   or checkbox with the whole row clickable), .form-grid */
+
+.field { margin-bottom: 1.5rem; }
+.field__label { display: block; margin-bottom: 0.375rem; font-weight: 700; }
+.field__hint { display: block; margin: -0.125rem 0 0.5rem; color: var(--color-text-muted); font-size: var(--text-sm); }
+.field__input {
+  display: block;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.625rem 0.875rem;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  color: var(--color-text);
+  line-height: 1.4;
+  -webkit-appearance: none;
+  appearance: none;
+}
+select.field__input {
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 7.5l5 5 5-5' fill='none' stroke='%231a237e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.875rem center;
+  background-size: 1.25rem;
+}
+textarea.field__input { min-height: 8rem; resize: vertical; }
+.field__input:focus { border-color: var(--navy-900); }
+/* Tab can move on to a date field's own calendar button: the whole field
+   keeps its ring */
+.field__input[type="date"]:focus-within { outline: 3px solid var(--color-focus); outline-offset: 3px; border-color: var(--navy-900); }
+.field__input::placeholder { color: var(--grey-700); opacity: 1; }
+.field__error { display: block; margin-top: 0.5rem; color: var(--color-danger); font-weight: 600; }
+.field--error .field__input { border-color: var(--red-700); }
+
+.choice {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0.5rem 0.75rem;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-md);
+  background: var(--white);
+  cursor: pointer;
+}
+.choice + .choice { margin-top: 0.5rem; }
+.choice__input {
+  flex: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  margin: 0 0.75rem 0 0;
+  accent-color: var(--navy-900);
+  cursor: pointer;
+}
+
+.form-grid { display: grid; grid-template-columns: minmax(0, 1fr); grid-gap: 0 1.5rem; gap: 0 1.5rem; }
+.form-grid__full { grid-column: 1 / -1; }
+@media (min-width: 48em) { .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* 8i. State: loading, empty and error messages in plain words (16px+) */
+
+.state { position: relative; padding: 1rem 1.25rem 1rem 3.25rem; color: var(--color-text-muted); }
+.state::before {
+  content: "";
+  position: absolute;
+  top: 1.2rem;
+  left: 1.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+}
+.state--loading::before {
+  border: 3px solid var(--navy-200);
+  border-top-color: var(--navy-900);
+  border-radius: 50%;
+  animation: cdl-spin 1.2s linear infinite;
+}
+.state--empty::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234a5068' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M12 11v6M12 7.5v.5'/%3E%3C/svg%3E");
+}
+.state--error { color: var(--color-danger); }
+.state--error::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b71c1c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 3l10 18H2z'/%3E%3Cpath d='M12 10v5M12 18v.5'/%3E%3C/svg%3E");
+}
+.state__action { margin-top: 0.75rem; }
+@keyframes cdl-spin { to { transform: rotate(360deg); } }
+
+/* 8j. Disclosure: <details class="disclosure"> with a large summary row.
+   Use instead of hover-only tooltips. */
+
+.disclosure { border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--white); }
+.disclosure__summary {
+  display: flex;
+  align-items: center;
+  min-height: var(--control-height);
+  padding: 0.625rem 1rem;
+  color: var(--navy-900);
+  font-weight: 600;
+  list-style: none;
+  cursor: pointer;
+}
+.disclosure__summary::-webkit-details-marker { display: none; }
+.disclosure__summary::after {
+  content: "";
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin-left: auto;
+  padding-left: 0.75rem;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath d='M5 7.5l5 5 5-5' fill='none' stroke='%231a237e' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right center / 1.25rem no-repeat;
+  transition: transform var(--duration) var(--ease);
+}
+.disclosure[open] > .disclosure__summary::after { transform: rotate(180deg); }
+.disclosure__body { padding: 0 1rem 1rem; }
+/* Words that change with the state, inside a summary:
+   <span class="disclosure__when-closed">Show the games</span><span class="disclosure__when-open">Hide the games</span> */
+.disclosure[open] .disclosure__when-closed, .disclosure:not([open]) .disclosure__when-open { display: none; }
+
+/* --row: a list row that opens (a result showing its games). No box: the
+   whole padded row is the button, the chevron sits on the right and the
+   opened part is a tinted panel. Rows sit in a list inside a .card--flush.
+   The summary is a plain block (older Safari cannot lay out a <summary>
+   as flex), so put only text and spans in it, never links or buttons. */
+.disclosure--row { border: 0; border-radius: 0; background: transparent; }
+.disclosure--row > .disclosure__summary {
+  display: block; position: relative; min-height: var(--control-height);
+  padding: 0.875rem 3.25rem 0.875rem var(--card-pad); color: inherit; font-weight: 400;
+}
+.disclosure--row > .disclosure__summary::after { position: absolute; top: 50%; right: var(--card-pad); margin-top: -0.625rem; padding: 0; }
+.disclosure--row > .disclosure__summary:focus { outline-offset: -3px; }
+.disclosure--row .disclosure__when-closed, .disclosure--row .disclosure__when-open { color: var(--color-link); font-weight: 600; text-decoration: underline; }
+.disclosure--row > .disclosure__body { padding: 1rem var(--card-pad) 1.25rem; border-top: 1px solid var(--color-divider); background: var(--navy-50); }
+@media (hover: hover) { .disclosure--row > .disclosure__summary:hover { background: var(--navy-50); } }
+
+/* 8k. Stat: one big number with a label */
+
+.stat__value {
+  display: block;
+  color: var(--navy-900);
+  font-size: var(--text-2xl);
+  font-weight: 700;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.stat__label { display: block; margin-top: 0.25rem; color: var(--color-text-muted); font-size: var(--text-sm); }
+
+/* 8l. Ranked list: rank, name with team underneath, value on the right.
+   An optional aria-hidden __head row labels the columns. The value column
+   is as wide as its value (a finish with its date never spills); values
+   are right-aligned, so they still line up. --stats adds two more number
+   columns from 30em (narrower screens show __fold instead). */
+
+.list-ranked__list { list-style: none; }
+.list-ranked__head,
+.list-ranked__item {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) max-content;
+  grid-column-gap: 0.75rem;
+  column-gap: 0.75rem;
+  align-items: center;
+  padding: 0.75rem var(--card-pad);
+}
+.list-ranked__head {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--color-divider);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+.list-ranked__item { min-height: 3.5rem; border-bottom: 1px solid var(--color-divider); }
+.list-ranked__item:last-child { border-bottom: 0; }
+.list-ranked__rank {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: var(--navy-900);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.list-ranked__item--top .list-ranked__rank { background: var(--gold-500); color: var(--navy-950); }
+.list-ranked__name { display: block; color: var(--color-text); font-weight: 700; line-height: 1.3; }
+.list-ranked__meta { display: block; color: var(--color-text-muted); font-size: var(--text-sm); line-height: 1.4; }
+.list-ranked__value, .list-ranked__num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.list-ranked__value { color: var(--navy-900); font-size: var(--text-lg); font-weight: 700; line-height: 1.2; }
+.list-ranked__sub {
+  display: block;
+  margin-top: 0.125rem;
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  font-weight: 400;
+}
+.list-ranked__note {
+  padding: 0.75rem var(--card-pad);
+  border-top: 1px solid var(--color-divider);
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+}
+.list-ranked--stats .list-ranked__head,
+.list-ranked--stats .list-ranked__item {
+  grid-template-columns: 2.25rem minmax(0, 1fr) 4rem;
+}
+.list-ranked__wide { display: none; }
+
+@media (min-width: 30em) {
+  .list-ranked--stats .list-ranked__head,
+  .list-ranked--stats .list-ranked__item {
+    grid-template-columns: 2.25rem minmax(0, 1fr) 3.5rem 3rem 3.75rem;
+  }
+  .list-ranked__wide { display: block; }
+  .list-ranked__fold { display: none; }
+}
+/* Words that name a value ("points", "Finish:"): for screen readers, and
+   shown once the value sits under the name (below 20em: a 320px phone with
+   large text), so names are not squeezed into a sliver */
+.list-ranked__label {
+  position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+@media not all and (min-width: 20em) {
+  .list-ranked__head,
+  .list-ranked__item,
+  .list-ranked--stats .list-ranked__head,
+  .list-ranked--stats .list-ranked__item { grid-template-columns: 2.25rem minmax(0, 1fr); }
+  .list-ranked__head > :last-child { display: none; }
+  .list-ranked .list-ranked__value { grid-column: 2; margin-top: 0.25rem; text-align: left; }
+  .list-ranked .list-ranked__sub { display: inline; margin-left: 0.375rem; }
+  .list-ranked__label {
+    position: static; width: auto; height: auto; margin: 0;
+    overflow: visible; clip: auto; white-space: normal;
+    color: var(--color-text-muted); font-size: var(--text-sm); font-weight: 400;
+  }
+}
+
+/* 8m. Match: one result or fixture. From 30em: home team, score and away
+   team on one line, the score in a tinted box (--fixture: "v" instead).
+   Below 30em a result is a small scoreboard (each team on its own line,
+   its score on the right) and a fixture reads "Home v Away", wrapping
+   between the names. The winner is bold with a tick (__team--winner);
+   __meta is a muted line under it (venue, time, a status badge). Rows
+   sit in a .match-list inside a .card--flush, split by .group-title bands
+   (a date, week or round). A row that opens to show its games is the
+   summary of a .disclosure--row (8j): <summary class="disclosure__summary
+   match">. --sm: the smaller rows for the games inside. */
+.match-list { list-style: none; }
+.match-list > li + li { border-top: 1px solid var(--color-divider); }
+.match { display: block; padding: 0.875rem var(--card-pad); }
+.match__line {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "home home-score" "away away-score";
+  grid-gap: 0.25rem 1rem; gap: 0.25rem 1rem; align-items: center;
+}
+/* A long one-word name ("Disappointers") may break rather than run into the
+   score on a small phone with large text */
+.match__team { display: block; min-width: 0; line-height: var(--leading-snug); word-break: break-word; overflow-wrap: anywhere; }
+.match__team--home { grid-area: home; }
+.match__team--away { grid-area: away; }
+.match__team--winner { display: flex; align-items: center; font-weight: 700; } /* the tick never wraps onto a line of its own */
+.match__team--tbc { color: var(--color-text-muted); }
+.match__tick { margin: -0.125rem 0 0 0.375rem; color: var(--green-700); stroke-width: 3; }
+.match__score { color: var(--navy-900); font-size: var(--text-lg); font-weight: 700; line-height: 1.2; text-align: right; font-variant-numeric: tabular-nums; }
+.match__score--home { grid-area: home-score; }
+.match__score--away { grid-area: away-score; }
+.match__sep { display: none; color: var(--color-text-muted); font-weight: 400; }
+.match__meta { display: block; margin-top: 0.375rem; color: var(--color-text-muted); font-size: var(--text-sm); }
+.match--fixture .match__line { display: block; }
+.match--fixture .match__team { display: inline-block; max-width: 100%; font-weight: 600; }
+.match--fixture .match__sep { display: inline-block; margin: 0 0.25rem; font-weight: 600; }
+.match--sm { padding: 0.625rem 0; font-size: var(--text-sm); }
+.match--sm .match__score { font-size: var(--text-md); }
+
+@media (min-width: 30em) {
+  .match__line,
+  .match--fixture .match__line {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto auto auto minmax(0, 1fr);
+    grid-template-areas: "home home-score sep away-score away"; grid-column-gap: 0; column-gap: 0;
+  }
+  .match--fixture .match__line { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); grid-template-areas: "home sep away"; }
+  .match__team--home { padding-right: 1rem; text-align: right; }
+  .match__team--home.match__team--winner { justify-content: flex-end; }
+  .match__team--away { padding-left: 1rem; }
+  .match__score, .match__sep { display: block; padding: 0.25rem 0.375rem; background: var(--navy-50); text-align: center; }
+  .match__score--home { min-width: 2.5rem; padding-left: 0.75rem; border-radius: var(--radius-md) 0 0 var(--radius-md); }
+  .match__score--away { min-width: 2.5rem; padding-right: 0.75rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; }
+  .match__sep { grid-area: sep; color: var(--navy-900); font-size: var(--text-lg); line-height: 1.2; }
+  .match--fixture .match__team { display: block; }
+  .match--fixture .match__sep { margin: 0; padding: 0.25rem 0.75rem; border-radius: var(--radius-md); font-size: var(--text-md); font-weight: 700; }
+  .match__meta { text-align: center; }
+  .match--sm .match__score, .match--sm .match__sep { font-size: var(--text-md); }
+}
+
+/* Group title: a date, week or round above the rows it groups */
+.group-title {
+  padding: 0.625rem var(--card-pad); border-left: 4px solid var(--navy-900); background: var(--navy-50);
+  color: var(--color-heading); font-size: var(--text-md); font-weight: 700; line-height: var(--leading-snug);
+}
+
+/* 8n. Document: a card that opens a document (league rules, AGM minutes,
+   fixture lists). Title, one line, a big "Open ..." button that opens a
+   new tab, an optional second button, and from 48em an optional large
+   read-only view (.doc__frame). Give the frame its src from the page
+   script only while the view shows, so phones never load it. */
+.doc__intro { max-width: var(--container-prose); margin-top: 0.25rem; color: var(--color-text-muted); }
+.doc__actions { margin-top: 1.25rem; }
+.doc__view { display: none; }
+@media (min-width: 48em) {
+  .doc__view {
+    display: block; height: 75vh; min-height: 30rem; max-height: 60rem; margin-top: 1.5rem;
+    border: 1px solid var(--color-border); border-radius: var(--radius-md); overflow: hidden; background: var(--white);
+  }
+  .doc__frame { display: block; width: 100%; height: 100%; border: 0; }
+}
+
+/* 8o. Filters: a search field with a clear button and selects above a
+   list, then a status line ("Showing 12 of 140 players"). One column on
+   phones; the search full width over the selects from 30em; one row from
+   64em. Each part is a .field (label above). */
+.filters { display: grid; grid-template-columns: minmax(0, 1fr); grid-gap: 1rem 1.5rem; gap: 1rem 1.5rem; align-items: end; }
+.filters > .field { margin-bottom: 0; }
+.filters__status { margin-top: 1rem; color: var(--color-text-muted); }
+.filters__status strong { color: var(--color-text); }
+.search { position: relative; }
+.search__input { padding-right: 3.5rem; }
+.search__input::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }
+.search__clear {
+  position: absolute; top: 50%; right: 0.125rem; display: flex; align-items: center; justify-content: center;
+  width: 3rem; height: 3rem; margin-top: -1.5rem; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--navy-900);
+}
+.search__clear:focus { outline-offset: -3px; }
+@media (hover: hover) { .search__clear:hover { background: var(--navy-50); } }
+@media (min-width: 30em) {
+  .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filters__search { grid-column: 1 / -1; }
+}
+@media (min-width: 64em) {
+  .filters { grid-template-columns: minmax(0, 2fr) repeat(auto-fit, minmax(12rem, 1fr)); }
+  .filters__search { grid-column: auto; }
+}
+
+/* 8p. Fieldset: one question answered with radios or checkboxes (.choice
+   rows). The legend looks like a field label. min-width: 0 stops a
+   fieldset pushing the page wider than a phone. */
+.fieldset { min-width: 0; margin: 0 0 1.5rem; padding: 0; border: 0; }
+.fieldset__legend { display: block; width: 100%; margin-bottom: 0.5rem; padding: 0; font-weight: 700; }
+.field__optional { color: var(--color-text-muted); font-weight: 400; }
+
+/* 8q. Icon link: a link with a small icon in front (map, phone, download),
+   48px tall so it is easy to tap */
+.icon-link { display: inline-flex; align-items: center; min-height: var(--control-height); font-weight: 600; }
+.icon-link > .icon { margin-right: 0.375rem; }
+
+
+/* 9. Utilities ============================================================ */
+
+.visually-hidden {
+  position: absolute !important; width: 1px !important; height: 1px !important; margin: -1px !important; padding: 0 !important;
+  overflow: hidden !important; clip: rect(0 0 0 0) !important; white-space: nowrap !important; border: 0 !important;
+}
+.text-muted { color: var(--color-text-muted) !important; }
+.text-center { text-align: center !important; }
+.nowrap { white-space: nowrap !important; }
+.tabular { font-variant-numeric: tabular-nums !important; }
+
+
+/* 10. Print =============================================================== */
+
+@media print {
+  body { background: var(--white); color: #000; font-size: 12pt; }
+  .skip-link,
+  .menu-toggle,
+  .site-nav,
+  .site-footer__nav,
+  .site-footer__top,
+  .segmented,
+  .btn,
+  .card__footer,
+  .filters,
+  .doc__view {
+    display: none !important;
+  }
+  .site-header { position: static; }
+  .site-header__badge { width: 2.5rem; height: 2.5rem; }
+  .site-header__bar, .page-header--band { border: 0; background: none; color: #000; }
+  .site-name, .page-header--band .page-header__title, .page-header--band .page-header__intro { color: #000; }
+  .site-footer { padding: 1rem 0 0; background: none; color: #000; }
+  .site-footer__about { color: #000; }
+  .card { border-color: #999; box-shadow: none; break-inside: avoid; }
+  .table thead th { background: #fff; color: #000; border-bottom: 2px solid #000; }
+  a { color: #000; }
+}

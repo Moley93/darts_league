@@ -1,1018 +1,419 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDL | Contacts &amp; Venues</title>
     <meta name="description" content="Contact information for the Crawley Darts League. Find details for venues, team secretaries and league committee members.">
-<meta property="og:title" content="CDL | Contacts & Venues">
-<meta property="og:description" content="Contact information for the Crawley Darts League. Find details for venues, team secretaries and league committee members.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
-    <title>CDL | Contacts & Venues</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
+    <link rel="canonical" href="https://crawleydartsleague.com/contactinfo.html">
+    <meta property="og:title" content="CDL | Contacts & Venues">
+    <meta property="og:description" content="Contact information for the Crawley Darts League. Find details for venues, team secretaries and league committee members.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* Contacts & Venues page only */
+        body.page-contactinfo .venues {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 1.25rem;
+            gap: 1.25rem;
+        }
+        body.page-contactinfo .venue {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+        }
+        /* "On this page" buttons: slimmer, and on phones they share the row */
+        body.page-contactinfo .cluster > .btn {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        body.page-contactinfo .venue__name {
+            color: var(--color-heading);
+            font-size: var(--title-card);
+            line-height: var(--leading-tight);
+        }
+        body.page-contactinfo .venue__address {
+            margin-top: 0.5rem;
+        }
+        body.page-contactinfo .venue__map {
+            display: inline-flex;
             align-items: center;
+            min-height: var(--control-height);
+            font-weight: 600;
         }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
+        body.page-contactinfo .venue__map .icon {
+            margin-right: 0.375rem;
         }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
+        body.page-contactinfo .venue__teams {
+            margin-top: 0.5rem;
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
         }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
+        /* The spacer pushes the call button to the bottom of each card. The
+           button is outlined: eight filled navy bars would shout. */
+        body.page-contactinfo .venue__spacer {
+            flex: 1 1 auto;
+            min-height: 1rem;
         }
-        
-        /* Additional styles for contact page */
-        .contact-section {
-            margin-bottom: 40px;
-        }
-
-        .contact-section h2 {
-            color: var(--primary);
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid var(--secondary);
-        }
-
-        /* Tables with consistent styling */
-        .contact-table {
+        body.page-contactinfo .venue__call {
+            display: flex;
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            /* Fixed layout so the colgroup widths below are respected
-               instead of being overridden by long cell content. */
-            table-layout: fixed;
-            word-wrap: break-word;
         }
-        /* Right-align phone numbers for readability and consistent vertical
-           alignment of digits. */
-        .contact-table .col-phone { text-align: right; white-space: nowrap; }
-        /* Centre short tag-like values (Division, Role headings, etc.). */
-        .contact-table .col-center { text-align: center; }
-
-        .contact-table thead {
-            background-color: var(--primary);
-            color: white;
+        body.page-contactinfo .committee__email {
+            margin-top: 1rem;
         }
-
-        .contact-table th, .contact-table td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid var(--medium-gray);
+        body.page-contactinfo .venue__nophone {
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
         }
-
-        .contact-table tbody tr:hover {
-            background-color: var(--light-gray);
-            transition: background-color 0.3s ease;
+        body.page-contactinfo .teams-card + .teams-card {
+            margin-top: 1.5rem;
         }
-
-        /* Responsive tables */
-        @media screen and (max-width: 768px) {
-            .contact-table {
-                display: block;
-                overflow-x: auto;
+        body.page-contactinfo .teams-card .card__header {
+            padding-bottom: 1rem;
+        }
+        body.page-contactinfo .people {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 0.75rem 1.5rem;
+            gap: 0.75rem 1.5rem;
+            margin-top: 1.25rem;
+            list-style: none;
+        }
+        body.page-contactinfo .people__item {
+            padding: 0.75rem 1rem;
+            border-left: 4px solid var(--navy-200);
+            background: var(--navy-50);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+        }
+        body.page-contactinfo .people__name {
+            display: block;
+            font-weight: 700;
+        }
+        body.page-contactinfo .people__role {
+            display: block;
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+        }
+        @media not all and (min-width: 30em) {
+            body.page-contactinfo .cluster > .btn {
+                flex: 1 1 auto;
             }
         }
-
-        /* Login message and button */
-        .login-info {
-            background-color: #e8f5e9;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            border-left: 4px solid var(--success);
+        @media (min-width: 48em) {
+            body.page-contactinfo .venues,
+            body.page-contactinfo .people {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            /* The same column widths in every division's table, so they line up */
+            body.page-contactinfo .teams-table {
+                table-layout: fixed;
+            }
+            body.page-contactinfo .teams-table thead th:nth-child(1) {
+                width: 32%;
+            }
+            body.page-contactinfo .teams-table thead th:nth-child(2) {
+                width: 40%;
+            }
         }
-
-        .login-info p {
-            margin: 0;
+        @media (min-width: 64em) {
+            body.page-contactinfo .venues {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            body.page-contactinfo .people {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
         }
-
-        .login-button {
-            display: inline-block;
-            background-color: var(--primary);
-            color: white;
-            padding: 8px 16px;
-            border-radius: 4px;
-            text-decoration: none;
-            margin-top: 10px;
-            transition: background-color 0.3s ease;
-            cursor: pointer;
-        }
-
-        .login-button:hover {
-            background-color: var(--secondary);
-        }
-
-        /* Phone numbers (to be revealed when logged in) */
-        .phone-hidden {
-            display: none;
-        }
-
-        /* GDPR notice */
-        .gdpr-notice {
-            font-size: 0.9em;
-            background-color: #f8f9fa;
-            padding: 10px 15px;
-            border-radius: 5px;
-            border-left: 4px solid var(--accent);
-            margin-top: 15px;
-        }
-        
-        /* Login modal styles */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.5);
-        }
-        
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            width: 80%;
-            max-width: 400px;
-        }
-        
-        .close {
-            color: #aaa;
-            float: right;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .close:hover {
-            color: black;
-        }
-        
-        /* Loading spinner */
-        .spinner {
-            display: none;
-            width: 40px;
-            height: 40px;
-            margin: 10px auto;
-            border: 4px solid rgba(0,0,0,0.1);
-            border-left-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-
-</style>
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="winnershistory.html">Winners History</a></li>
-            </ul>
-        </li>
-        
-        <li><a href="admin-login.html">Admin Login</a></li>
-
-        
-        <li><a href="team-login.html">Team Login</a></li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-        </li>
-    </ul>
-    </nav>    <div class="container">
-        <!-- Venues & Contacts Page -->
-        <div id="contact-info" class="page">
-            <div class="card">
-                <h1>Venues & Contacts</h1>
-                
-                <!-- Venue Information Section -->
-                <div class="contact-section">
-                    <h2>Venue Information</h2>
-                    <table class="contact-table" id="venues-table">
-                        <colgroup>
-                            <col style="width: 25%;">
-                            <col style="width: 50%;">
-                            <col style="width: 25%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Venue Name</th>
-                                <th>Address</th>
-                                <th class="col-phone">Phone Number</th>
-                            </tr>
-                        </thead>
-                        <tbody id="venuesTbody">
-                            <tr><td colspan="3" style="text-align:center;color:#757575;font-style:italic;padding:20px;">Loading venues...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Team Information Section -->
-                <div class="contact-section">
-                    <h2>Team Information</h2>
-                    
-                    
-                    <table class="contact-table" id="team-contact-table">
-                        <colgroup>
-                            <col style="width: 28%;">
-                            <col style="width: 14%;">
-                            <col style="width: 30%;">
-                            <col style="width: 28%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Team</th>
-                                <th class="col-center">Division</th>
-                                <th>Venue</th>
-                                <th>Secretary</th>
-                            </tr>
-                        </thead>
-                        <tbody id="teamsTbody">
-                            <tr><td colspan="4" style="text-align:center;color:#757575;font-style:italic;padding:20px;">Loading teams...</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <!-- Committee Information Section -->
-                <div class="contact-section">
-                    <h2>Committee Information</h2>
-                    <p style="margin-bottom:15px;">To get in touch with any committee member, please email <a href="mailto:clare.nicholson@sky.com"><strong>clare.nicholson@sky.com</strong></a> and your message will be passed on.</p>
-                    <table class="contact-table" id="committee-table">
-                        <colgroup>
-                            <col style="width: 45%;">
-                            <col style="width: 55%;">
-                        </colgroup>
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Role</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr><td>Mike Kirrage</td><td>League Chairman</td></tr>
-                            <tr><td>Clare Sabourn</td><td>League Secretary</td></tr>
-                            <tr><td>Jackie Moran</td><td>Treasurer</td></tr>
-                            <tr><td>Warren Grantham</td><td>Competitions Secretary</td></tr>
-                        </tbody>
-                    </table>
-                </div>
+<body class="page-contactinfo">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
             </div>
         </div>
-    </div>
-    
-    <!-- Login Modal -->
-    <div id="login-modal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h2>Team Captain Login</h2>
-            <form id="login-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" required>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
+
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Contacts &amp; Venues</h1>
+                <p class="page-header__intro">Where every team plays, the venues' phone numbers, team secretaries and the league committee.</p>
+            </div>
+
+            <nav class="cluster" aria-label="On this page">
+                <a class="btn btn--secondary" href="#venues">Venues</a>
+                <a class="btn btn--secondary" href="#teams">Teams</a>
+                <a class="btn btn--secondary" href="#committee">Committee</a>
+            </nav>
+
+            <section class="section" id="venues" aria-labelledby="venues-title">
+                <div class="section__head">
+                    <h2 class="section-title" id="venues-title">Venues</h2>
+                    <p class="section__intro">Each venue's address and phone number.</p>
                 </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" required>
+                <div class="venues" id="venues-list">
+                    <p class="state state--loading">Loading venues...</p>
                 </div>
-                <div id="login-error" style="color: red; margin-bottom: 10px; display: none;"></div>
-                <div class="spinner" id="login-spinner"></div>
-                <button type="submit" class="btn">Login</button>
-            </form>
+            </section>
+
+            <section class="section" id="teams" aria-labelledby="teams-title">
+                <div class="section__head">
+                    <h2 class="section-title" id="teams-title">Teams</h2>
+                    <p class="section__intro">Each team's home venue and secretary.</p>
+                </div>
+                <div id="teams-list">
+                    <p class="state state--loading">Loading teams...</p>
+                </div>
+            </section>
+
+            <section class="section" id="committee" aria-labelledby="committee-title">
+                <div class="section__head">
+                    <h2 class="section-title" id="committee-title">Committee</h2>
+                </div>
+                <div class="card">
+                    <p class="prose">To get in touch with any committee member, please email <a href="mailto:clare.nicholson@sky.com"><strong>clare.nicholson@sky.com</strong></a> and your message will be passed on.</p>
+                    <p class="committee__email"><a class="btn btn--secondary btn--block" href="mailto:clare.nicholson@sky.com"><svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3.75 5.75h16.5v12.5H3.75z"/><path d="M4 6.5l8 6.25 8-6.25"/></svg>Email the committee</a></p>
+                    <ul class="people" id="committee-table">
+                        <li class="people__item"><span class="people__name">Mike Kirrage</span><span class="people__role">League Chairman</span></li>
+                        <li class="people__item"><span class="people__name">Clare Sabourn</span><span class="people__role">League Secretary</span></li>
+                        <li class="people__item"><span class="people__name">Jackie Moran</span><span class="people__role">Treasurer</span></li>
+                        <li class="people__item"><span class="people__name">Warren Grantham</span><span class="people__role">Competitions Secretary</span></li>
+                    </ul>
+                </div>
+            </section>
         </div>
-    </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-        
-        // DOM Elements
-        const loginModal = document.getElementById('login-modal');
-        const openLoginButton = document.getElementById('open-login-modal');
-        const closeModalButton = document.querySelector('.close');
-        const loginForm = document.getElementById('login-form');
-        const loginSpinner = document.getElementById('login-spinner');
-        const loginError = document.getElementById('login-error');
-        const logoutButton = document.getElementById('logout-button');
-        const loginRequiredNotice = document.getElementById('login-required-notice');
-        const loggedInNotice = document.getElementById('logged-in-notice');
-        
-        // Check if user is logged in on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            checkLogin();
-            
-            // Open login modal
-            openLoginButton.addEventListener('click', function() {
-                loginModal.style.display = 'block';
-                document.getElementById('username').focus();
-            });
-            
-            // Close login modal when clicking X
-            closeModalButton.addEventListener('click', function() {
-                loginModal.style.display = 'none';
-                resetLoginForm();
-            });
-            
-            // Close login modal when clicking outside
-            window.addEventListener('click', function(event) {
-                if (event.target === loginModal) {
-                    loginModal.style.display = 'none';
-                    resetLoginForm();
-                }
-            });
-            
-            // Logout button functionality
-            logoutButton.addEventListener('click', function() {
-                localStorage.removeItem('captainLoggedIn');
-                localStorage.removeItem('captainData');
-                checkLogin();
-            });
-            
-            // Login form submission
-            loginForm.addEventListener('submit', async function(e) {
-                e.preventDefault();
-                
-                const username = document.getElementById('username').value;
-                const password = document.getElementById('password').value;
-                
-                if (!username || !password) {
-                    showLoginError('Please enter both username and password');
-                    return;
-                }
-                
-                try {
-                    showLoading(true);
-                    hideLoginError();
-                    
-                    const result = await postApi('login', { username, password });
-                    
-                    if (result && result.success) {
-                        // Store login state in localStorage
-                        localStorage.setItem('captainLoggedIn', 'true');
-                        localStorage.setItem('captainData', JSON.stringify(result.captain));
-                        
-                        // Close modal and update UI
-                        loginModal.style.display = 'none';
-                        resetLoginForm();
-                        checkLogin();
-                    } else {
-                        const errorMsg = result ? (result.error || 'Invalid username or password') : 'Login failed. Please try again.';
-                        showLoginError(errorMsg);
-                    }
-                } catch (error) {
-                    console.error('Login error:', error);
-                    showLoginError('An error occurred during login. Please try again.');
-                } finally {
-                    showLoading(false);
-                }
-            });
-        });
-        
-        // Check login state and update UI
-        function checkLogin() {
-            const isLoggedIn = localStorage.getItem('captainLoggedIn') === 'true';
-            
-            if (isLoggedIn) {
-                // Show secretary phone numbers and hide placeholders
-                document.querySelectorAll('.phone-hidden').forEach(element => {
-                    element.style.display = 'table-cell';
-                });
-                
-                document.querySelectorAll('.phone-placeholder').forEach(element => {
-                    element.style.display = 'none';
-                });
-                
-                // Show logged-in notice and hide login notice
-                loginRequiredNotice.classList.add('hidden');
-                loggedInNotice.classList.remove('hidden');
-                
-                // Get captain data if available
-                const captainData = localStorage.getItem('captainData');
-                if (captainData) {
-                    try {
-                        const captain = JSON.parse(captainData);
-                        console.log('Logged in as captain for team:', captain.team_name);
-                    } catch (e) {
-                        console.error('Error parsing captain data');
-                    }
-                }
-            } else {
-                // Hide phone numbers and show placeholders
-                document.querySelectorAll('.phone-hidden').forEach(element => {
-                    element.style.display = 'none';
-                });
-                
-                document.querySelectorAll('.phone-placeholder').forEach(element => {
-                    element.style.display = 'table-cell';
-                });
-                
-                // Show login notice and hide logged-in notice
-                loginRequiredNotice.classList.remove('hidden');
-                loggedInNotice.classList.add('hidden');
-            }
-        }
-        
-        // Reset login form
-        function resetLoginForm() {
-            loginForm.reset();
-            hideLoginError();
-            showLoading(false);
-        }
-        
-        // Show/hide loading spinner
-        function showLoading(show) {
-            loginSpinner.style.display = show ? 'block' : 'none';
-        }
-        
-        // Show login error message
-        function showLoginError(message) {
-            loginError.textContent = message;
-            loginError.style.display = 'block';
-        }
-        
-        // Hide login error message
-        function hideLoginError() {
-            loginError.style.display = 'none';
-        }
-        
-        // API functions
-        async function postApi(endpoint, data) {
-            try {
-                const response = await fetch(`${API_URL}?endpoint=${endpoint}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                
-                const responseText = await response.text();
-                
-                try {
-                    return JSON.parse(responseText);
-                } catch (parseError) {
-                    console.error('JSON Parse Error:', parseError);
-                    console.error('Response text:', responseText);
-                    return { success: false, error: 'Invalid response from server' };
-                }
-            } catch (error) {
-                console.error('API Error:', error);
-                return { success: false, error: error.message };
-            }
-        }
-    </script>    <script>
     (function() {
+        // Venues and teams come from api.php, so admins can change them
+        // without touching this page. Secretary phone numbers are not shown
+        // (GDPR); venue numbers are public business numbers.
+        const DIVISIONS = [['premier', 'Premier Division'], ['a', 'A Division']];
+
         function escHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+        // A number a phone can dial: drops an extension ("ext 2", "x2") and
+        // the "(0)" in "+44 (0)1293...", then everything but digits and +
+        function telHref(phone) {
+            const number = String(phone).split(/\s*(?:ext\.?|extension|x)\s*\d/i)[0]
+                .replace(/^\s*\+\s*44\s*\(0\)/, '+44');
+            return 'tel:' + number.replace(/[^0-9+]/g, '');
+        }
+
+        // Keep a UK postcode on one line ("RH10 5EJ" never splits), in capitals
+        function keepPostcode(html) {
+            return html.replace(/\b([A-Z]{1,2}[0-9][A-Z0-9]?) ([0-9][A-Z]{2})\b/gi,
+                (m, outward, inward) => outward.toUpperCase() + '&nbsp;' + inward.toUpperCase());
+        }
+
+        function mapHref(name, address) {
+            return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ', ' + address);
+        }
+
+        function stateHtml(kind, message) {
+            const retry = kind === 'error' ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>' : '';
+            return `<div class="state state--${kind}" role="${kind === 'error' ? 'alert' : 'status'}"><p>${message}</p>${retry}</div>`;
+        }
+
+        function venueCard(v, teams) {
+            const name = v.venue_name || '';
+            const address = String(v.address || '').trim();
+            const phone = String(v.phone || '').trim();
+            const homeTeams = teams.filter(t => t.venue === name).map(t => t.team_name);
+            let html = `<article class="card venue"><h3 class="venue__name">${escHtml(name)}</h3>`;
+            if (address) {
+                html += `<p class="venue__address">${keepPostcode(escHtml(address))}</p>`
+                    + `<p class="venue__map-row"><a class="venue__map" href="${escHtml(mapHref(name, address))}" target="_blank" rel="noopener">`
+                    + '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>'
+                    + `Show on Google Maps<span class="visually-hidden">: ${escHtml(name)} (opens in a new tab)</span></a></p>`;
+            }
+            if (homeTeams.length) {
+                html += `<p class="venue__teams">Home venue of ${homeTeams.map(escHtml).join(', ')}</p>`;
+            }
+            html += '<span class="venue__spacer"></span>';
+            if (phone) {
+                html += `<a class="btn btn--secondary venue__call" href="${escHtml(telHref(phone))}">`
+                    + '<svg class="icon btn__icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 2.75h7a1.75 1.75 0 0 1 1.75 1.75v15a1.75 1.75 0 0 1-1.75 1.75h-7a1.75 1.75 0 0 1-1.75-1.75v-15A1.75 1.75 0 0 1 8.5 2.75z"/><path d="M11 18h2"/></svg>'
+                    + `Call ${escHtml(phone)}<span class="visually-hidden"> (${escHtml(name)})</span></a>`;
+            } else {
+                html += '<p class="venue__nophone">No phone number listed.</p>';
+            }
+            return html + '</article>';
+        }
+
+        function teamsCard(label, teams) {
+            const rows = teams.map(t => `
+                <tr>
+                    <th scope="row">${escHtml(t.team_name)}</th>
+                    <td data-label="Home venue">${escHtml(t.venue || 'Not listed')}</td>
+                    <td data-label="Secretary">${escHtml(t.secretary_name || 'Not listed')}</td>
+                </tr>`).join('');
+            return `
+                <div class="card card--flush teams-card">
+                    <div class="card__header"><h3 class="card__title">${label}</h3></div>
+                    <table class="table table--stack teams-table">
+                        <caption class="visually-hidden">${label} teams</caption>
+                        <thead><tr><th scope="col">Team</th><th scope="col">Home venue</th><th scope="col">Secretary</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>`;
+        }
+
         async function loadContactInfo() {
+            const venuesBox = document.getElementById('venues-list');
+            const teamsBox = document.getElementById('teams-list');
+            let j = null;
             try {
                 const r = await fetch('api.php?endpoint=contact-info', { credentials: 'same-origin' });
-                const j = await r.json();
-                if (!j || !j.success) return;
-                const authed = !!j.authed;
-
-                const vt = document.getElementById('venuesTbody');
-                if (vt) {
-                    vt.innerHTML = '';
-                    if (!j.venues || j.venues.length === 0) {
-                        vt.innerHTML = '<tr><td colspan="3" style="text-align:center;color:#757575;font-style:italic;padding:20px;">No venues recorded. An admin can add them from the Venues tab.</td></tr>';
-                    } else {
-                        j.venues.forEach(v => {
-                            const tr = document.createElement('tr');
-                            tr.innerHTML = '<td>' + escHtml(v.venue_name) + '</td>' +
-                                           '<td>' + escHtml(v.address || '') + '</td>' +
-                                           '<td class="col-phone">' + escHtml(v.phone || '') + '</td>';
-                            vt.appendChild(tr);
-                        });
-                    }
-                }
-
-                const tt = document.getElementById('teamsTbody');
-                if (tt) {
-                    tt.innerHTML = '';
-                    if (!j.teams || j.teams.length === 0) {
-                        tt.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#757575;font-style:italic;padding:20px;">No teams recorded yet.</td></tr>';
-                    } else {
-                        j.teams.forEach(t => {
-                            const tr = document.createElement('tr');
-                            // Phone numbers removed from team rows (GDPR). Venue
-                            // phone numbers in the Venue Information table above
-                            // are kept because they are public business numbers.
-                            tr.innerHTML = '<td>' + escHtml(t.team_name) + '</td>' +
-                                           '<td class="col-center">' + (t.division === 'premier' ? 'Premier' : 'A') + '</td>' +
-                                           '<td>' + escHtml(t.venue || '') + '</td>' +
-                                           '<td>' + escHtml(t.secretary_name || '') + '</td>';
-                            tt.appendChild(tr);
-                        });
-                    }
-                }
-
-                // Show / hide the "log in for phone numbers" notices based on auth.
-                var lr = document.getElementById('login-required-notice');
-                var li = document.getElementById('logged-in-notice');
-                if (lr) lr.style.display = authed ? 'none' : '';
-                if (li) li.style.display = authed ? '' : 'none';
+                j = await r.json();
             } catch (e) {
-                console.error('Failed to load contact info', e);
+                j = null;
+            }
+            if (!j || !j.success) {
+                if (venuesBox) venuesBox.innerHTML = stateHtml('error', 'Sorry, the venues could not be loaded just now.');
+                if (teamsBox) teamsBox.innerHTML = stateHtml('error', 'Sorry, the teams could not be loaded just now.');
+                return;
+            }
+            const venues = Array.isArray(j.venues) ? j.venues : [];
+            const teams = Array.isArray(j.teams) ? j.teams : [];
+
+            if (venuesBox) {
+                venuesBox.innerHTML = venues.length
+                    ? venues.map(v => venueCard(v, teams)).join('')
+                    : stateHtml('empty', 'No venues have been added yet.');
+            }
+            if (teamsBox) {
+                const groups = DIVISIONS
+                    .map(([key, label]) => [label, teams.filter(t => t.division === key)])
+                    .filter(([, list]) => list.length);
+                const others = teams.filter(t => !DIVISIONS.some(([key]) => key === t.division));
+                if (others.length) groups.push(['Other teams', others]);
+                teamsBox.innerHTML = groups.length
+                    ? groups.map(([label, list]) => teamsCard(label, list)).join('')
+                    : stateHtml('empty', 'No teams have been added yet.');
             }
         }
+
+        // "Try again" after a failed load. Keyboard focus moves to the list
+        // that was retried, which stays in place while it reloads.
+        document.addEventListener('click', function(e) {
+            const retry = e.target.closest && e.target.closest('#venues-list [data-retry], #teams-list [data-retry]');
+            if (!retry) return;
+            const box = retry.closest('#venues-list, #teams-list');
+            document.getElementById('venues-list').innerHTML = '<p class="state state--loading" role="status">Loading venues...</p>';
+            document.getElementById('teams-list').innerHTML = '<p class="state state--loading" role="status">Loading teams...</p>';
+            box.setAttribute('tabindex', '-1');
+            box.focus();
+            loadContactInfo();
+        });
+
         document.addEventListener('DOMContentLoaded', loadContactInfo);
     })();
     </script>

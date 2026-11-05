@@ -117,6 +117,12 @@
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://crawleydartsleague.com/winnershistory.html</loc>
+    <lastmod>2026-11-05</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
   
   <!-- Score submission/edit pages were removed; their functionality
        is now inside team-login.html which is intentionally noindex. -->

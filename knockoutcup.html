@@ -1,1463 +1,776 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CDL | Knockout Cup</title>
     <meta name="description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
-<meta property="og:title" content="Cup Results - Crawley Darts League">
-<meta property="og:description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
-    <title>Cup Results - Crawley Darts League</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+    <link rel="canonical" href="https://crawleydartsleague.com/knockoutcup.html">
+    <meta property="og:title" content="CDL | Knockout Cup">
+    <meta property="og:description" content="Knockout Cup results for the Crawley Darts League. View the latest cup match scores and progression for both Premier and A Divisions.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://crawleydartsleague.com/knockoutcup.html">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <link rel="stylesheet" href="cup-draw.css?v=2">
+    <style>
+        /* Knockout Cup page only. The match cards, round headings, status,
+           winner banner and the list of other cups come from cup-draw.css,
+           so the Knockout Cup looks like the other cup pages. */
+        body.page-knockoutcup .ko-body:focus {
+            outline-offset: -3px;
         }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
+        body.page-knockoutcup .ko-round + .ko-round {
+            margin-top: 2rem;
         }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
+        /* The date after the round name: "Quarter Final, Tue 3 Nov 2026" */
+        body.page-knockoutcup .ko-when {
+            color: var(--color-text-muted);
+            font-weight: 400;
         }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
+        body.page-knockoutcup .ko-today {
+            font-size: var(--text-sm);
+            vertical-align: 0.125em;
         }
-        /* Enhanced fixture card styles */
-        .fixture-card {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 15px !important;
-            border-bottom: 1px solid #eee !important;
-            transition: background 0.3s ease !important;
-            cursor: pointer !important;
-            position: relative !important;
+        /* One card to a row on phones, two from 48em, each only as tall as
+           itself (an opened card never stretches its neighbour) */
+        body.page-knockoutcup .ko-list {
+            grid-template-columns: minmax(0, 1fr);
         }
-        
-        .fixture-card:hover {
-            background: var(--light-gray) !important;
-        }
-        
-        .fixture-card:last-child {
-            border-bottom: none !important;
-        }
-        
-        .team-name.home {
-            text-align: left !important;
-            width: 40% !important;
-            padding-right: 10px !important;
-        }
-        
-        .team-name.away {
-            text-align: right !important;
-            width: 40% !important;
-            padding-left: 10px !important;
-            padding-right: 30px !important; /* Add space for the expand icon */
-        }
-        
-        .score {
-            font-weight: bold !important;
-            font-size: 1.2em !important;
-            padding: 5px 15px !important;
-            color: var(--primary) !important;
-            text-align: center !important;
-            width: 20% !important;
-            background-color: rgba(245, 245, 245, 0.5) !important;
-            border-radius: 4px !important;
-        }
-        
-        /* Cup round styles */
-        .cup-round-header {
-            background-color: var(--primary);
-            color: white;
-            padding: 12px 20px;
-            margin: 25px 0 15px;
-            text-align: center;
-            font-size: 1.3em;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Draw bracket styles */
-        .draw-bracket {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-            margin: 20px 0;
-        }
-
-        .bracket-round {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .round-title {
-            background: var(--primary);
-            color: white;
-            padding: 15px 20px;
-            font-weight: bold;
-            font-size: 1.2em;
-            text-align: center;
-        }
-
-        .round-matches {
-            padding: 20px;
-        }
-
-        .match-fixture {
-            display: flex;
-            align-items: center;
-            background: var(--light-gray);
-            border-radius: 6px;
-            margin-bottom: 15px;
-            padding: 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-        }
-
-        .match-fixture:hover {
-            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
-            transform: translateY(-1px);
-        }
-
-        .match-fixture:last-child {
-            margin-bottom: 0;
-        }
-
-        .fixture-teams {
-            flex: 1;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-right: 20px;
-        }
-
-        .team-slot {
-            font-weight: 500;
-            color: var(--primary);
-            padding: 8px 15px;
-            background: white;
-            border-radius: 4px;
-            border: 2px solid var(--medium-gray);
-            min-width: 150px;
-            text-align: center;
-        }
-
-        .team-slot.qualified {
-            border-color: var(--primary);
-            background: var(--primary);
-            color: white;
-        }
-
-        .match-vs {
-            font-weight: bold;
-            color: var(--dark-gray);
-            margin: 0 15px;
-        }
-
-        .match-info {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            min-width: 200px;
-        }
-
-        .match-date {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 5px;
-        }
-
-        .match-venue {
-            font-size: 0.9em;
-            color: var(--dark-gray);
-            font-style: italic;
-        }
-
-        .match-time {
-            font-size: 0.85em;
-            color: var(--dark-gray);
-            margin-top: 2px;
-        }
-
-        .match-result {
-            background: var(--secondary);
-            color: white;
-            padding: 8px 15px;
-            border-radius: 4px;
-            font-weight: bold;
-            min-width: 80px;
-            text-align: center;
-        }
-
-        /* Responsive bracket layout */
-        @media (max-width: 768px) {
-            .match-fixture {
-                flex-direction: column;
-                gap: 15px;
-            }
-
-            .fixture-teams {
-                flex-direction: column;
-                gap: 10px;
-                width: 100%;
-                padding-right: 0;
-            }
-
-            .team-slot {
-                min-width: 120px;
-            }
-
-            .match-info {
-                align-items: center;
-                min-width: auto;
-                text-align: center;
-            }
-        }
-
-        /* Upcoming matches section */
-        .upcoming-matches {
-            margin-top: 30px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .upcoming-header {
-            background: var(--secondary);
-            color: white;
-            padding: 15px 20px;
-            font-weight: bold;
-            font-size: 1.2em;
-            text-align: center;
-        }
-
-        .upcoming-list {
-            padding: 20px;
-        }
-
-        .upcoming-match {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 15px;
-            border-bottom: 1px solid var(--light-gray);
-            background: #fafafa;
-            margin-bottom: 10px;
-            border-radius: 6px;
-        }
-
-        .upcoming-match:last-child {
-            border-bottom: none;
-            margin-bottom: 0;
-        }
-
-        .upcoming-teams {
-            font-weight: 500;
-            color: var(--primary);
-        }
-
-        .upcoming-details {
-            text-align: right;
-            font-size: 0.9em;
-            color: var(--dark-gray);
-        }
-
-        /* Tournament Bracket Styles */
-        .knockout-cup-brackets {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 40px;
-        }
-
-        .division-bracket {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .division-header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-
-        .division-header h2 {
-            margin: 0;
-            font-size: 1.8em;
-            font-weight: bold;
-        }
-
-        .tournament-bracket {
-            padding: 30px 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .bracket-round {
-            position: relative;
-        }
-
-        .round-header {
-            background: var(--secondary);
-            color: white;
-            padding: 12px 20px;
-            font-weight: bold;
-            font-size: 1.2em;
-            text-align: center;
-            border-radius: 6px;
-            margin-bottom: 20px;
-        }
-
-        .matches {
-            display: grid;
-            gap: 20px;
-        }
-
-        .bracket-round:first-child .matches {
-            grid-template-columns: repeat(4, 1fr);
-            gap: 15px;
-        }
-
-        .bracket-round:nth-child(2) .matches {
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .bracket-round:last-child .matches {
-            max-width: 400px;
-            margin: 0 auto;
-        }
-
-        .match {
-            background: var(--light-gray);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-        }
-
-        .match:hover {
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            transform: translateY(-2px);
-        }
-
-        .final-match {
-            border: 2px solid var(--secondary);
-            background: linear-gradient(135deg, #f8f9ff, var(--light-gray));
-        }
-
-        .team {
-            background: white;
-            padding: 12px 16px;
-            margin: 8px 0;
-            border-radius: 6px;
-            font-weight: 500;
-            color: var(--primary);
-            text-align: center;
-            border: 2px solid var(--medium-gray);
-            transition: all 0.3s ease;
-        }
-
-        .team.placeholder {
-            background: #f0f0f0;
-            color: var(--dark-gray);
-            font-style: italic;
-            border-color: #ddd;
-        }
-
-        .vs {
-            text-align: center;
-            font-weight: bold;
-            color: var(--secondary);
-            font-size: 1.1em;
-            margin: 10px 0;
-        }
-
-        .winner-slot {
-            background: var(--primary);
-            color: white;
-            padding: 10px 16px;
-            margin-top: 15px;
-            border-radius: 6px;
-            text-align: center;
-            font-weight: bold;
-            font-size: 0.9em;
-        }
-
-        .winner-slot.champion {
-            background: linear-gradient(135deg, #FFD700, #FFA500);
-            color: #333;
-            font-size: 1.1em;
-            padding: 15px 20px;
-            box-shadow: 0 4px 8px rgba(255, 215, 0, 0.3);
-        }
-
-        .venue-line {
-            margin-top: 8px;
-            text-align: center;
-            font-size: 0.8em;
-            color: var(--dark-gray);
-        }
-
-        .venue-line a {
-            color: inherit;
+        body.page-knockoutcup .ko-date {
+            color: var(--color-text-muted);
+            font-weight: 600;
             white-space: nowrap;
         }
-
-        /* Bracket connections (optional visual enhancement) */
-        .bracket-round:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            bottom: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 15px;
-            background: var(--medium-gray);
+        body.page-knockoutcup .ko-status {
+            margin: 0.5rem 0.25rem 0;
         }
-
-        /* Responsive Tournament Bracket */
-        @media (max-width: 1200px) {
-            .bracket-round:first-child .matches {
-                grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
-            }
+        /* The home team's venue: its name, then Call and Map, on one line
+           where there is room */
+        body.page-knockoutcup .venue-line {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            margin: 0.375rem 0 0;
+            padding: 0 0.25rem;
+            font-size: var(--text-sm);
+            line-height: 1.4;
         }
-
-        @media (max-width: 768px) {
-            .knockout-cup-brackets {
-                padding: 15px;
-                gap: 30px;
-            }
-
-            .tournament-bracket {
-                padding: 20px 15px;
-                gap: 25px;
-            }
-
-            .bracket-round:first-child .matches,
-            .bracket-round:nth-child(2) .matches {
-                grid-template-columns: 1fr;
-            }
-
-            .match {
-                padding: 15px;
-            }
-
-            .division-header h2 {
-                font-size: 1.5em;
-            }
-
-            .round-header {
-                font-size: 1.1em;
-                padding: 10px 15px;
-            }
-
-            .team {
-                padding: 10px 12px;
-                font-size: 0.9em;
-            }
-
-            .winner-slot {
-                padding: 8px 12px;
-                font-size: 0.8em;
-            }
-
-            .winner-slot.champion {
-                font-size: 1em;
-                padding: 12px 16px;
-            }
+        body.page-knockoutcup .ko-venue {
+            margin: 0.375rem 1rem 0.375rem 0;
         }
-
-        @media (max-width: 480px) {
-            .division-header h2 {
-                font-size: 1.3em;
-            }
-
-            .team {
-                padding: 8px 10px;
-                font-size: 0.85em;
-            }
-
-            .vs {
-                font-size: 1em;
-                margin: 8px 0;
-            }
+        body.page-knockoutcup .ko-venue__label {
+            color: var(--color-text-muted);
         }
-        
-        /* Date header styles */
-        .results-date-header {
-            background: var(--light-gray);
-            padding: 10px 15px;
-            margin: 15px 0 10px;
-            border-radius: 5px;
-            font-size: 1.1em;
-            color: var(--primary);
-            border-left: 4px solid var(--secondary);
+        /* The street and postcode on their own line under the venue's name */
+        body.page-knockoutcup .ko-venue__address {
+            display: block;
         }
-        
-        /* Expandable section styles */
-        .fixture-card .expand-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 1.2em;
-            transition: transform 0.3s ease;
+        body.page-knockoutcup .venue-line .icon-link {
+            margin-right: 1.25rem;
         }
-        
-        .fixture-card.expanded .expand-icon {
-            transform: translateY(-50%) rotate(180deg);
+        body.page-knockoutcup .venue-line .icon-link:last-child {
+            margin-right: 0;
         }
-        
-        .match-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-            background-color: #f9f9f9;
-            border-left: 3px solid var(--primary);
-            margin: 0 5px 0 20px;
+        /* A played match opens to show its games: the whole card can be
+           clicked, and the button is the way in by keyboard */
+        body.page-knockoutcup .ko-card--done {
+            cursor: pointer;
         }
-        
-        .match-details.expanded {
-            max-height: 2000px;
-            margin-bottom: 15px;
+        body.page-knockoutcup .ko-toggle {
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 0.5rem;
         }
-        
-        .match-details-content {
-            padding: 15px;
+        body.page-knockoutcup .ko-toggle__icon {
+            margin-left: 0.5rem;
+            transition: transform var(--duration) var(--ease);
         }
-        
-        .match-header {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
+        body.page-knockoutcup .ko-toggle[aria-expanded="true"] .ko-toggle__icon {
+            transform: rotate(180deg);
         }
-        
-        .player-match {
+        body.page-knockoutcup .match-details {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.75rem 0.75rem;
+            border-radius: var(--radius-md);
+            background: var(--navy-50);
+            cursor: auto;
+        }
+        body.page-knockoutcup .match-details:focus {
+            outline-offset: -3px;
+        }
+        body.page-knockoutcup .match-details .state {
+            padding-left: 2rem;
+            padding-right: 0;
+        }
+        body.page-knockoutcup .match-details .state::before {
+            left: 0;
+        }
+        body.page-knockoutcup .ko-details__title {
+            margin: 0.75rem 0 0.125rem;
+            color: var(--color-heading);
+            font-size: var(--text-md);
+            line-height: var(--leading-snug);
+        }
+        body.page-knockoutcup .ko-details__none {
+            padding-top: 0.75rem;
+            color: var(--color-text-muted);
+        }
+        body.page-knockoutcup .ko-stats {
+            list-style: none;
+        }
+        body.page-knockoutcup .ko-stats li {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dotted #eee;
+            padding: 0.5rem 0;
+            border-top: 1px solid var(--color-divider);
+            font-size: var(--text-sm);
         }
-        
-        .player-match:last-child {
-            border-bottom: none;
+        body.page-knockoutcup .ko-stats li:first-child {
+            border-top: 0;
         }
-        
-        .player-match .home-player {
-            flex: 2;
-            text-align: left;
-            padding-right: 5px;
+        body.page-knockoutcup .ko-stats__value {
+            margin-left: 1rem;
+            color: var(--navy-900);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
-        
-        .player-match .away-player {
-            flex: 2;
-            text-align: right;
-            padding-left: 5px;
+        body.page-knockoutcup .ko-wrap + .section {
+            margin-top: 2.5rem;
         }
-        
-        .player-match .match-score {
-            flex: 1;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .stats-section {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
-        
-        .stats-section h4 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        
-        .stats-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
-        
-        .player-name {
-            flex: 3;
-        }
-        
-        .stat-value {
-            flex: 1;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .loading-indicator {
-            text-align: center;
-            padding: 20px;
-            color: var(--primary);
-            font-style: italic;
-        }
-        
-        .error-message {
-            color: #d32f2f;
-            text-align: center;
-            padding: 10px;
-            font-style: italic;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .fixture-card {
-                flex-direction: column !important;
-                text-align: center !important;
-                gap: 10px !important;
-                padding-right: 30px !important;
-            }
-            
-            .team-name.home, .team-name.away {
-                text-align: center !important;
-                padding: 0 0 10px 0 !important; /* Add bottom padding on mobile */
-                width: 100% !important;
-            }
-            
-            .score {
-                width: 80% !important;
-            }
-            
-            .fixture-card .expand-icon {
-                top: 15px;
-                right: 15px;
-                transform: none;
-            }
-            
-            .fixture-card.expanded .expand-icon {
-                transform: rotate(180deg);
-            }
-            
-            .player-match {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
-            }
-            
-            .player-match .home-player,
-            .player-match .away-player {
-                text-align: center;
-                width: 100%;
-                padding: 3px 0;
-            }
-            
-            .match-details {
-                margin: 0;
+        @media (min-width: 48em) {
+            body.page-knockoutcup .ko-list {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+        /* Inside an opened match the games keep the phone's scoreboard look
+           at every width (each team on its own line, its score on the
+           right), so long trebles names are not squeezed into a narrow
+           column, and no tinted score box disappears on the tinted panel */
+        @media (min-width: 30em) {
+            body.page-knockoutcup .match-details .match__line {
+                grid-template-columns: minmax(0, 1fr) auto;
+                grid-template-areas: "home home-score" "away away-score";
+                grid-column-gap: 1rem;
+                column-gap: 1rem;
+                grid-row-gap: 0.25rem;
+                row-gap: 0.25rem;
+            }
+            body.page-knockoutcup .match-details .match__team--home {
+                padding-right: 0;
+                text-align: left;
+            }
+            body.page-knockoutcup .match-details .match__team--home.match__team--winner {
+                justify-content: flex-start;
+            }
+            body.page-knockoutcup .match-details .match__team--away {
+                padding-left: 0;
+            }
+            body.page-knockoutcup .match-details .match__score {
+                padding: 0;
+                background: none;
+                text-align: right;
+            }
+            body.page-knockoutcup .match-details .match__sep {
+                display: none;
+            }
+            body.page-knockoutcup .match-details .match--fixture .match__line {
+                display: block;
+            }
+            body.page-knockoutcup .match-details .match--fixture .match__team {
+                display: inline-block;
+            }
+            body.page-knockoutcup .match-details .match--fixture .match__sep {
+                display: inline-block;
+                margin: 0 0.25rem;
+                padding: 0;
+                background: none;
+                font-size: inherit;
+            }
+        }
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-    <nav class="nav">
-        <ul class="nav-menu">
-            <li><a href="index.html">Home</a></li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">League</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguetable.html">League Table</a></li>
-                    <li><a href="leagueresults.html">Results</a></li>
-                </ul>
-            </li>
-            
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Statistics</a>
-                <ul class="dropdown-menu">
-                    <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                    <li><a href="playerrankings.html">Player Rankings</a></li>
-                </ul>
-            </li>
-            
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Information</a>
-                <ul class="dropdown-menu">
-                    <li><a href="leaguefixtures.html">Fixtures</a></li>
-                    <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                    <li><a href="rules.html">League Rules</a></li>
-                    <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                    <li><a href="players.html">Players</a></li>
-                    <li><a href="winnershistory.html">Winners History</a></li>
-                </ul>
-            </li>
-            
-            <li><a href="admin-login.html">Admin Login</a></li>
-
-            
-            <li><a href="team-login.html">Team Login</a></li>
-    
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
-                </ul>
-            </li>
-        </ul>
-    </nav>
-
-    <div class="container">
-        <!-- Cup Results Page -->
-        <div id="cup-results" class="page">
-            <div class="card">
-                <div class="knockout-cup-brackets">
-                    <div id="premier-bracket" class="division-bracket">
-                        <div class="division-header"><h2>Premier Division</h2></div>
-                        <div id="premier-bracket-body" class="tournament-bracket">
-                            <p style="text-align:center;color:var(--dark-gray);padding:30px;">Loading bracket...</p>
-                        </div>
-                    </div>
-                    <div id="a-bracket" class="division-bracket">
-                        <div class="division-header"><h2>A Division</h2></div>
-                        <div id="a-bracket-body" class="tournament-bracket">
-                            <p style="text-align:center;color:var(--dark-gray);padding:30px;">Loading bracket...</p>
-                        </div>
-                    </div>
-                </div>
+<body class="page-knockoutcup">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
             </div>
         </div>
-    </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
 
-    <!-- Expandable match-details styling -->
-    <style>
-        .match.completed { cursor: pointer; }
-        .match.completed:hover .score-line { background: var(--secondary); }
-        .score-line {
-            background: var(--primary); color: white;
-            padding: 8px 14px; border-radius: 6px;
-            font-weight: 700; text-align: center;
-            margin: 8px 0; font-size: 1.05em;
-            transition: background 0.2s;
-        }
-        .score-line .expand-hint { font-size: 0.75em; font-weight: 400; opacity: 0.8; margin-left: 8px; }
-        .match-details { display: none; margin-top: 12px; padding: 12px; background: white;
-            border-radius: 6px; border: 1px solid var(--medium-gray); text-align: left; }
-        .match-details.expanded { display: block; }
-        .match-details h4 { color: var(--primary); margin: 8px 0 4px; font-size: 0.95em; }
-        .match-details .game-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--medium-gray); font-size: 0.9em; }
-        .match-details .game-row:last-child { border-bottom: none; }
-        .match-details .game-score { font-weight: 700; color: var(--primary); white-space: nowrap; padding: 0 10px; }
-        .empty-bracket { text-align: center; padding: 40px 20px; color: var(--dark-gray); font-style: italic; }
-        .empty-bracket strong { display: block; color: var(--primary); font-size: 1.1em; margin-bottom: 8px; }
-    </style>
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Knockout Cup</h1>
+                <p class="page-header__intro">The team cup: each round's matches, where they are played and the results. Choose a division.</p>
+            </div>
+
+            <div class="ko-wrap" id="knockout">
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
+                </div>
+                <p class="segmented-status" id="ko-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <section class="cd-section ko-division" id="premier-bracket" aria-labelledby="premier-title">
+                    <h2 class="visually-hidden" id="premier-title">Premier Division</h2>
+                    <div id="premier-bracket-body" class="ko-body"><noscript><p class="state state--empty">Turn on JavaScript to see the draw.</p></noscript></div>
+                </section>
+                <section class="cd-section ko-division" id="a-bracket" aria-labelledby="a-title" hidden>
+                    <h2 class="visually-hidden" id="a-title">A Division</h2>
+                    <div id="a-bracket-body" class="ko-body"></div>
+                </section>
+            </div>
+
+            <section class="section" aria-labelledby="other-cups-title">
+                <h2 class="section-title" id="other-cups-title">Other cups</h2>
+                <ul class="cd-more" role="list">
+                    <li><a class="cd-more-link" href="321cup.html">3-2-1 Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="singlescup.html">Singles Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="pairscup.html">Pairs Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="goodfridaycup.html">Good Friday Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="paulterrycup.html">Paul/Terry Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="memorialcup.html">Memorial Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="capseccup.html">Cap/Sec Cup<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                    <li><a class="cd-more-link" href="winnershistory.html">Winners History<svg class="icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M11 5l5 5-5 5"/></svg></a></li>
+                </ul>
+            </section>
+        </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Set up division buttons to load cup data
-    const divisionButtons = document.querySelectorAll('.division-toggle button');
+    (function () {
+        'use strict';
 
-    divisionButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            // Update active button styling
-            divisionButtons.forEach(btn => btn.classList.remove('active'));
-            this.classList.add('active');
-
-            // Load cup data based on division
-            const division = this.getAttribute('data-division');
-            loadknockoutcup(division);
-        });
-    });
-
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
-        // ===== Dynamic bracket rendering =====
+        // The team Knockout Cup: one draw per division from api.php
+        // (endpoint=cup-bracket), one division shown at a time. Each match card
+        // has its date and the home team's venue (tap to call, a map link);
+        // a played match opens to show its games (endpoint=match-details),
+        // loaded the first time it opens.
         const API = 'api.php';
+        const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+        const STORE_KEY = 'cdl-knockout-division';
+        const ROUND_ORDER = ['Last 64', 'Last 32', 'Last 16', 'Quarter Final', 'Semi Final', 'Final'];
+        const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const NBSP = String.fromCharCode(160); // keeps a date on one line
+        const ICON_PHONE = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8.5 2.75h7a1.75 1.75 0 0 1 1.75 1.75v15a1.75 1.75 0 0 1-1.75 1.75h-7a1.75 1.75 0 0 1-1.75-1.75v-15A1.75 1.75 0 0 1 8.5 2.75z"/><path d="M11 18h2"/></svg>';
+        const ICON_MAP = '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.5"/></svg>';
+        const ICON_CHEVRON = '<svg class="icon ko-toggle__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg>';
+        const TICK = '<svg class="icon match__tick" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>';
+        let current = 'premier';
 
-        function escHtml(s) {
-            return String(s == null ? '' : s).replace(/[&<>"']/g,
-                c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+        // Escape any API string before it goes into HTML (names, venues, rounds)
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        // "2026-11-03" -> that calendar day as a local Date (not midnight UTC),
+        // or null when it is not a real date
+        function parseDay(s) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ''));
+            if (!m) return null;
+            const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            return isNaN(d.getTime()) || d.getMonth() !== Number(m[2]) - 1 ? null : d;
+        }
+        function ymd(d) {
+            const two = n => (n < 10 ? '0' : '') + n;
+            return d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
+        }
+        // -1 before today, 0 today, 1 later (null when there is no date)
+        function fromToday(s) {
+            const d = parseDay(s);
+            if (!d) return null;
+            const day = ymd(d), today = ymd(new Date());
+            return day < today ? -1 : (day === today ? 0 : 1);
+        }
+        // A date as HTML: "Tue 3 Nov 2026" on one line, or "Today" on the day itself
+        function dayHtml(s) {
+            const d = parseDay(s);
+            if (!d) return '';
+            if (fromToday(s) === 0) return '<span class="badge badge--gold ko-today">Today</span>';
+            return esc([DAY_NAMES[d.getDay()], d.getDate(), MONTH_NAMES[d.getMonth()], d.getFullYear()].join(NBSP));
+        }
+
+        // Loading, empty and error messages in plain words. message is text
+        // written here; an error offers Try again, named by what it reloads
+        // ("draw" or "details"), as a reloaded box takes the button away
+        // before the click reaches the outer box.
+        function stateHtml(kind, message, retryName) {
+            const retry = kind === 'error' ? '<button class="btn btn--secondary state__action" type="button" data-retry="' + retryName + '">Try again</button>' : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + retry + '</div>';
+        }
+
+        // A number a phone can dial: drops an extension ("ext 2", "x2") and the
+        // "(0)" in "+44 (0)1293...", then everything but digits and +
+        function telHref(phone) {
+            const number = String(phone).split(/\s*(?:ext\.?|extension|x)\s*\d/i)[0]
+                .replace(/^\s*\+\s*44\s*\(0\)/, '+44');
+            return 'tel:' + number.replace(/[^0-9+]/g, '');
+        }
+        function mapHref(name, address) {
+            return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(name + ', ' + address);
+        }
+
+        // A side is a bye when it is empty or a team named "Bye" (the same test
+        // api.php uses when it makes the draw). A bye match has exactly one.
+        function isByeSide(name) {
+            return !name || /bye/i.test(name);
+        }
+        function isByeMatch(m) {
+            const h = isByeSide(m.home_team), a = isByeSide(m.away_team);
+            return (h || a) && !(h && a);
+        }
+
+        // The team that went through, or '' while the match is not decided
+        function winnerOf(m) {
+            if (m.status !== 'completed') return '';
+            if (isByeMatch(m)) return isByeSide(m.home_team) ? String(m.away_team) : String(m.home_team);
+            const h = Number(m.home_score), a = Number(m.away_score);
+            return h > a ? String(m.home_team || '') : (a > h ? String(m.away_team || '') : '');
         }
 
         async function loadBracket(division, containerId) {
             const container = document.getElementById(containerId);
+            if (!container) return;
+            const name = DIVISIONS[division];
+            container.innerHTML = stateHtml('loading', 'Loading the ' + name + ' draw...');
+            let data = null;
             try {
-                const res = await fetch(`${API}?endpoint=cup-bracket&division=${encodeURIComponent(division)}`);
-                const data = await res.json();
-                if (!data || !data.success) {
-                    container.innerHTML = '<div class="empty-bracket"><strong>Bracket unavailable</strong>' +
-                        escHtml(data && data.error ? data.error : 'Try refreshing the page.') + '</div>';
-                    return;
-                }
-                const matches = Array.isArray(data.matches) ? data.matches : [];
-                if (matches.length === 0) {
-                    container.innerHTML = '<div class="empty-bracket"><strong>No draw made yet</strong>' +
-                        'Once the league admin performs the draw, the bracket will appear here.</div>';
-                    return;
-                }
-                renderBracket(container, matches);
+                const res = await fetch(API + '?endpoint=cup-bracket&division=' + encodeURIComponent(division), { credentials: 'same-origin' });
+                data = await res.json();
             } catch (e) {
-                container.innerHTML = '<div class="empty-bracket"><strong>Bracket unavailable</strong>' +
-                    'Could not load the bracket right now.</div>';
+                data = null;
             }
+            if (!data || data.success !== true || !Array.isArray(data.matches)) {
+                container.innerHTML = stateHtml('error', 'Sorry, the ' + name + ' draw could not be loaded just now. Please check your connection.', 'draw');
+                return;
+            }
+            if (!data.matches.length) {
+                container.innerHTML = stateHtml('empty', 'There is no Knockout Cup draw for the ' + name + ' yet. Once the league admin makes the draw it will appear here.');
+                return;
+            }
+            try {
+                renderBracket(container, data.matches);
+            } catch (e) {
+                if (window.console) console.error('Knockout Cup draw could not be shown', e);
+                container.innerHTML = stateHtml('error', 'Sorry, the ' + name + ' draw could not be shown just now.', 'draw');
+            }
+        }
+
+        // ", Tue 3 Nov 2026" after the round name when all its matches share a date
+        function roundDate(r) {
+            const dates = r.matches.map(m => String(m.match_date || '').slice(0, 10));
+            if (!dates[0] || dates.some(d => d !== dates[0])) return '';
+            const day = dayHtml(dates[0]);
+            return day ? '<span class="ko-when">, ' + day + '</span>' : '';
         }
 
         function renderBracket(container, matches) {
-            // Group matches by cup_round preserving the order they came back in
-            const order = [];
-            const byRound = {};
-            matches.forEach(m => {
-                const r = m.cup_round || 'Round';
-                if (!byRound[r]) { byRound[r] = []; order.push(r); }
-                byRound[r].push(m);
+            const list = matches.filter(m => m && typeof m === 'object');
+            // Rounds in playing order; within a round, matches in the order they were drawn
+            const rounds = [];
+            const byName = {};
+            list.forEach(m => {
+                const name = String(m.cup_round || 'Round');
+                if (!byName[name]) {
+                    byName[name] = { name: name, matches: [] };
+                    rounds.push(byName[name]);
+                }
+                byName[name].matches.push(m);
             });
-
-            container.innerHTML = '';
-            order.forEach(roundName => {
-                const roundDiv = document.createElement('div');
-                roundDiv.className = 'bracket-round';
-                roundDiv.innerHTML = `<div class="round-header">${escHtml(roundName)}</div>
-                                      <div class="matches"></div>`;
-                const matchesDiv = roundDiv.querySelector('.matches');
-                byRound[roundName].forEach((m, i) => {
-                    matchesDiv.appendChild(buildMatchEl(m, roundName, i));
-                });
-                container.appendChild(roundDiv);
+            if (rounds.every(r => ROUND_ORDER.indexOf(r.name) >= 0)) {
+                rounds.sort((x, y) => ROUND_ORDER.indexOf(x.name) - ROUND_ORDER.indexOf(y.name));
+            }
+            rounds.forEach(r => r.matches.sort((x, y) => Number(x.match_id) - Number(y.match_id)));
+            // Matches are numbered through the draw, and an empty slot names the
+            // match whose winner will fill it ("Winner of match 1")
+            const info = {};
+            let no = 0;
+            rounds.forEach(r => r.matches.forEach(m => { info[m.match_id] = { no: ++no, feed: {} }; }));
+            list.forEach(m => {
+                const next = info[m.next_match_id];
+                if (next && (m.next_match_slot === 'home' || m.next_match_slot === 'away')) next.feed[m.next_match_slot] = info[m.match_id].no;
+            });
+            // Exact match: only the round named "Final" crowns the winner
+            const finals = byName.Final ? byName.Final.matches : [];
+            const champion = finals.length === 1 ? winnerOf(finals[0]) : '';
+            const open = list.some(m => m.status !== 'completed');
+            let html = '<div class="cd-ui"><div class="cd-head">'
+                + (open ? '<span class="cd-state cd-state-live">In progress</span>' : '<span class="cd-state cd-state-done">Complete</span>')
+                + '</div>';
+            if (champion) html += '<div class="cd-champ"><div class="cd-champ-name">' + esc('Winner: ' + champion) + '</div></div>';
+            rounds.forEach(r => {
+                html += '<div class="ko-round"><h3 class="cd-rhead">' + esc(r.name) + roundDate(r) + '</h3><div class="cd-list ko-list"></div></div>';
+            });
+            container.innerHTML = html + '</div>';
+            const lists = container.querySelectorAll('.ko-list');
+            rounds.forEach((r, i) => {
+                r.matches.forEach(m => lists[i].appendChild(buildMatchEl(m, r.name, info[m.match_id])));
             });
         }
 
-        function teamSlotHtml(name, isPlaceholder) {
-            if (!name || isPlaceholder) return '<div class="team placeholder">TBC</div>';
-            return `<div class="team">${escHtml(name)}</div>`;
-        }
-
-        // A "bye" match is one where one side is a NULL placeholder or
-        // the team_name contains "bye" (case-insensitive). These are
-        // auto-completed by the draw and shouldn't render as if a real
-        // match was played.
-        function isByeMatch(m) {
-            const h = m.home_team, a = m.away_team;
-            const isHomeBye = !h || /bye/i.test(h);
-            const isAwayBye = !a || /bye/i.test(a);
-            return (isHomeBye || isAwayBye) && !(isHomeBye && isAwayBye);
-        }
-
-        // The home team (drawn first) hosts the fixture at its venue. The
-        // venue's phone number is a tap-to-call link.
+        // The home team (drawn first) hosts the match at its venue: the venue's
+        // name and address, a tap-to-call link and a link to Google Maps
         function venueLineHtml(m) {
-            if (!m.home_team || !m.venue) return '<div class="venue-line">Venue TBC</div>';
-            let html = 'Venue: ' + escHtml(m.venue + (m.venue_address ? ', ' + m.venue_address : ''));
-            const tel = String(m.venue_phone || '').replace(/[^\d+]/g, '');
-            if (tel) html += ` (<a href="tel:${tel}">${escHtml(m.venue_phone)}</a>)`;
-            return `<div class="venue-line">${html}</div>`;
+            if (!m.home_team || !m.venue) return '';
+            const venue = String(m.venue);
+            const address = String(m.venue_address || '').trim();
+            const phone = String(m.venue_phone || '').trim();
+            let html = '<p class="venue-line"><span class="ko-venue"><span class="ko-venue__label">Venue:</span> ' + esc(venue)
+                + (address ? '<span class="ko-venue__address">' + esc(address) + '</span>' : '') + '</span>';
+            if (/\d/.test(phone)) {
+                html += '<a class="icon-link" href="' + esc(telHref(phone)) + '">' + ICON_PHONE + 'Call ' + esc(phone)
+                    + '<span class="visually-hidden"> (' + esc(venue) + ')</span></a>';
+            }
+            if (address) {
+                html += '<a class="icon-link" href="' + esc(mapHref(venue, address)) + '" target="_blank" rel="noopener">' + ICON_MAP + 'Map'
+                    + '<span class="visually-hidden">: ' + esc(venue) + ' (opens in a new tab)</span></a>';
+            }
+            return html + '</p>';
         }
 
-        function buildMatchEl(m, roundName, idx) {
+        function buildMatchEl(m, roundName, own) {
             const wrap = document.createElement('div');
-            // Exact match: "Quarter Final" and "Semi Final" must not get the
-            // gold champion styling.
+            // Exact match: "Quarter Final" and "Semi Final" must not get the Final's styling
             const isFinal = roundName === 'Final';
-            wrap.className = 'match' + (isFinal ? ' final-match' : '');
-
+            const label = 'Match ' + own.no;
             const homeName = m.home_team || null;
             const awayName = m.away_team || null;
             const isCompleted = m.status === 'completed';
-            const isScheduled = m.status === 'scheduled';
-            // Only a completed match can be a bye: a later-round match with
-            // one winner through so far is still waiting for its opponent.
-            const bye = isCompleted && isByeMatch(m);
 
-            // ----- Bye render: collapsed walkover card -----
-            if (bye) {
-                const advancingName = (homeName && !/bye/i.test(homeName)) ? homeName : awayName;
-                wrap.classList.add('bye-match');
-                wrap.style.background = '#fff8e1';
-                wrap.style.border = '2px dashed #ffb300';
-                wrap.innerHTML = `
-                    <div class="team" style="border-color:#ffb300;">${escHtml(advancingName || 'Unknown')}</div>
-                    <div class="vs" style="color:#e65100;">bye</div>
-                    <div class="team placeholder" style="background:#fff3e0;color:#e65100;border-color:#ffe082;">no opponent</div>
-                    <div class="winner-slot" style="background:#ef6c00;">Auto-advances</div>
-                `;
+            // Only a completed match can be a bye: a later-round match with one
+            // winner through so far is still waiting for its opponent
+            if (isCompleted && isByeMatch(m)) {
+                wrap.className = 'cd-byerow ko-bye';
+                wrap.innerHTML = '<span class="cd-mnum">' + esc(label) + '</span> <span class="cd-byetext">' + esc(winnerOf(m) + ': bye') + '</span>';
                 return wrap;
             }
 
-            // Determine winner display for played matches
-            let winnerLabel = 'TBC';
-            if (isCompleted) {
-                if (Number(m.home_score) > Number(m.away_score)) winnerLabel = `Winner: ${homeName || 'Home'}`;
-                else if (Number(m.away_score) > Number(m.home_score)) winnerLabel = `Winner: ${awayName || 'Away'}`;
-                else winnerLabel = 'Drawn';
+            const h = Number(m.home_score), a = Number(m.away_score);
+            const homeWon = isCompleted && h > a, awayWon = isCompleted && a > h;
+            const side = (name, feedNo, won, lost, score) => {
+                if (!name) return '<div class="cd-side cd-tbd"><span class="cd-who">' + esc(feedNo ? 'Winner of match ' + feedNo : 'To be confirmed') + '</span></div>';
+                return '<div class="cd-side' + (won ? ' cd-win' : (lost ? ' cd-lose' : '')) + '"><span class="cd-who"><span class="cd-n">' + esc(name) + '</span>'
+                    + (won ? '<span class="cd-sr"> (winner)</span>' : '') + '</span>'
+                    + (isCompleted ? ' <span class="cd-legs">' + esc(score) + '</span>' : '') + '</div>';
+            };
+            let status = '';
+            if (!isCompleted && homeName && awayName) {
+                status = fromToday(m.match_date) === -1
+                    ? '<span class="badge badge--warning">Awaiting result</span>'
+                    : '<span class="badge">To be played</span>';
+            } else if (isCompleted && !homeWon && !awayWon) {
+                status = '<span class="badge">Drawn</span>';
             }
-
-            wrap.innerHTML = `
-                ${teamSlotHtml(homeName, !homeName)}
-                ${isCompleted
-                    ? `<div class="score-line" data-match="${m.match_id}">${escHtml(homeName || 'Home')} ${m.home_score} - ${m.away_score} ${escHtml(awayName || 'Away')}<span class="expand-hint">▼ click to expand</span></div>`
-                    : '<div class="vs">vs</div>'}
-                ${teamSlotHtml(awayName, !awayName)}
-                ${venueLineHtml(m)}
-                ${isScheduled
-                    ? '<div class="winner-slot" style="background:#fff3e0;color:#e65100;">Awaiting result</div>'
-                    : (isCompleted
-                        ? `<div class="winner-slot${isFinal ? ' champion' : ''}">${escHtml(winnerLabel)}</div>`
-                        : '<div class="winner-slot" style="background:var(--medium-gray);color:var(--dark-gray);">Awaiting teams</div>')}
-                <div class="match-details" id="md-${m.match_id}"><p style="color:var(--dark-gray);text-align:center;">Loading details…</p></div>
-            `;
+            const date = dayHtml(m.match_date);
+            const id = 'md-' + String(m.match_id).replace(/[^0-9A-Za-z_-]/g, '');
+            wrap.className = 'cd-mcard ko-card' + (isFinal ? ' cd-final' : '') + (isCompleted ? ' cd-done ko-card--done' : '');
+            wrap.innerHTML = '<div class="cd-mhead"><span class="cd-mnum">' + esc(label) + '</span>' + (date ? ' <span class="ko-date">' + date + '</span>' : '') + '</div>'
+                + side(homeName, own.feed.home, homeWon, awayWon, h)
+                + side(awayName, own.feed.away, awayWon, homeWon, a)
+                + (status ? '<p class="ko-status">' + status + '</p>' : '')
+                + venueLineHtml(m)
+                + (isCompleted
+                    ? '<button class="btn btn--secondary ko-toggle" type="button" aria-expanded="false" aria-controls="' + id + '"><span class="ko-toggle__text">Show match details</span>' + ICON_CHEVRON + '</button>'
+                        + '<div class="match-details" id="' + id + '" hidden></div>'
+                    : '');
 
             if (isCompleted) {
-                wrap.classList.add('completed');
-                const scoreEl = wrap.querySelector('.score-line');
+                const button = wrap.querySelector('.ko-toggle');
                 const detailEl = wrap.querySelector('.match-details');
-                wrap.addEventListener('click', async (e) => {
-                    // A tap on the venue's phone link dials; it doesn't toggle.
-                    if (e.target.closest('.match-details, .venue-line a')) return;
-                    const opened = detailEl.classList.toggle('expanded');
-                    const hint = scoreEl.querySelector('.expand-hint');
-                    if (hint) hint.textContent = opened ? '▲ click to collapse' : '▼ click to expand';
-                    if (opened && !detailEl.dataset.loaded) {
-                        await loadMatchDetails(m.match_id, detailEl);
-                        detailEl.dataset.loaded = '1';
+                wrap.addEventListener('click', e => {
+                    // Try again inside the details: keyboard focus waits on the panel (the button goes away)
+                    if (e.target.closest('[data-retry="details"]')) {
+                        detailEl.setAttribute('tabindex', '-1');
+                        detailEl.focus();
+                        loadMatchDetails(m, detailEl);
+                        return;
                     }
+                    // A tap on the venue's phone or map link dials or opens the map; it doesn't toggle.
+                    if (e.target.closest('.match-details, .venue-line a')) return;
+                    const opening = detailEl.hidden;
+                    detailEl.hidden = !opening;
+                    button.setAttribute('aria-expanded', opening ? 'true' : 'false');
+                    button.querySelector('.ko-toggle__text').textContent = opening ? 'Hide match details' : 'Show match details';
+                    if (opening && detailEl.getAttribute('data-loaded') !== 'true') loadMatchDetails(m, detailEl);
                 });
             }
             return wrap;
         }
 
-        async function loadMatchDetails(matchId, detailEl) {
-            try {
-                const res = await fetch(`${API}?endpoint=match-details&match_id=${matchId}`);
-                const d = await res.json();
-                if (!d || d.success === false) {
-                    detailEl.innerHTML = '<p style="color:#c62828;">Could not load match details.</p>';
-                    return;
-                }
-                let html = '';
-                // Cup format: trebles, singles and (at 4-4) the 1001 team game.
-                const cupLabels = { trebles: 'Trebles', singles: 'Singles', team1001: '1001 Team Game' };
-                ['trebles', 'singles', 'team1001'].forEach(type => {
-                    const games = (d.cupGames || []).filter(g => g.game_type === type);
-                    if (!games.length) return;
-                    html += `<h4>${cupLabels[type]}</h4>`;
-                    games.forEach(g => {
-                        const names = side => (g[side + '_players'] || []).map(p => escHtml(p.player_name)).join(', ');
-                        const score = type === 'team1001'
-                            ? (g.home_score > g.away_score ? 'W - L' : 'L - W')
-                            : `${g.home_score} - ${g.away_score}`;
-                        html += `<div class="game-row">
-                            <span>${type === 'team1001' ? '' : `Game ${g.game_no}: `}${names('home')}</span>
-                            <span class="game-score">${score}</span>
-                            <span>${names('away')}</span>
-                        </div>`;
-                    });
-                });
-                if ((d.doubles || []).length) {
-                    html += '<h4>Doubles</h4>';
-                    d.doubles.forEach((g, i) => {
-                        html += `<div class="game-row">
-                            <span>Game ${i + 1}: ${escHtml(g.home_player1_name)} & ${escHtml(g.home_player2_name)}</span>
-                            <span class="game-score">${g.home_score} - ${g.away_score}</span>
-                            <span>${escHtml(g.away_player1_name)} & ${escHtml(g.away_player2_name)}</span>
-                        </div>`;
-                    });
-                }
-                if ((d.singles || []).length) {
-                    html += '<h4>Singles</h4>';
-                    d.singles.forEach((g, i) => {
-                        html += `<div class="game-row">
-                            <span>Game ${i + 1}: ${escHtml(g.home_player_name)}</span>
-                            <span class="game-score">${g.home_score} - ${g.away_score}</span>
-                            <span>${escHtml(g.away_player_name)}</span>
-                        </div>`;
-                    });
-                }
-                if ((d.oneEighties || []).length) {
-                    html += '<h4>180s</h4>';
-                    d.oneEighties.forEach(o => {
-                        html += `<div class="game-row"><span>${escHtml(o.player_name)}</span><span class="game-score">${o.count}×</span></div>`;
-                    });
-                }
-                if ((d.highFinishes || []).length) {
-                    html += '<h4>High Finishes</h4>';
-                    d.highFinishes.forEach(h => {
-                        html += `<div class="game-row"><span>${escHtml(h.player_name)}</span><span class="game-score">${h.finish_value}</span></div>`;
-                    });
-                }
-                if (!html) html = '<p style="color:var(--dark-gray);text-align:center;">No individual game data recorded for this match.</p>';
-                detailEl.innerHTML = html;
-            } catch (e) {
-                detailEl.innerHTML = '<p style="color:#c62828;">Failed to load match details.</p>';
-            }
+        // ---------- match details ----------
+
+        const CUP_GAMES = [['trebles', 'Trebles'], ['singles', 'Singles'], ['team1001', '1001 team game']];
+
+        function names(list) {
+            const out = (Array.isArray(list) ? list : []).map(p => p && p.player_name).filter(Boolean).join(', ');
+            return out || 'Not recorded';
+        }
+        function both(a, b) {
+            return [a, b].filter(Boolean).join(' & ') || 'Not recorded';
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
+        // One game: a plain sentence for screen readers, the line itself hidden from
+        // them (home, score, away reads oddly aloud). Escapes every name.
+        function matchLine(g) {
+            const h = Number(g.homeScore) || 0, a = Number(g.awayScore) || 0;
+            const team = (name, side, won) => '<span class="match__team match__team--' + side + (won ? ' match__team--winner' : '') + '">'
+                + esc(name) + (won ? TICK : '') + '</span>';
+            const said = esc(g.home) + ' ' + h + ', ' + esc(g.away) + ' ' + a + '.'
+                + (h > a ? ' ' + esc(g.home) + ' won.' : (a > h ? ' ' + esc(g.away) + ' won.' : ' A draw.'));
+            return '<span class="visually-hidden">' + said + '</span>'
+                + '<span class="match__line" aria-hidden="true">' + team(g.home, 'home', h > a)
+                + '<span class="match__score match__score--home">' + h + '</span>'
+                + '<span class="match__sep">-</span>'
+                + '<span class="match__score match__score--away">' + a + '</span>'
+                + team(g.away, 'away', a > h) + '</span>';
+        }
+        // The 1001 team game has a winner, not a score
+        function teamGameLine(g) {
+            const h = Number(g.homeScore) || 0, a = Number(g.awayScore) || 0;
+            const team = (name, side, won) => '<span class="match__team match__team--' + side + (won ? ' match__team--winner' : '') + '">'
+                + esc(name) + (won ? TICK : '') + '</span>';
+            const said = esc(g.home) + ' versus ' + esc(g.away) + '.'
+                + (h > a ? ' ' + esc(g.home) + ' won.' : (a > h ? ' ' + esc(g.away) + ' won.' : ''));
+            return '<span class="visually-hidden">' + said + '</span>'
+                + '<span class="match__line" aria-hidden="true">' + team(g.home, 'home', h > a)
+                + '<span class="match__sep">v</span>' + team(g.away, 'away', a > h) + '</span>';
+        }
+        function gamesHtml(title, rows) {
+            return '<h4 class="ko-details__title">' + title + '</h4><ul class="match-list" role="list">'
+                + rows.map(r => '<li><div class="match match--sm' + (r.fixture ? ' match--fixture' : '') + '">' + r.html + '</div></li>').join('')
+                + '</ul>';
+        }
+        function statsHtml(title, rows) {
+            return '<h4 class="ko-details__title">' + title + '</h4><ul class="ko-stats" role="list">'
+                + rows.map(r => '<li><span class="ko-stats__name">' + esc(r[0]) + '</span><span class="ko-stats__value">' + esc(r[1]) + '</span></li>').join('')
+                + '</ul>';
+        }
+
+        // d: the match-details answer; m: the match from the draw (its two teams)
+        function detailsHtml(d, m) {
+            let html = '';
+            const cupGames = Array.isArray(d.cupGames) ? d.cupGames : [];
+            CUP_GAMES.forEach(pair => {
+                const type = pair[0];
+                const games = cupGames.filter(g => g && g.game_type === type);
+                if (!games.length) return;
+                html += gamesHtml(pair[1], games.map(g => {
+                    // The 1001 game is played by the whole team: it is shown with the team names
+                    if (type === 'team1001') return { html: teamGameLine({ home: m.home_team || 'Home team', away: m.away_team || 'Away team', homeScore: g.home_score, awayScore: g.away_score }), fixture: true };
+                    return { html: matchLine({ home: names(g.home_players), away: names(g.away_players), homeScore: g.home_score, awayScore: g.away_score }) };
+                }));
+            });
+            const doubles = Array.isArray(d.doubles) ? d.doubles : [];
+            if (doubles.length) {
+                html += gamesHtml('Doubles', doubles.map(g => ({ html: matchLine({
+                    home: both(g.home_player1_name, g.home_player2_name), away: both(g.away_player1_name, g.away_player2_name),
+                    homeScore: g.home_score, awayScore: g.away_score }) })));
+            }
+            const singles = Array.isArray(d.singles) ? d.singles : [];
+            if (singles.length) {
+                html += gamesHtml('Singles', singles.map(g => ({ html: matchLine({
+                    home: g.home_player_name || 'Not recorded', away: g.away_player_name || 'Not recorded',
+                    homeScore: g.home_score, awayScore: g.away_score }) })));
+            }
+            const oneEighties = Array.isArray(d.oneEighties) ? d.oneEighties : [];
+            if (oneEighties.length) html += statsHtml('180s', oneEighties.map(o => [o.player_name, Number(o.count) || 0]));
+            const finishes = Array.isArray(d.highFinishes) ? d.highFinishes : [];
+            if (finishes.length) html += statsHtml('High finishes', finishes.map(f => [f.player_name, Number(f.finish_value) || 0]));
+            return html || '<p class="ko-details__none">No game results were recorded for this match.</p>';
+        }
+
+        async function loadMatchDetails(m, detailEl) {
+            detailEl.setAttribute('data-loaded', 'true');
+            detailEl.innerHTML = stateHtml('loading', 'Loading the match details...');
+            let d = null;
+            try {
+                const res = await fetch(API + '?endpoint=match-details&match_id=' + encodeURIComponent(m.match_id), { credentials: 'same-origin' });
+                d = await res.json();
+            } catch (e) {
+                d = null;
+            }
+            if (!d || typeof d !== 'object' || d.success === false) {
+                // Forgotten, so Try again (or opening the card again) asks again
+                detailEl.removeAttribute('data-loaded');
+                detailEl.innerHTML = stateHtml('error', 'Sorry, the match details could not be loaded just now.', 'details');
+                return;
+            }
+            detailEl.innerHTML = detailsHtml(d, m);
+        }
+
+        // ---------- the division switch ----------
+
+        function readSaved() {
+            try {
+                const v = window.localStorage.getItem(STORE_KEY);
+                return v === 'premier' || v === 'a' ? v : null;
+            } catch (e) {
+                return null;
+            }
+        }
+        function save(v) {
+            try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* not remembered: fine */ }
+        }
+        // #premier or #a in the address: a link straight to one division
+        function fromHash() {
+            const h = String(window.location.hash || '').replace(/^#/, '');
+            return h === 'premier' || h === 'a' ? h : null;
+        }
+
+        // Each division has its own box, so an answer that arrives after the
+        // viewer switched division still lands in the right place
+        function show(division) {
+            current = division === 'a' ? 'a' : 'premier';
+            document.querySelectorAll('#knockout .segmented [data-division]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.getAttribute('data-division') === current ? 'true' : 'false');
+            });
+            document.getElementById('ko-status').innerHTML = 'Showing: <strong>' + DIVISIONS[current] + '</strong>';
+            document.getElementById('premier-bracket').hidden = current !== 'premier';
+            document.getElementById('a-bracket').hidden = current !== 'a';
+        }
+
+        function init() {
+            document.querySelectorAll('#knockout .segmented [data-division]').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const division = e.currentTarget.getAttribute('data-division'); // currentTarget: the button holds a tick icon
+                    if (division === current) return;
+                    save(division);
+                    try {
+                        window.history.replaceState(window.history.state, '', '#' + division);
+                    } catch (err) {
+                        // Some embedded browsers refuse replaceState; the switch still works
+                    }
+                    show(division);
+                });
+            });
+            // Try again after a failed load: keyboard focus waits on the box while it reloads
+            Object.keys(DIVISIONS).forEach(division => {
+                const body = document.getElementById(division + '-bracket-body');
+                body.addEventListener('click', e => {
+                    if (!e.target.closest('[data-retry="draw"]')) return;
+                    body.setAttribute('tabindex', '-1');
+                    body.focus();
+                    loadBracket(division, division + '-bracket-body');
+                });
+            });
+            window.addEventListener('hashchange', () => {
+                const wanted = fromHash();
+                if (wanted && wanted !== current) show(wanted);
+            });
+            show(fromHash() || readSaved() || 'premier');
             loadBracket('premier', 'premier-bracket-body');
             loadBracket('a', 'a-bracket-body');
-        });
+        }
+
+        init();
+    })();
     </script>
 </body>
 </html>

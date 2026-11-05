@@ -4,637 +4,523 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CDL | Player Rankings</title>
+    <meta name="description" content="Singles rankings for the Crawley Darts League: every Premier and A Division player's league singles results and points this season.">
+    <link rel="canonical" href="https://crawleydartsleague.com/playerrankings.html">
+    <meta property="og:title" content="CDL | Player Rankings">
+    <meta property="og:description" content="Singles rankings for the Crawley Darts League: every Premier and A Division player's league singles results and points this season.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
     <style>
-        :root {
-            --primary: #1a237e;
-            --secondary: #3949ab;
-            --light-gray: #f5f5f5;
-            --medium-gray: #e0e0e0;
-            --dark-gray: #757575;
-            --card-bg: #ffffff;
-            --row-alt: rgba(0, 0, 0, 0.03);
-            --win-bg: rgba(76, 175, 80, 0.1);
-            --loss-bg: rgba(244, 67, 54, 0.1);
+        /* Player Rankings page only. Phones (below 48em) get a ranked list,
+           wider screens a full table. Both are built from the same rows and
+           CSS shows one of them. */
+        body.page-playerrankings .rankings-layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            grid-gap: 1.5rem;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+        body.page-playerrankings .rankings-card__body {
+            border-top: 1px solid var(--color-divider);
+        }
+        /* Focus rests on the list while it reloads after "Try again"; the
+           ring sits inside so the card's rounded edge never cuts it */
+        body.page-playerrankings .rankings-card__body:focus {
+            outline-offset: -3px;
         }
 
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-gray);
+        /* Phones: rank, the name with the team and "Played 5, won 5, lost 0"
+           underneath, the points on the right (the home page's list look) */
+        body.page-playerrankings .rank-list__list {
+            list-style: none;
         }
-
-        .container {
-            padding: 15px;
-            max-width: 1200px;
-            margin: 0 auto;
+        body.page-playerrankings .rank-list__item + .rank-list__item {
+            border-top: 1px solid var(--color-divider);
         }
-
-        /* Landscape Notice Banner */
-        .landscape-notice {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background-color: #ff9800;
-            color: white;
-            text-align: center;
-            padding: 10px;
-            z-index: 9999;
+        body.page-playerrankings .rank-line {
+            display: grid;
+            grid-template-columns: 2.25rem minmax(0, 1fr) max-content;
+            grid-column-gap: 0.75rem;
+            column-gap: 0.75rem;
+            align-items: center;
+        }
+        body.page-playerrankings .rank-line__cue {
+            grid-column: 2 / -1;
+            margin-top: 0.125rem;
+            font-size: var(--text-sm);
+        }
+        body.page-playerrankings .rank-plain {
+            padding: 0.75rem var(--card-pad);
+        }
+        /* A ranked row opens to show that player's results. The whole row is
+           the button; the chevron follows the words instead of sitting at the
+           far right, so names keep their room on small phones. */
+        body.page-playerrankings .rank-row > .disclosure__summary {
+            padding: 0.75rem var(--card-pad);
+        }
+        body.page-playerrankings .rank-row > .disclosure__summary::after {
             display: none;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-
-        .notice-content {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+        body.page-playerrankings .rank-row__chevron {
+            width: 1rem;
+            height: 1rem;
+            margin: -0.125rem 0 0 0.25rem;
+            color: var(--color-link);
         }
-
-        .landscape-icon {
-            transform: rotate(90deg);
-            display: inline-block;
-            font-size: 1.5em;
+        body.page-playerrankings .rank-row > .disclosure__body {
+            padding-left: calc(var(--card-pad) + 3rem);
         }
-
-        .card {
-            background-color: var(--card-bg);
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-bottom: 20px;
-        }
-
-        .division-toggle {
-            display: flex;
-            margin-bottom: 20px;
-            overflow-x: auto;
-        }
-
-        .division-toggle button {
-            background: var(--light-gray);
-            border: none;
-            padding: 10px 16px;
-            cursor: pointer;
-            font-weight: bold;
-            color: var(--dark-gray);
-            transition: all 0.3s ease;
-        }
-
-        .division-toggle button:first-child {
-            border-radius: 4px 0 0 4px;
-        }
-
-        .division-toggle button:last-child {
-            border-radius: 0 4px 4px 0;
-        }
-
-        .division-toggle button.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        h2 {
-            color: var(--primary);
-            margin-top: 0;
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        /* Standard Table Styles */
-        .rankings-table {
+        /* The opened part: each result, how many times and the points */
+        body.page-playerrankings .rank-detail {
             width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-            font-size: 14px;
-            table-layout: fixed; /* Added for better column width control */
+            max-width: 22rem;
+            font-size: var(--text-sm);
+            font-variant-numeric: tabular-nums;
         }
-
-        .rankings-table th, 
-        .rankings-table td {
-            text-align: center;
-            padding: 10px 8px;
-            border-bottom: 1px solid var(--medium-gray);
-        }
-
-        /* Set specific widths for columns */
-        .rankings-table th:first-child, 
-        .rankings-table td:first-child {
-            width: 50px; /* Rank column */
-        }
-
-        .rankings-table th:nth-child(2), 
-        .rankings-table td:nth-child(2) {
-            width: auto; /* Player name column - flexible */
+        body.page-playerrankings .rank-detail th,
+        body.page-playerrankings .rank-detail td {
+            padding: 0.375rem 0;
+            border-bottom: 1px solid var(--grey-300);
+            font-weight: 400;
             text-align: left;
         }
-
-        .rankings-table th:nth-child(3), 
-        .rankings-table td:nth-child(3) {
-            width: 60px; /* Played column */
-        }
-
-        /* Score columns - make narrower and prevent wrapping */
-        .rankings-table th.score-col,
-        .rankings-table td.score-col {
-            width: 40px;
+        body.page-playerrankings .rank-detail .num {
+            padding-left: 1rem;
+            text-align: right;
             white-space: nowrap;
         }
-
-        /* Points column */
-        .rankings-table th:last-child, 
-        .rankings-table td:last-child {
-            width: 60px;
+        body.page-playerrankings .rank-detail thead th {
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+        body.page-playerrankings .rank-detail tfoot th,
+        body.page-playerrankings .rank-detail tfoot td {
+            border-bottom: 0;
+            font-weight: 700;
         }
 
-        .rankings-table th {
-            background-color: var(--light-gray);
-            font-weight: bold;
+        /* The players with no points yet sit behind a button */
+        body.page-playerrankings .rank-more {
+            padding: 0.75rem var(--card-pad);
+            border-top: 1px solid var(--color-divider);
+        }
+        body.page-playerrankings .rank-more__chevron {
+            transition: transform var(--duration) var(--ease);
+        }
+        body.page-playerrankings .rank-more__btn[aria-expanded="true"] .rank-more__chevron {
+            transform: rotate(180deg);
+        }
+        body.page-playerrankings .rank-rest {
+            border-top: 1px solid var(--color-divider);
         }
 
-        /* Alternating row colors for better readability */
-        .rankings-table tbody tr:nth-child(even) {
-            background-color: var(--row-alt);
-        }
-
-        .rankings-table td:nth-child(2) {
-            text-align: left;
-        }
-
-        .wins-header {
-            background-color: #4caf50; /* Green for wins */
-            color: #000000;
-            font-weight: bold;
-        }
-
-        .losses-header {
-            background-color: #f44336; /* Red for losses */
-            color: #000000;
-            font-weight: bold;
-        }
-
-        .win-score {
-            background-color: var(--win-bg);
-        }
-
-        .loss-score {
-            background-color: var(--loss-bg);
-        }
-
-        /* Preserve the win/loss colors even with alternating rows */
-        .rankings-table tbody tr:nth-child(even) td.win-score {
-            background-color: rgba(76, 175, 80, 0.15);
-        }
-
-        .rankings-table tbody tr:nth-child(even) td.loss-score {
-            background-color: rgba(244, 67, 54, 0.15);
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .league-only-note {
-            font-size: 0.8em;
-            font-weight: normal;
-            color: var(--secondary);
-            font-style: italic;
-            margin-left: 10px;
-        }
-
-        .points-system-tooltip {
-            position: relative;
-            display: inline-block;
-            cursor: help;
-            margin-left: 5px;
-            font-size: 0.8em;
-            color: #1a237e;
-        }
-
-        .tooltip-content {
-            visibility: hidden;
-            width: 250px;
-            background-color: #fff;
-            color: #333;
-            text-align: left;
-            border-radius: 6px;
-            padding: 10px;
-            position: absolute;
-            z-index: 1000;
-            top: 100%;
-            left: 50%;
-            margin-left: -125px;
-            margin-top: 10px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-            font-weight: normal;
-            font-style: normal;
-            font-size: 0.9em;
-        }
-
-        .points-system-tooltip:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        /* Mobile Card View Styles */
-        .player-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 15px;
-            padding: 15px;
-            position: relative;
-        }
-
-        /* Alternating card colors */
-        .player-card:nth-child(even) {
-            background-color: var(--row-alt);
-        }
-
-        .player-card .rank {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: var(--primary);
-            color: white;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
-        .player-card .name {
-            font-size: 18px;
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 5px;
-            padding-right: 35px; /* Space for rank */
-        }
-
-        .player-card .stats {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            border-top: 1px solid var(--light-gray);
-            padding-top: 10px;
-            margin-top: 5px;
-        }
-
-        .player-card .stat-item {
-            flex: 1 0 50%;
-            margin-bottom: 8px;
-            min-width: 120px;
-        }
-
-        .player-card .stat-label {
-            font-size: 12px;
-            color: var(--dark-gray);
-            display: block;
-        }
-
-        .player-card .stat-value {
-            font-size: 16px;
-            font-weight: bold;
-        }
-
-        .player-card .points {
-            background-color: #f5f5f5;
-            padding: 8px 12px;
-            border-radius: 4px;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .player-card .points .stat-value {
-            color: var(--primary);
-            font-size: 18px;
-        }
-
-        .stat-group {
-            display: flex;
-            flex-wrap: wrap;
-            margin-bottom: 10px;
-        }
-
-        .stat-group-label {
-            flex: 100%;
-            font-weight: bold;
-            margin-bottom: 5px;
-            padding: 4px 8px;
-            border-radius: 4px;
-            text-align: center;
-            color: white;
-            font-size: 14px;
-        }
-
-        /* Use the exact same colors as in the table for consistency */
-        .wins-label {
-            background-color: #4caf50; /* Green for wins - matches the table header */
-        }
-
-        .losses-label {
-            background-color: #f44336; /* Red for losses - matches the table header */
-        }
-
-        /* Win/Loss stat items in cards with consistent coloring */
-        .player-card .win-stat {
-            background-color: var(--win-bg);
-            border-radius: 4px;
-            padding: 4px;
-        }
-
-        .player-card .loss-stat {
-            background-color: var(--loss-bg);
-            border-radius: 4px;
-            padding: 4px;
-        }
-
-        /* Responsive Designs */
-        @media screen and (max-width: 991px) {
-            .rankings-table th, 
-            .rankings-table td {
-                padding: 8px 4px; /* Reduced horizontal padding */
-                font-size: 13px;
-            }
-            
-            /* Further reduce widths on smaller screens */
-            .rankings-table th.score-col,
-            .rankings-table td.score-col {
-                width: 32px;
-            }
-        }
-
-        /* Mobile Card View Trigger */
-        @media screen and (max-width: 767px) {
-            /* Hide standard tables on mobile */
-            .desktop-table {
-                display: none;
-            }
-
-            /* Show card view on mobile */
-            .mobile-cards {
-                display: block;
-            }
-
-            .card {
-                padding: 15px;
-            }
-
-            h2 {
-                font-size: 1.3rem;
-            }
-
-            .division-toggle button {
-                padding: 8px 12px;
-                font-size: 14px;
-            }
-
-            .league-only-note {
-                display: block;
-                margin: 5px 0 0 0;
-            }
-        }
-
-        /* Default show tables, hide cards */
-        .desktop-table {
-            display: table;
-        }
-
-        .mobile-cards {
+        /* Tablets and computers: the full table */
+        body.page-playerrankings .rank-table-wrap {
             display: none;
         }
+        body.page-playerrankings .rank-table .num {
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+        }
+        body.page-playerrankings .rank-table .rank-table__pos {
+            padding-left: var(--card-pad);
+        }
+        body.page-playerrankings .rank-table .rank-table__points,
+        body.page-playerrankings .rank-table .rank-table__more-cell {
+            padding-right: var(--card-pad);
+        }
+        body.page-playerrankings .rank-table__name,
+        body.page-playerrankings .rank-table__team {
+            display: block;
+        }
+        body.page-playerrankings .rank-table__team {
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+            font-weight: 400;
+        }
+        /* Wins and Losses: a coloured bar under each group heading, and the
+           same pale green or red behind its numbers */
+        body.page-playerrankings .rank-table thead .rank-table__group {
+            text-align: center;
+            box-shadow: inset 0 -4px 0 var(--green-600);
+        }
+        body.page-playerrankings .rank-table thead .rank-table__group--loss {
+            box-shadow: inset 0 -4px 0 var(--red-600);
+        }
+        body.page-playerrankings .rank-table tbody td.rank-table__win {
+            background: var(--green-50);
+        }
+        body.page-playerrankings .rank-table tbody td.rank-table__loss {
+            background: var(--red-50);
+        }
+        body.page-playerrankings .rank-table td.rank-table__points {
+            color: var(--navy-900);
+            font-weight: 700;
+        }
+        body.page-playerrankings .rank-table td.rank-table__none {
+            color: var(--color-text-muted);
+            text-align: center;
+        }
+        body.page-playerrankings .rank-table__rank {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2.25rem;
+            height: 2.25rem;
+            border-radius: var(--radius-pill);
+            font-weight: 700;
+        }
+        body.page-playerrankings .rank-table__top .rank-table__rank {
+            background: var(--gold-500);
+            color: var(--navy-950);
+        }
+        body.page-playerrankings .rank-table .rank-table__more-cell {
+            height: auto;
+            padding-top: 0.75rem;
+            padding-bottom: 0.75rem;
+            padding-left: var(--card-pad);
+            border-top: 1px solid var(--color-divider);
+            background: var(--white);
+        }
+        body.page-playerrankings .rank-table .rank-table__rest > tr:first-child > * {
+            border-top: 1px solid var(--color-divider);
+        }
 
-        /* Add top padding to container when notice is visible */
-        .container.with-notice {
-            padding-top: 60px;
+        /* Key */
+        body.page-playerrankings .rankings-key .key__term {
+            min-width: 3.75rem;
+            margin-right: 0.75rem;
+        }
+        body.page-playerrankings .rankings-key__note {
+            margin-top: 0.75rem;
+            color: var(--color-text-muted);
+            font-size: var(--text-sm);
+        }
+        /* Large text on a small screen (below 20em, such as 390px wide with
+           a 24px text size): the points move under the record, so names and
+           the opened results keep their room */
+        @media not all and (min-width: 20em) {
+            body.page-playerrankings .rank-line {
+                grid-template-columns: 2.25rem minmax(0, 1fr);
+            }
+            body.page-playerrankings .rank-line .list-ranked__value {
+                grid-column: 2;
+                margin-top: 0.25rem;
+                text-align: left;
+            }
+            body.page-playerrankings .rank-line .list-ranked__sub {
+                display: inline;
+                margin-left: 0.375rem;
+            }
+            body.page-playerrankings .rank-row > .disclosure__body {
+                padding-left: var(--card-pad);
+            }
+            body.page-playerrankings .rank-detail .num {
+                padding-left: 0.5rem;
+            }
+        }
+        @media (min-width: 30em) {
+            /* Wins down the left, losses down the right */
+            body.page-playerrankings .rankings-key .rankings-key__results {
+                grid-auto-flow: column;
+                grid-template-rows: repeat(3, auto);
+            }
+            body.page-playerrankings .rankings-key .rankings-key__results--a {
+                grid-template-rows: repeat(2, auto);
+            }
+        }
+        @media (min-width: 48em) {
+            body.page-playerrankings .rank-list {
+                display: none;
+            }
+            body.page-playerrankings .rank-table-wrap {
+                display: block;
+            }
+        }
+        @media (min-width: 64em) {
+            body.page-playerrankings .rank-table .num {
+                padding-left: 0.75rem;
+                padding-right: 0.75rem;
+            }
+            body.page-playerrankings .rank-table .rank-table__pos {
+                padding-left: var(--card-pad);
+            }
+            body.page-playerrankings .rank-table .rank-table__points {
+                padding-right: var(--card-pad);
+            }
+        }
+        /* Wide screens: the key beside the table, staying in view */
+        @media (min-width: 75em) {
+            body.page-playerrankings .rankings-layout {
+                grid-template-columns: minmax(0, 1fr) 20rem;
+                align-items: start;
+            }
+            body.page-playerrankings .rankings-key {
+                position: -webkit-sticky;
+                position: sticky;
+                top: 1rem;
+            }
+            body.page-playerrankings .rankings-key .key__list,
+            body.page-playerrankings .rankings-key .rankings-key__results {
+                grid-template-columns: minmax(0, 1fr);
+                grid-auto-flow: row;
+                grid-template-rows: none;
+            }
+            body.page-playerrankings .rankings-card__jump {
+                display: none;
+            }
+        }
+        /* Paper: the full table at any page width */
+        @media print {
+            body.page-playerrankings .rank-list,
+            body.page-playerrankings .rankings-card__jump {
+                display: none;
+            }
+            body.page-playerrankings .rank-table-wrap {
+                display: block;
+                overflow: visible;
+            }
+            body.page-playerrankings .rankings-key {
+                position: static;
+            }
         }
     </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-    <!-- Landscape mode notice -->
-    <div id="landscape-notice" class="landscape-notice">
-        <div class="notice-content">
-            <span class="landscape-icon">📱</span>
-            <strong>For better viewing of tables, please rotate your device to landscape mode</strong>
+<body class="page-playerrankings">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
+            </div>
         </div>
-    </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
 
-    <div class="container" id="main-container">
-        <div id="player-rankings" class="page">
-            <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Player Rankings</h1>
+                <p class="page-header__intro">Every player's league singles this season, ranked by points. Choose a division.</p>
+            </div>
+
+            <div id="rankings">
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
                 </div>
-                <h2>Player Rankings <span class="league-only-note">(Singles - League Games Only)</span> 
-                    <div class="points-system-tooltip" id="premier-tooltip">ⓘ
-                        <div class="tooltip-content">
-                            <strong>Premier Division Points:</strong>
-                            <div style="margin-top: 5px;">
-                                Win 3-0: 5 points<br>
-                                Win 3-1: 4 points<br>
-                                Win 3-2: 3 points<br>
-                                Loss 2-3: 2 points<br>
-                                Loss 1-3: 1 point<br>
-                                Loss 0-3: 0 points
-                            </div>
+                <p class="segmented-status" id="rankings-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <div class="rankings-layout">
+                    <section class="card card--flush rankings-card" aria-labelledby="rankings-title">
+                        <div class="card__header">
+                            <h2 class="card__title" id="rankings-title" data-division-name>Premier Division</h2>
+                            <p class="card__meta">League singles only, most points first. <a class="rankings-card__jump" href="#rankings-key">How points are worked out</a></p>
                         </div>
-                    </div>
-                    <div class="points-system-tooltip hidden" id="a-tooltip">ⓘ
-                        <div class="tooltip-content">
-                            <strong>A Division Points:</strong>
-                            <div style="margin-top: 5px;">
-                                Win 2-0: 3 points<br>
-                                Win 2-1: 2 points<br>
-                                Loss 1-2: 1 point<br>
-                                Loss 0-2: 0 points
-                            </div>
+                        <div class="rankings-card__body" id="rankings-list">
+                            <p class="state state--loading">Loading the rankings...</p>
                         </div>
-                    </div>
-                </h2>
-                
-                <!-- Premier Division Table (Desktop View) -->
-                <table id="premier-rankings-table" class="rankings-table desktop-table">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Player</th>
-                            <th>Team</th>
-                            <th>Played</th>
-                            <th colspan="3" class="wins-header">Wins</th>
-                            <th colspan="3" class="losses-header">Losses</th>
-                            <th>Points</th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th class="score-col">3-0</th>
-                            <th class="score-col">3-1</th>
-                            <th class="score-col">3-2</th>
-                            <th class="score-col">2-3</th>
-                            <th class="score-col">1-3</th>
-                            <th class="score-col">0-3</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="premier-rankings-body">
-                        <!-- Dynamic content will be loaded here -->
-                    </tbody>
-                </table>
-                
-                <!-- Premier Division Mobile Cards View -->
-                <div id="premier-rankings-cards" class="mobile-cards">
-                    <!-- Dynamic content will be loaded here -->
-                </div>
-                
-                <!-- A Division Table (Desktop View) -->
-                <table id="a-rankings-table" class="rankings-table desktop-table hidden">
-                    <thead>
-                        <tr>
-                            <th>Rank</th>
-                            <th>Player</th>
-                            <th>Team</th>
-                            <th>Played</th>
-                            <th colspan="2" class="wins-header">Wins</th>
-                            <th colspan="2" class="losses-header">Losses</th>
-                            <th>Points</th>
-                        </tr>
-                        <tr>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th></th>
-                            <th class="score-col">2-0</th>
-                            <th class="score-col">2-1</th>
-                            <th class="score-col">1-2</th>
-                            <th class="score-col">0-2</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="a-rankings-body">
-                        <!-- Dynamic content will be loaded here -->
-                    </tbody>
-                </table>
-                
-                <!-- A Division Mobile Cards View -->
-                <div id="a-rankings-cards" class="mobile-cards hidden">
-                    <!-- Dynamic content will be loaded here -->
+                    </section>
+
+                    <aside class="card key key--columns rankings-key" id="rankings-key" aria-labelledby="key-title">
+                        <h2 class="key__title" id="key-title">Key</h2>
+                        <dl class="key__list">
+                            <div class="key__item"><dt class="key__term">Pos</dt><dd class="key__desc">Position</dd></div>
+                            <div class="key__item"><dt class="key__term">Played</dt><dd class="key__desc">League singles played</dd></div>
+                        </dl>
+                        <dl class="key__list rankings-key__results" data-key="premier">
+                            <div class="key__item"><dt class="key__term">3-0</dt><dd class="key__desc">Won 3 legs to 0: 5 points</dd></div>
+                            <div class="key__item"><dt class="key__term">3-1</dt><dd class="key__desc">Won 3 legs to 1: 4 points</dd></div>
+                            <div class="key__item"><dt class="key__term">3-2</dt><dd class="key__desc">Won 3 legs to 2: 3 points</dd></div>
+                            <div class="key__item"><dt class="key__term">2-3</dt><dd class="key__desc">Lost 2 legs to 3: 2 points</dd></div>
+                            <div class="key__item"><dt class="key__term">1-3</dt><dd class="key__desc">Lost 1 leg to 3: 1 point</dd></div>
+                            <div class="key__item"><dt class="key__term">0-3</dt><dd class="key__desc">Lost 0 legs to 3: no points</dd></div>
+                        </dl>
+                        <dl class="key__list rankings-key__results rankings-key__results--a" data-key="a" hidden>
+                            <div class="key__item"><dt class="key__term">2-0</dt><dd class="key__desc">Won 2 legs to 0: 3 points</dd></div>
+                            <div class="key__item"><dt class="key__term">2-1</dt><dd class="key__desc">Won 2 legs to 1: 2 points</dd></div>
+                            <div class="key__item"><dt class="key__term">1-2</dt><dd class="key__desc">Lost 1 leg to 2: 1 point</dd></div>
+                            <div class="key__item"><dt class="key__term">0-2</dt><dd class="key__desc">Lost 0 legs to 2: no points</dd></div>
+                        </dl>
+                        <p class="rankings-key__note"><span data-key="premier">Premier Division singles are the best of 5 legs.</span><span data-key="a" hidden>A Division singles are the best of 3 legs.</span> Only league matches count, not cup matches. Players level on points are ordered by singles won.</p>
+                    </aside>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-        // Landscape notification management
-        function checkOrientation() {
-            const landscapeNotice = document.getElementById('landscape-notice');
-            const mainContainer = document.getElementById('main-container');
-            const isPortrait = window.innerHeight > window.innerWidth;
-            const isNarrow = window.innerWidth < 767;
-            
-            // Only show notice if in portrait mode AND screen is narrow (mobile)
-            if (isPortrait && isNarrow && document.querySelector('.desktop-table:not(.hidden)')) {
-                landscapeNotice.style.display = 'block';
-                mainContainer.classList.add('with-notice');
-            } else {
-                landscapeNotice.style.display = 'none';
-                mainContainer.classList.remove('with-notice');
-            }
+    (function () {
+        // Player rankings: every player's league singles in one division,
+        // ranked by points. The points are worked out here in the browser,
+        // exactly as this page always has (the API's own "points" field uses
+        // older values and is not shown). index.html's Top 10 card copies
+        // this scoring and order: keep the two the same.
+        const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+        const STORE_KEY = 'cdl-rankings-division'; // one key per page
+        // The result columns of each division, in table order, with the
+        // points each result is worth (the same values as
+        // recalculatePlayerPoints below: change both together)
+        const RESULTS = {
+            premier: [
+                { field: 'win_3_0', score: '3-0', won: true, points: 5 },
+                { field: 'win_3_1', score: '3-1', won: true, points: 4 },
+                { field: 'win_3_2', score: '3-2', won: true, points: 3 },
+                { field: 'loss_2_3', score: '2-3', won: false, points: 2 },
+                { field: 'loss_1_3', score: '1-3', won: false, points: 1 },
+                { field: 'loss_0_3', score: '0-3', won: false, points: 0 }
+            ],
+            a: [
+                { field: 'win_2_0', score: '2-0', won: true, points: 3 },
+                { field: 'win_2_1', score: '2-1', won: true, points: 2 },
+                { field: 'loss_1_2', score: '1-2', won: false, points: 1 },
+                { field: 'loss_0_2', score: '0-2', won: false, points: 0 }
+            ]
+        };
+        const CHEVRON = '<path d="M4 7l6 6 6-6"/>';
+        const CHEVRON_UP = '<path d="M4 13l6-6 6 6"/>';
+        const cache = {};
+        let current = 'premier';
+
+        // Escape any API string before it goes into HTML (names, teams)
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+        // Counts arrive as strings ("3") or numbers; anything else shows as 0
+        function num(v) {
+            const n = Number(v);
+            return isFinite(n) ? n : 0;
         }
 
-        // Check on page load and whenever orientation or window size changes
-        window.addEventListener('load', checkOrientation);
-        window.addEventListener('resize', checkOrientation);
-        window.addEventListener('orientationchange', checkOrientation);
-
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
+        // Loading, empty and error messages in plain words; the error offers Try again
+        function stateHtml(kind, message) {
+            const retry = kind === 'error'
+                ? '<button class="btn btn--secondary state__action" type="button" data-retry>Try again</button>'
+                : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + retry + '</div>';
         }
 
-        // Set initial tooltip visibility based on current division
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentDivision = getCurrentDivision();
-            if (currentDivision === 'premier') {
-                document.getElementById('premier-tooltip').classList.remove('hidden');
-                document.getElementById('a-tooltip').classList.add('hidden');
-            } else {
-                document.getElementById('premier-tooltip').classList.add('hidden');
-                document.getElementById('a-tooltip').classList.remove('hidden');
+        // The ranking list, or null when it could not be loaded. Fetched once
+        // per division; a failed request is forgotten so Try again asks again.
+        function getRanking(division) {
+            if (!cache[division]) {
+                cache[division] = fetch('api.php?endpoint=singles-ranking&division=' + encodeURIComponent(division) + '&match_type=league', { credentials: 'same-origin' })
+                    .then(res => res.json())
+                    .then(data => (Array.isArray(data) ? data : null))
+                    .catch(() => null);
+                cache[division].then(data => { if (!data) delete cache[division]; });
             }
-            
-            // Check orientation immediately on load
-            checkOrientation();
-        });
-
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                // Toggle table/cards visibility based on division
-                if (division === 'premier') {
-                    // Desktop tables
-                    document.getElementById('premier-rankings-table').classList.remove('hidden');
-                    document.getElementById('a-rankings-table').classList.add('hidden');
-                    // Mobile card views
-                    document.getElementById('premier-rankings-cards').classList.remove('hidden');
-                    document.getElementById('a-rankings-cards').classList.add('hidden');
-                    // Tooltips
-                    document.getElementById('premier-tooltip').classList.remove('hidden');
-                    document.getElementById('a-tooltip').classList.add('hidden');
-                } else {
-                    // Desktop tables
-                    document.getElementById('premier-rankings-table').classList.add('hidden');
-                    document.getElementById('a-rankings-table').classList.remove('hidden');
-                    // Mobile card views
-                    document.getElementById('premier-rankings-cards').classList.add('hidden');
-                    document.getElementById('a-rankings-cards').classList.remove('hidden');
-                    // Tooltips
-                    document.getElementById('premier-tooltip').classList.add('hidden');
-                    document.getElementById('a-tooltip').classList.remove('hidden');
-                }
-                
-                loadPlayerRankings(division);
-                
-                // Check orientation when division is changed
-                checkOrientation();
-            });
-        });
-
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
-            try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
-            }
+            return cache[division];
         }
 
         // Recalculate player points based on the correct scoring system
+        // (unchanged from the old page)
         function recalculatePlayerPoints(player, division) {
             let points = 0;
-            
+
             if (division === 'premier') {
                 // Premier Division scoring
                 points += (player.win_3_0 || 0) * 5;  // 5 points for 3-0 win
@@ -644,205 +530,224 @@
                 points += (player.loss_1_3 || 0) * 1; // 1 point for 1-3 loss
                 // 0 points for 0-3 loss
             } else {
-                // A Division scoring (assuming 2-0, 2-1, 1-2, 0-2 format)
+                // A Division scoring (2-0, 2-1, 1-2, 0-2)
                 points += (player.win_2_0 || 0) * 3;  // 3 points for 2-0 win
                 points += (player.win_2_1 || 0) * 2;  // 2 points for 2-1 win
                 points += (player.loss_1_2 || 0) * 1; // 1 point for 1-2 loss
                 // 0 points for 0-2 loss
             }
-            
+
             return points;
         }
 
-        async function loadPlayerRankings(division) {
-            // Add match_type=league parameter to only get league singles rankings
-            const data = await fetchApi('singles-ranking', { division, match_type: 'league' });
-            
-            // Get the appropriate table body and cards container based on division
-            const tbody = document.getElementById(`${division}-rankings-body`);
-            const cardsContainer = document.getElementById(`${division}-rankings-cards`);
-            if (!tbody || !cardsContainer) return;
-            
-            tbody.innerHTML = '';
-            cardsContainer.innerHTML = '';
-            
-            if (data.length === 0) {
-                // Display a message if no data is found - for both desktop and mobile views
-                const colSpan = division === 'premier' ? 11 : 9; // +1 from previous count to accommodate the Team column
-                
-                // Desktop table message
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td colspan="${colSpan}" style="text-align: center;">No player rankings data available for league singles games in this division yet.</td>
-                `;
-                tbody.appendChild(row);
-                
-                // Mobile cards message
-                const messageCard = document.createElement('div');
-                messageCard.className = 'player-card';
-                messageCard.innerHTML = `
-                    <p style="text-align: center;">No player rankings data available for league singles games in this division yet.</p>
-                `;
-                cardsContainer.appendChild(messageCard);
-                return;
-            }
-            
-            // Process the data to recalculate correct point values and sort by new points
+        // Sort by recalculated points, then by singles won (unchanged). The
+        // position is the place in this full list, as the page always showed.
+        function rankPlayers(data, division) {
             const processedData = data.map(player => {
                 player.recalculated_points = recalculatePlayerPoints(player, division);
                 return player;
             });
-            
-            // Sort by recalculated points, then by wins
             processedData.sort((a, b) => {
                 if (b.recalculated_points !== a.recalculated_points) {
                     return b.recalculated_points - a.recalculated_points;
                 }
                 return b.won - a.won;
             });
-            
-            // Display the processed data
-            processedData.forEach((player, index) => {
-                // 1. Create row for desktop table view
-                const row = document.createElement('tr');
-                
-                if (division === 'premier') {
-                    // Premier Division format (3-0, 3-1, 3-2, 2-3, 1-3, 0-3)
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${player.player_name}</td>
-                        <td>${player.team_name || '-'}</td>
-                        <td>${player.played}</td>
-                        <td class="win-score score-col">${player.win_3_0 || 0}</td>
-                        <td class="win-score score-col">${player.win_3_1 || 0}</td>
-                        <td class="win-score score-col">${player.win_3_2 || 0}</td>
-                        <td class="loss-score score-col">${player.loss_2_3 || 0}</td>
-                        <td class="loss-score score-col">${player.loss_1_3 || 0}</td>
-                        <td class="loss-score score-col">${player.loss_0_3 || 0}</td>
-                        <td><strong>${player.recalculated_points}</strong></td>
-                    `;
-
-                    // 2. Create card for mobile view
-                    const card = document.createElement('div');
-                    card.className = 'player-card';
-                    card.innerHTML = `
-                        <div class="rank">${index + 1}</div>
-                        <div class="name">${player.player_name}</div>
-                        <div class="team-name" style="color:#555;font-size:0.9em;margin-bottom:6px;">${player.team_name || ''}</div>
-                        <div class="stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Played</span>
-                                <span class="stat-value">${player.played}</span>
-                            </div>
-                            
-                            <div class="stat-group">
-                                <div class="stat-group-label wins-label">Wins</div>
-                                <div class="stat-item">
-                                    <span class="stat-label">3-0</span>
-                                    <span class="stat-value">${player.win_3_0 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">3-1</span>
-                                    <span class="stat-value">${player.win_3_1 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">3-2</span>
-                                    <span class="stat-value">${player.win_3_2 || 0}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-group">
-                                <div class="stat-group-label losses-label">Losses</div>
-                                <div class="stat-item">
-                                    <span class="stat-label">2-3</span>
-                                    <span class="stat-value">${player.loss_2_3 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">1-3</span>
-                                    <span class="stat-value">${player.loss_1_3 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">0-3</span>
-                                    <span class="stat-value">${player.loss_0_3 || 0}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="points">
-                                <span class="stat-label">Total Points</span>
-                                <span class="stat-value">${player.recalculated_points}</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    cardsContainer.appendChild(card);
-                    
-                } else {
-                    // A Division format (2-0, 2-1, 1-2, 0-2)
-                    row.innerHTML = `
-                        <td>${index + 1}</td>
-                        <td>${player.player_name}</td>
-                        <td>${player.team_name || '-'}</td>
-                        <td>${player.played}</td>
-                        <td class="win-score score-col">${player.win_2_0 || 0}</td>
-                        <td class="win-score score-col">${player.win_2_1 || 0}</td>
-                        <td class="loss-score score-col">${player.loss_1_2 || 0}</td>
-                        <td class="loss-score score-col">${player.loss_0_2 || 0}</td>
-                        <td><strong>${player.recalculated_points}</strong></td>
-                    `;
-
-                    // Create card for mobile view
-                    const card = document.createElement('div');
-                    card.className = 'player-card';
-                    card.innerHTML = `
-                        <div class="rank">${index + 1}</div>
-                        <div class="name">${player.player_name}</div>
-                        <div class="team-name" style="color:#555;font-size:0.9em;margin-bottom:6px;">${player.team_name || ''}</div>
-                        <div class="stats">
-                            <div class="stat-item">
-                                <span class="stat-label">Played</span>
-                                <span class="stat-value">${player.played}</span>
-                            </div>
-                            
-                            <div class="stat-group">
-                                <div class="stat-group-label wins-label">Wins</div>
-                                <div class="stat-item">
-                                    <span class="stat-label">2-0</span>
-                                    <span class="stat-value">${player.win_2_0 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">2-1</span>
-                                    <span class="stat-value">${player.win_2_1 || 0}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="stat-group">
-                                <div class="stat-group-label losses-label">Losses</div>
-                                <div class="stat-item">
-                                    <span class="stat-label">1-2</span>
-                                    <span class="stat-value">${player.loss_1_2 || 0}</span>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-label">0-2</span>
-                                    <span class="stat-value">${player.loss_0_2 || 0}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="points">
-                                <span class="stat-label">Total Points</span>
-                                <span class="stat-value">${player.recalculated_points}</span>
-                            </div>
-                        </div>
-                    `;
-                    
-                    cardsContainer.appendChild(card);
-                }
-                
-                tbody.appendChild(row);
-            });
+            return processedData.map((player, index) => ({ player: player, position: index + 1, points: player.recalculated_points }));
         }
 
-        // Initially load the player rankings
-        loadPlayerRankings(getCurrentDivision());
+        function pointsWord(n) {
+            return n === 1 ? 'point' : 'points';
+        }
+        // "Played 5, won 4, lost 1": with large text it wraps between the pairs
+        function record(p) {
+            return num(p.played) > 0
+                ? '<span class="nowrap">Played ' + num(p.played) + ',</span> <span class="nowrap">won ' + num(p.won) + ',</span> <span class="nowrap">lost ' + num(p.lost) + '</span>'
+                : 'Not played yet';
+        }
+
+        // Phones: one row of the ranked list
+        function listLine(r, cue) {
+            const p = r.player;
+            return '<span class="rank-line' + (r.position === 1 ? ' list-ranked__item--top' : '') + '">'
+                + '<span class="list-ranked__rank"><span aria-hidden="true">' + r.position + '</span><span class="visually-hidden">Position ' + r.position + '</span></span>'
+                + '<span class="list-ranked__main"><span class="list-ranked__name">' + esc(p.player_name) + '</span>'
+                + '<span class="list-ranked__meta">' + esc(p.team_name) + '</span>'
+                + '<span class="list-ranked__meta">' + record(p) + '</span></span>'
+                + '<span class="list-ranked__value">' + r.points + '<span class="list-ranked__sub">' + pointsWord(r.points) + '</span></span>'
+                + cue + '</span>';
+        }
+        // What the row opens to: each result, how many times, and its points
+        function resultsTable(r, division) {
+            const p = r.player;
+            const rows = RESULTS[division].map(x => {
+                const times = num(p[x.field]);
+                return '<tr><th scope="row">' + (x.won ? 'Won ' : 'Lost ') + x.score + '</th><td class="num">' + times + '</td><td class="num">' + times * x.points + '</td></tr>';
+            }).join('');
+            return '<table class="rank-detail"><caption class="visually-hidden">' + esc(p.player_name) + ': singles results and points</caption>'
+                + '<thead><tr><th scope="col">Result</th><th scope="col" class="num">Times</th><th scope="col" class="num">Points</th></tr></thead>'
+                + '<tbody>' + rows + '</tbody>'
+                + '<tfoot><tr><th scope="row">Total</th><td class="num">' + num(p.played) + '</td><td class="num">' + r.points + '</td></tr></tfoot></table>';
+        }
+        function listRow(r, division, opens) {
+            if (!opens) return '<li class="rank-list__item"><div class="rank-plain">' + listLine(r, '') + '</div></li>';
+            // The last word keeps its chevron on the same line
+            const cue = '<span class="rank-line__cue">'
+                + '<span class="disclosure__when-closed">Show their <span class="nowrap">results<svg class="icon rank-row__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false">' + CHEVRON + '</svg></span></span>'
+                + '<span class="disclosure__when-open">Hide their <span class="nowrap">results<svg class="icon rank-row__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false">' + CHEVRON_UP + '</svg></span></span>'
+                + '</span>';
+            return '<li class="rank-list__item"><details class="disclosure disclosure--row rank-row">'
+                + '<summary class="disclosure__summary">' + listLine(r, cue) + '</summary>'
+                + '<div class="disclosure__body">' + resultsTable(r, division) + '</div>'
+                + '</details></li>';
+        }
+
+        // Tablets and computers: one row of the table
+        function tableRow(r, division) {
+            const p = r.player;
+            const results = RESULTS[division];
+            let html = '<tr' + (r.position === 1 ? ' class="rank-table__top"' : '') + '>'
+                + '<td class="num rank-table__pos"><span class="rank-table__rank">' + r.position + '</span></td>'
+                + '<th scope="row"><span class="rank-table__name">' + esc(p.player_name) + '</span><span class="rank-table__team">' + esc(p.team_name) + '</span></th>';
+            if (num(p.played) > 0) {
+                html += '<td class="num">' + num(p.played) + '</td>'
+                    + results.map(x => '<td class="num rank-table__' + (x.won ? 'win' : 'loss') + '">' + num(p[x.field]) + '</td>').join('');
+            } else {
+                html += '<td class="rank-table__none" colspan="' + (results.length + 1) + '">Not played yet</td>';
+            }
+            return html + '<td class="num rank-table__points">' + r.points + '</td></tr>';
+        }
+
+        // The button in front of the players with no points yet
+        function moreLabel(n, open) {
+            if (open) return n === 1 ? 'Hide the player with no points yet' : 'Hide the ' + n + ' players with no points yet';
+            return n === 1 ? 'Show 1 more player with no points yet' : 'Show ' + n + ' more players with no points yet';
+        }
+        function moreButton(n, controls) {
+            return '<button class="btn btn--secondary rank-more__btn" type="button" aria-expanded="false" aria-controls="' + controls + '" data-more="' + n + '">'
+                + '<span class="rank-more__label">' + moreLabel(n, false) + '</span>'
+                + '<svg class="icon btn__icon--end rank-more__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false">' + CHEVRON + '</svg></button>';
+        }
+
+        function render(data, division) {
+            const name = DIVISIONS[division];
+            const rows = rankPlayers(data, division);
+            if (!rows.some(r => num(r.player.played) > 0)) {
+                return stateHtml('empty', 'No league singles have been played in the ' + name + ' yet.');
+            }
+            // Players on 0 points who have not won a single come last, in the
+            // same order and positions, behind a button: most have not played.
+            const split = rows.findIndex(r => r.points === 0 && !(num(r.player.won) > 0));
+            const top = split > 0 ? rows.slice(0, split) : rows;
+            const rest = split > 0 ? rows.slice(split) : [];
+            const results = RESULTS[division];
+            const wins = results.filter(x => x.won).length;
+            const columns = results.length + 4;
+
+            let list = '<div class="rank-list"><ol class="rank-list__list" role="list">' + top.map(r => listRow(r, division, num(r.player.played) > 0)).join('') + '</ol>';
+            if (rest.length) {
+                list += '<div class="rank-more">' + moreButton(rest.length, 'rank-rest-list') + '</div>'
+                    + '<ol class="rank-list__list rank-rest" id="rank-rest-list" role="list" data-rest hidden>' + rest.map(r => listRow(r, division, false)).join('') + '</ol>';
+            }
+            list += '</div>';
+
+            const table = '<div class="rank-table-wrap table-scroll"><table class="table rank-table">'
+                + '<caption class="visually-hidden">' + name + ' singles rankings</caption>'
+                + '<thead><tr>'
+                + '<th scope="col" rowspan="2" class="num rank-table__pos">Pos</th>'
+                + '<th scope="col" rowspan="2">Player</th>'
+                + '<th scope="col" rowspan="2" class="num">Played</th>'
+                + '<th scope="col" colspan="' + wins + '" class="rank-table__group">Wins</th>'
+                + '<th scope="col" colspan="' + (results.length - wins) + '" class="rank-table__group rank-table__group--loss">Losses</th>'
+                + '<th scope="col" rowspan="2" class="num rank-table__points">Points</th>'
+                + '</tr><tr>'
+                + results.map(x => '<th scope="col" class="num"><span class="visually-hidden">' + (x.won ? 'Won ' : 'Lost ') + '</span>' + x.score + '</th>').join('')
+                + '</tr></thead>'
+                + '<tbody>' + top.map(r => tableRow(r, division)).join('') + '</tbody>'
+                + (rest.length
+                    ? '<tbody><tr><td class="rank-table__more-cell" colspan="' + columns + '">' + moreButton(rest.length, 'rank-rest-body') + '</td></tr></tbody>'
+                        + '<tbody class="rank-table__rest" id="rank-rest-body" data-rest hidden>' + rest.map(r => tableRow(r, division)).join('') + '</tbody>'
+                    : '')
+                + '</table></div>';
+
+            return list + table;
+        }
+
+        // Show or hide the players with no points yet (the list and the table
+        // each have a button; both follow one choice)
+        function setRest(box, open) {
+            box.querySelectorAll('[data-more]').forEach(btn => {
+                btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                btn.querySelector('.rank-more__label').textContent = moreLabel(Number(btn.getAttribute('data-more')), open);
+            });
+            box.querySelectorAll('[data-rest]').forEach(el => { el.hidden = !open; });
+        }
+
+        async function load(division) {
+            const box = document.getElementById('rankings-list');
+            const name = DIVISIONS[division];
+            box.innerHTML = stateHtml('loading', 'Loading the ' + name + ' rankings...');
+            const data = await getRanking(division);
+            if (division !== current) return; // another division was chosen meanwhile
+            if (!data) {
+                box.innerHTML = stateHtml('error', 'Sorry, the rankings could not be loaded just now. Please check your connection.');
+                return;
+            }
+            box.innerHTML = render(data, division);
+        }
+
+        function readSaved() {
+            try {
+                const v = window.localStorage.getItem(STORE_KEY);
+                return v === 'premier' || v === 'a' ? v : null;
+            } catch (e) {
+                return null;
+            }
+        }
+        function save(v) {
+            try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* not remembered: fine */ }
+        }
+
+        function show(division) {
+            current = division === 'a' ? 'a' : 'premier';
+            const name = DIVISIONS[current];
+            document.querySelectorAll('#rankings .segmented [data-division]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.dataset.division === current ? 'true' : 'false');
+            });
+            document.getElementById('rankings-status').innerHTML = 'Showing: <strong>' + name + '</strong>';
+            document.querySelectorAll('#rankings [data-division-name]').forEach(el => { el.textContent = name; });
+            document.querySelectorAll('#rankings [data-key]').forEach(el => { el.hidden = el.getAttribute('data-key') !== current; });
+            load(current);
+        }
+
+        function init() {
+            const box = document.getElementById('rankings-list');
+            document.querySelectorAll('#rankings .segmented [data-division]').forEach(btn => {
+                btn.addEventListener('click', e => {
+                    const division = e.currentTarget.dataset.division; // currentTarget: the button holds a tick icon
+                    if (division === current) return;
+                    save(division);
+                    show(division);
+                });
+            });
+            box.addEventListener('click', e => {
+                const more = e.target.closest('[data-more]');
+                if (more) {
+                    setRest(box, more.getAttribute('aria-expanded') !== 'true');
+                    return;
+                }
+                // "Try again": keyboard focus moves to the list, which stays
+                // in place while it reloads
+                if (!e.target.closest('[data-retry]')) return;
+                box.setAttribute('tabindex', '-1');
+                box.focus();
+                load(current);
+            });
+            show(readSaved() || 'premier');
+        }
+
+        init();
+    })();
     </script>
 </body>
 </html>

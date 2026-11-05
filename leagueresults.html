@@ -1,1035 +1,553 @@
 <!DOCTYPE html>
 <html lang="en">
-    <link rel="icon" href="cdl.png">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
-<meta property="og:title" content="CDL | League Results">
-<meta property="og:description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
-<meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=2">
     <title>CDL | League Results</title>
-    <link rel="stylesheet" href="styles.css">
-<style>
-        /* Enhanced fixture card styles */
-        .fixture-card {
-            display: flex !important;
-            justify-content: space-between !important;
-            align-items: center !important;
-            padding: 15px !important;
-            border-bottom: 1px solid #eee !important;
-            transition: background 0.3s ease !important;
-            cursor: pointer !important;
-            position: relative !important;
+    <meta name="description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
+    <link rel="canonical" href="https://crawleydartsleague.com/leagueresults.html">
+    <meta property="og:title" content="CDL | League Results">
+    <meta property="og:description" content="Latest match results from the Crawley Darts League. View recent scores from both Premier and A Division matches.">
+    <meta property="og:image" content="https://crawleydartsleague.com/cdl-logo.png?v=3">
+    <link rel="icon" href="cdl.png?v=2">
+    <link rel="preload" href="fonts/atkinson-hyperlegible-next-latin-400.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="stylesheet" href="site.css?v=1">
+    <noscript><style>.site-header{position:relative}.menu-toggle{display:none}.site-header__badge{margin-right:0}.site-nav,.site-nav__sub{display:block}@media (min-width:64em){.site-nav__sub{display:none}.site-nav__group:hover .site-nav__sub,.site-nav__group:focus-within .site-nav__sub{display:block}}</style></noscript>
+    <style>
+        /* Results page only: every selector starts body.page-leagueresults */
+        body.page-leagueresults .results-layout {
+            margin-top: 1.5rem;
         }
-        
-        .fixture-card:hover {
-            background: var(--light-gray) !important;
+        body.page-leagueresults .results-week + .results-week {
+            margin-top: 1.25rem;
         }
-        
-        .fixture-card:last-child {
-            border-bottom: none !important;
+        /* Keyboard focus rests on the list while it reloads after "Try again" */
+        body.page-leagueresults .results-list:focus {
+            outline-offset: 2px;
         }
-        
-        .team-name.home {
-            text-align: left !important;
-            width: 40% !important;
-            padding-right: 10px !important;
+        /* A walkover row has no games to open: the same right inset as the
+           rows that open, so every score box lines up down the list */
+        body.page-leagueresults .results-walkover {
+            padding-right: 3.25rem;
         }
-        
-.team-name.away {
-    text-align: right !important;
-    width: 40% !important;
-    padding-left: 10px !important;
-    padding-right: 30px !important; /* Add this line to create space for the expand icon */
-}
-        
-        .score {
-            font-weight: bold !important;
-            font-size: 1.2em !important;
-            padding: 5px 15px !important;
-            color: var(--primary) !important;
-            text-align: center !important;
-            width: 20% !important;
-            background-color: rgba(245, 245, 245, 0.5) !important;
-            border-radius: 4px !important;
+        /* The games inside an opened result */
+        body.page-leagueresults .disclosure__body > .subsection-title:first-child {
+            margin-top: 0;
         }
-        
-        /* Expandable section styles */
-        .fixture-card .expand-icon {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--primary);
-            font-size: 1.2em;
-            transition: transform 0.3s ease;
+        body.page-leagueresults .disclosure__body .state {
+            padding-left: 2rem;
+            padding-right: 0;
         }
-        
-        .fixture-card.expanded .expand-icon {
-            transform: translateY(-50%) rotate(180deg);
+        body.page-leagueresults .disclosure__body .state::before {
+            left: 0;
         }
-        
-        .match-details {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease;
-            background-color: #f9f9f9;
-            border-left: 3px solid var(--primary);
-            margin: 0 5px 0 20px;
+        /* 180s and high finishes: the player on the left, the number on the right */
+        body.page-leagueresults .game-stats {
+            list-style: none;
         }
-        
-        .match-details.expanded {
-            max-height: 2000px;
-            margin-bottom: 15px;
-        }
-        
-        .match-details-content {
-            padding: 15px;
-        }
-        
-        .match-header {
-            font-weight: bold;
-            color: var(--primary);
-            margin-bottom: 10px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 5px;
-        }
-        
-        .player-match {
+        body.page-leagueresults .game-stats__item {
             display: flex;
+            align-items: baseline;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px dotted #eee;
+            padding: 0.5rem 0;
+            font-size: var(--text-sm);
         }
-        
-        .player-match:last-child {
-            border-bottom: none;
+        body.page-leagueresults .game-stats__item + .game-stats__item {
+            border-top: 1px solid var(--color-divider);
         }
-        
-        .player-match .home-player {
-            flex: 2;
-            text-align: left;
-            padding-right: 5px;
+        body.page-leagueresults .game-stats__value {
+            flex: none;
+            margin-left: 1rem;
+            color: var(--navy-900);
+            font-size: var(--text-md);
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
         }
-        
-        .player-match .away-player {
-            flex: 2;
-            text-align: right;
-            padding-left: 5px;
+        /* The key: each term on its own line above what it means */
+        body.page-leagueresults .results-key .key__item {
+            display: block;
+            padding: 0.5rem 0;
         }
-        
-        .player-match .match-score {
-            flex: 1;
-            text-align: center;
-            font-weight: bold;
+        body.page-leagueresults .results-key .key__item + .key__item {
+            border-top: 1px solid var(--color-divider);
         }
-        
-        .stats-section {
-            margin-top: 15px;
-            padding-top: 10px;
-            border-top: 1px solid #eee;
-        }
-        
-        .stats-section h4 {
-            color: var(--primary);
-            margin-bottom: 10px;
-        }
-        
-        .stats-item {
+        body.page-leagueresults .results-key .key__term {
             display: flex;
-            justify-content: space-between;
-            padding: 5px 0;
-        }
-        
-        .player-name {
-            flex: 3;
-        }
-        
-        .stat-value {
-            flex: 1;
-            text-align: right;
-            font-weight: bold;
-        }
-        
-        .loading-indicator {
-            text-align: center;
-            padding: 20px;
-            color: var(--primary);
-            font-style: italic;
-        }
-        
-        .error-message {
-            color: #d32f2f;
-            text-align: center;
-            padding: 10px;
-            font-style: italic;
-        }
-        
-        /* Responsive adjustments */
-        @media (max-width: 600px) {
-            .fixture-card {
-                flex-direction: column !important;
-                text-align: center !important;
-                gap: 10px !important;
-                padding-right: 30px !important;
-            }
-            
-    .team-name.home, .team-name.away {
-        text-align: center !important;
-        padding: 0 0 10px 0 !important; /* Add bottom padding on mobile */
-        width: 100% !important;
-    }
-
-            
-            .score {
-                width: 80% !important;
-            }
-            
-            .fixture-card .expand-icon {
-                top: 15px;
-                right: 15px;
-                transform: none;
-            }
-            
-            .fixture-card.expanded .expand-icon {
-                transform: rotate(180deg);
-            }
-            
-            .player-match {
-                flex-direction: column;
-                align-items: center;
-                padding: 10px 0;
-            }
-            
-            .player-match .home-player,
-            .player-match .away-player {
-                text-align: center;
-                width: 100%;
-                padding: 3px 0;
-            }
-            
-            .match-details {
-                margin: 0;
-            }
-        }
-                /* Custom header style for the index page to position logo left and title centered */
-                .header {
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            color: white;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            position: relative;
-            display: flex;
-            justify-content: center;
             align-items: center;
+            min-height: 1.75rem;
         }
-        
-        .logo-container {
-            position: absolute;
-            right: 20px;
-            top: 55%;
-            transform: translateY(-50%);
+        body.page-leagueresults .results-key .match__tick {
+            margin: 0 0.375rem 0 0;
         }
-        
-        .logo {
-            width: 60px;
-            height: 58px;
-            object-fit: contain;
+        @media (min-width: 30em) {
+            /* On the tinted panel the score boxes are white, so they still
+               read as boxes (phones show no boxes) */
+            body.page-leagueresults .disclosure__body .match__score,
+            body.page-leagueresults .disclosure__body .match__sep {
+                background: var(--white);
+            }
+            /* Wider screens centre the games, so the short 180s and high
+               finish lists sit in the middle too */
+            body.page-leagueresults .game-stats {
+                max-width: 20rem;
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
-        
-        .header h1 {
-            margin: 0;
-            text-align: center;
+        /* Large text on a small phone (below 20em): the row's arrow moves
+           down beside "Show the games", so team names get the full width */
+        @media not all and (min-width: 20em) {
+            body.page-leagueresults .disclosure--row > .disclosure__summary,
+            body.page-leagueresults .results-walkover {
+                padding-right: var(--card-pad);
+            }
+            body.page-leagueresults .disclosure--row > .disclosure__summary::after {
+                top: auto;
+                bottom: 0.875rem;
+                margin-top: 0;
+            }
+            body.page-leagueresults .match__team--winner {
+                display: block;
+            }
+            body.page-leagueresults .match__tick {
+                margin-left: 0.25rem;
+            }
         }
-
-        /* Basic dropdown styling */
-.nav .dropdown {
-    position: relative;
-}
-
-.nav .dropdown-toggle {
-    cursor: pointer;
-}
-
-.nav .dropdown-menu {
-    display: none;
-    position: absolute;
-    background: white;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-    z-index: 1000;
-    border-radius: 4px;
-    padding: 10px 0;
-}
-
-.nav .dropdown:hover .dropdown-menu {
-    display: block;
-}
-
-.nav .dropdown-menu li {
-    margin: 0;
-    padding: 0;
-}
-
-.nav .dropdown-menu a {
-    display: block;
-    padding: 10px 20px;
-    color: var(--primary);
-    border-radius: 0;
-}
-
-.nav .dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile navigation */
-.mobile-nav-toggle {
-    display: none;
-    cursor: pointer;
-    padding: 10px;
-    font-size: 1.5rem;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .mobile-nav-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        display: none;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background: white;
-        box-shadow: 0 5px 10px rgba(0,0,0,0.1);
-        z-index: 1000;
-        padding: 0;
-        margin: 0;
-    }
-    
-    .nav-menu.active {
-        display: block;
-    }
-    
-    .nav-menu li {
-        margin: 0;
-        padding: 0;
-        display: block;
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .nav-menu a {
-        padding: 15px 20px;
-        display: block;
-    }
-    
-    .nav .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        background: var(--light-gray);
-        width: 100%;
-        padding: 0;
-    }
-    
-    .nav .dropdown-menu li:first-child {
-        border-top: 1px solid var(--medium-gray);
-    }
-    
-    .nav .dropdown:hover .dropdown-menu {
-        display: none; /* Don't show on hover on mobile */
-    }
-    
-    /* Add a + icon to dropdowns */
-    .nav .dropdown-toggle::after {
-        content: "+";
-        margin-left: 5px;
-    }
-    
-    /* Toggle this class with JavaScript */
-    .nav .dropdown.active .dropdown-menu {
-        display: block;
-    }
-    
-    .nav .dropdown.active .dropdown-toggle::after {
-        content: "-";
-    }
-}
-:root {
-    --primary: #1a237e;
-    --secondary: #3949ab;
-    --light-gray: #f5f5f5;
-    --medium-gray: #e0e0e0;
-    --dark-gray: #757575;
-    --card-bg: #ffffff;
-}
-
-/* Header Styles */
-.header {
-    background: linear-gradient(135deg, var(--primary), var(--secondary));
-    color: white;
-    padding: 15px 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-}
-
-
-
-.header h1 {
-    margin: 0;
-    text-align: center;
-    font-size: 1.5rem;
-}
-
-/* Navigation Styles */
-.nav {
-    background-color: white;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.nav-menu {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    justify-content: center;
-}
-
-.nav-menu > li {
-    position: relative;
-    margin: 0;
-}
-
-.nav-menu > li > a {
-    display: block;
-    padding: 15px;
-    color: var(--primary);
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.nav-menu > li > a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Dropdown Menu */
-.dropdown {
-    position: relative;
-}
-
-.dropdown-toggle:after {
-    content: "▼";
-    font-size: 0.7em;
-    margin-left: 5px;
-    vertical-align: middle;
-}
-
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background-color: white;
-    min-width: 200px;
-    padding: 5px 0;
-    margin: 0;
-    list-style: none;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    border-radius: 0 0 4px 4px;
-    z-index: 100;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(10px);
-    transition: all 0.3s ease;
-}
-
-.dropdown:hover .dropdown-menu,
-.dropdown:focus-within .dropdown-menu,
-.dropdown-menu:hover {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-/* The last menu (Join) lines up with its item's right edge so it opens
-   to the left. Opening to the right it ran off the page at some widths. */
-.nav-menu > li:last-child > .dropdown-menu {
-    left: auto;
-    right: 0;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-.dropdown-menu a {
-    display: block;
-    padding: 10px 15px;
-    color: var(--primary);
-    text-decoration: none;
-    transition: all 0.3s ease;
-}
-
-.dropdown-menu a:hover {
-    background-color: var(--light-gray);
-}
-
-/* Mobile Toggle Button */
-.mobile-toggle {
-    display: none;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    position: absolute;
-    left: 20px;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 10;
-}
-
-.mobile-toggle .bar {
-    display: block;
-    width: 25px;
-    height: 3px;
-    margin: 5px auto;
-    background-color: white;
-    transition: all 0.3s ease;
-}
-
-/* Media Queries for Responsive Design */
-@media screen and (max-width: 992px) {
-    .nav-menu {
-        justify-content: flex-start;
-    }
-    
-    .nav-menu > li > a {
-        padding: 15px 10px;
-        font-size: 0.9rem;
-    }
-}
-
-@media screen and (max-width: 768px) {
-    .header h1 {
-        font-size: 1.3rem;
-    }
-    
-    .mobile-toggle {
-        display: block;
-    }
-    
-    .nav-menu {
-        flex-direction: column;
-        position: absolute;
-        top: 100%;
-        left: 0;
-        width: 100%;
-        background-color: white;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.5s ease;
-        z-index: 100;
-    }
-    
-    .nav-menu.active {
-        max-height: 1000px;
-    }
-    
-    .dropdown-menu {
-        position: static;
-        box-shadow: none;
-        opacity: 1;
-        visibility: visible;
-        transform: none;
-        max-height: 0;
-        overflow: hidden;
-        transition: max-height 0.3s ease;
-    }
-    
-    .dropdown.active .dropdown-menu {
-        max-height: 500px;
-    }
-    
-    .dropdown-toggle:after {
-        float: right;
-    }
-    
-    .dropdown.active .dropdown-toggle:after {
-        content: "▲";
-    }
-    
-    .nav-menu > li {
-        border-bottom: 1px solid var(--light-gray);
-    }
-    
-    .dropdown-menu li {
-        background-color: var(--light-gray);
-        padding-left: 15px;
-    }
-}
-
-@media screen and (max-width: 480px) {
-    .header h1 {
-        font-size: 1.1rem;
-    }
-    
-    .logo {
-        width: 50px;
-        height: 48px;
-    }
-}
-</style>
+    </style>
+    <script src="site.js?v=1" defer></script>
 </head>
-<body>
-<header class="header">
-    <div class="logo-container">
-        <img src="cdl-logo.png?v=2" alt="Crawley Darts League Logo" class="logo">
-    </div>
-    <h1>Crawley Darts League</h1>
-    <button class="mobile-toggle" aria-label="Toggle menu">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-    </button>
-</header>
-
-<nav class="nav">
-    <ul class="nav-menu">
-        <li><a href="index.html">Home</a></li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">League</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguetable.html">League Table</a></li>
-                <li><a href="leagueresults.html">Results</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Cup</a>
-            <ul class="dropdown-menu">
-                <li><a href="knockoutcup.html">Knockout Cup</a></li>
-                <li><a href="321cup.html">3-2-1 Cup</a></li>
-                <li><a href="singlescup.html">Singles Cup</a></li>
-                <li><a href="pairscup.html">Pairs Cup</a></li>
-                <li><a href="goodfridaycup.html">Good Friday Cup</a></li>
-                <li><a href="paulterrycup.html">Paul/Terry Cup</a></li>
-                <li><a href="memorialcup.html">Memorial Cup</a></li>
-                <li><a href="capseccup.html">Cap/Sec Cup</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Statistics</a>
-            <ul class="dropdown-menu">
-                <li><a href="180sfinishes.html">180s & High Finishes</a></li>
-                <li><a href="playerrankings.html">Player Rankings</a></li>
-            </ul>
-        </li>
-        
-        <li class="dropdown">
-            <a href="#" class="dropdown-toggle">Information</a>
-            <ul class="dropdown-menu">
-                <li><a href="leaguefixtures.html">Fixtures</a></li>
-                <li><a href="contactinfo.html">Contacts & Venues</a></li>
-                <li><a href="rules.html">League Rules</a></li>
-                <li><a href="agm-minutes.html">AGM Minutes</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="winnershistory.html">Winners History</a></li>
-            </ul>
-        </li>
-        
-        <li><a href="admin-login.html">Admin Login</a></li>
-
-        
-        <li><a href="team-login.html">Team Login</a></li>
-
-            <li class="dropdown">
-                <a href="#" class="dropdown-toggle">Join</a>
-                <ul class="dropdown-menu">
-                    <li><a href="registration.html">Registration Form</a></li>
-                    <li><a href="findateam.html">Find a Team</a></li>
+<body class="page-leagueresults">
+    <a class="skip-link" href="#main">Skip to main content</a>
+    <!-- site-header:start -->
+    <header class="site-header" id="top">
+        <div class="site-header__bar">
+            <div class="container site-header__inner">
+                <a class="site-name" href="index.html">Crawley Darts League</a>
+                <img class="site-header__badge" src="cdl-logo.png?v=3" alt="" width="48" height="48">
+                <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6.5h16M4 12h16M4 17.5h16"/></svg>
+                    <svg class="icon menu-toggle__icon menu-toggle__icon--close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+                    <span class="menu-toggle__label menu-toggle__label--menu">Menu</span>
+                    <span class="menu-toggle__label menu-toggle__label--close">Close</span>
+                </button>
+            </div>
+        </div>
+        <nav class="site-nav" id="site-nav" aria-label="Main">
+            <div class="container site-nav__inner">
+                <ul class="site-nav__list">
+                    <li class="site-nav__item"><a class="site-nav__link" href="index.html">Home</a></li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-league">League<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-league">
+                            <li><a class="site-nav__sublink" href="leaguetable.html">League Table</a></li>
+                            <li><a class="site-nav__sublink" href="leagueresults.html">Results</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-cup">Cup<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-cup">
+                            <li><a class="site-nav__sublink" href="knockoutcup.html">Knockout Cup</a></li>
+                            <li><a class="site-nav__sublink" href="321cup.html">3-2-1 Cup</a></li>
+                            <li><a class="site-nav__sublink" href="singlescup.html">Singles Cup</a></li>
+                            <li><a class="site-nav__sublink" href="pairscup.html">Pairs Cup</a></li>
+                            <li><a class="site-nav__sublink" href="goodfridaycup.html">Good Friday Cup</a></li>
+                            <li><a class="site-nav__sublink" href="paulterrycup.html">Paul/Terry Cup</a></li>
+                            <li><a class="site-nav__sublink" href="memorialcup.html">Memorial Cup</a></li>
+                            <li><a class="site-nav__sublink" href="capseccup.html">Cap/Sec Cup</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-statistics">Statistics<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-statistics">
+                            <li><a class="site-nav__sublink" href="180sfinishes.html">180s &amp; High Finishes</a></li>
+                            <li><a class="site-nav__sublink" href="playerrankings.html">Player Rankings</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item site-nav__group">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-information">Information<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-information">
+                            <li><a class="site-nav__sublink" href="leaguefixtures.html">Fixtures</a></li>
+                            <li><a class="site-nav__sublink" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                            <li><a class="site-nav__sublink" href="rules.html">League Rules</a></li>
+                            <li><a class="site-nav__sublink" href="agm-minutes.html">AGM Minutes</a></li>
+                            <li><a class="site-nav__sublink" href="players.html">Players</a></li>
+                            <li><a class="site-nav__sublink" href="winnershistory.html">Winners History</a></li>
+                        </ul>
+                    </li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="admin-login.html">Admin Login</a></li>
+                    <li class="site-nav__item"><a class="site-nav__link" href="team-login.html">Team Login</a></li>
+                    <li class="site-nav__item site-nav__group site-nav__group--end">
+                        <button class="site-nav__toggle" type="button" aria-expanded="false" aria-controls="nav-join">Join<svg class="icon site-nav__chevron" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 7l6 6 6-6"/></svg></button>
+                        <ul class="site-nav__sub" id="nav-join">
+                            <li><a class="site-nav__sublink" href="registration.html">Registration Form</a></li>
+                            <li><a class="site-nav__sublink" href="findateam.html">Find a Team</a></li>
+                        </ul>
+                    </li>
                 </ul>
-        </li>
-    </ul>
-    </nav>    <div class="container">
-        <!-- League Results Page -->
-        <div id="league-results" class="page">
-            <div class="card">
-                <div class="division-toggle">
-                    <button class="active" data-division="premier">Premier Division</button>
-                    <button data-division="a">A Division</button>
+            </div>
+        </nav>
+    </header>
+    <!-- site-header:end -->
+
+    <main id="main" class="site-main">
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-header__title">Results</h1>
+                <p class="page-header__intro">Every league result this season, newest first. Tap or click a result to see its games.</p>
+            </div>
+
+            <div id="league-results">
+                <div class="segmented" role="group" aria-label="Division">
+                    <button class="segmented__btn" type="button" data-division="premier" aria-pressed="true"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Premier Division</button>
+                    <button class="segmented__btn" type="button" data-division="a" aria-pressed="false"><svg class="icon segmented__check" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>A Division</button>
                 </div>
-                <div id="league-results-list">
-                    <!-- Dynamic results will be loaded here -->
+                <p class="segmented-status" id="results-status" aria-live="polite">Showing: <strong>Premier Division</strong></p>
+
+                <div class="grid grid--aside results-layout">
+                    <!-- Filled from api.php?endpoint=league-results: one card per match week -->
+                    <div class="results-list" id="league-results-list">
+                        <div class="card card--flush"><p class="state state--loading">Loading the results...</p></div>
+                    </div>
+
+                    <aside class="card key results-key" aria-labelledby="results-key-title">
+                        <h2 class="key__title" id="results-key-title">How to read the results</h2>
+                        <dl class="key__list">
+                            <div class="key__item"><dt class="key__term"><svg class="icon match__tick" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>Tick</dt><dd class="key__desc">The team that won the match, also shown in bold.</dd></div>
+                            <div class="key__item"><dt class="key__term"><span class="badge badge--warning">Walkover</span></dt><dd class="key__desc">One team did not play, so the other team was given the match. No games were played.</dd></div>
+                            <div class="key__item"><dt class="key__term">Week of</dt><dd class="key__desc">Results are grouped by week, Monday to Sunday. League matches are on Friday evenings, so each week is named after its Friday.</dd></div>
+                        </dl>
+                    </aside>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
+
+    <!-- site-footer:start -->
+    <footer class="site-footer">
+        <div class="container">
+            <nav class="site-footer__nav" aria-label="Footer">
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">League</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="leaguetable.html">League Table</a></li>
+                        <li><a class="site-footer__link" href="leagueresults.html">Results</a></li>
+                        <li><a class="site-footer__link" href="leaguefixtures.html">Fixtures</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Useful pages</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="knockoutcup.html">Knockout Cup</a></li>
+                        <li><a class="site-footer__link" href="contactinfo.html">Contacts &amp; Venues</a></li>
+                        <li><a class="site-footer__link" href="rules.html">League Rules</a></li>
+                    </ul>
+                </div>
+                <div class="site-footer__group">
+                    <h2 class="site-footer__heading">Captains and admins</h2>
+                    <ul class="site-footer__list">
+                        <li><a class="site-footer__link" href="team-login.html">Team Login</a></li>
+                        <li><a class="site-footer__link" href="admin-login.html">Admin Login</a></li>
+                    </ul>
+                </div>
+            </nav>
+            <div class="site-footer__bottom">
+                <p class="site-footer__about">Crawley Darts League. Matches on Friday evenings across Crawley.</p>
+                <a class="site-footer__top" href="#top"><svg class="icon site-footer__icon" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M10 16V4M5 9l5-5 5 5"/></svg>Back to top</a>
+            </div>
+        </div>
+    </footer>
+    <!-- site-footer:end -->
 
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const mobileToggle = document.querySelector('.mobile-toggle');
-    const navMenu = document.querySelector('.nav-menu');
-    const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
-    
-    // Toggle mobile menu
-    mobileToggle.addEventListener('click', function() {
-        navMenu.classList.toggle('active');
-        
-        // Animate hamburger to X
-        this.classList.toggle('active');
-        const bars = this.querySelectorAll('.bar');
-        if (this.classList.contains('active')) {
-            bars[0].style.transform = 'rotate(-45deg) translate(-5px, 6px)';
-            bars[1].style.opacity = '0';
-            bars[2].style.transform = 'rotate(45deg) translate(-5px, -6px)';
-        } else {
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle dropdown menus on mobile
-    dropdownToggles.forEach(toggle => {
-        toggle.addEventListener('click', function(e) {
-            // Only apply this behavior on mobile
-            if (window.innerWidth <= 768) {
-                e.preventDefault();
-                const parentLi = this.parentElement;
-                
-                // Close all other open dropdowns
-                document.querySelectorAll('.dropdown.active').forEach(item => {
-                    if (item !== parentLi) {
-                        item.classList.remove('active');
-                    }
-                });
-                
-                // Toggle this dropdown
-                parentLi.classList.toggle('active');
-            }
-        });
-    });
-    
-    // Close menu when clicking outside
-    document.addEventListener('click', function(e) {
-        const isClickInsideNav = navMenu.contains(e.target) || mobileToggle.contains(e.target);
-        if (!isClickInsideNav && navMenu.classList.contains('active')) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-        }
-    });
-    
-    // Handle resize events
-    window.addEventListener('resize', function() {
-        if (window.innerWidth > 768) {
-            navMenu.classList.remove('active');
-            mobileToggle.classList.remove('active');
-            const bars = mobileToggle.querySelectorAll('.bar');
-            bars[0].style.transform = 'none';
-            bars[1].style.opacity = '1';
-            bars[2].style.transform = 'none';
-            
-            // Reset all dropdowns
-            document.querySelectorAll('.dropdown.active').forEach(item => {
-                item.classList.remove('active');
-            });
-        }
-    });
-});
-        // API configuration
-        const API_URL = 'api.php'; // Change this to your actual API endpoint
+    (function () {
+        // League results from api.php?endpoint=league-results&division=...,
+        // grouped by match week, newest first. Each result opens to show its
+        // games from api.php?endpoint=match-details&match_id=..., loaded the
+        // first time it opens and kept for the rest of the visit.
+        const DIVISIONS = { premier: 'Premier Division', a: 'A Division' };
+        const STORE_KEY = 'cdl-results-division';
+        const BYES = ['Bye', 'Division A Bye'];
+        let current = 'premier';
+        let loadSeq = 0;
+        const gamesCache = {};
 
-        // Keep track of loaded match details to avoid redundant API calls
-        const loadedMatchDetails = {};
-
-        function getCurrentDivision() {
-            const divisionToggle = document.querySelector('.division-toggle button.active');
-            return divisionToggle ? divisionToggle.dataset.division : 'premier';
+        // Escape any API string before it goes into HTML (names, titles, notes)
+        function esc(s) {
+            return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
-        // Division toggle handling
-        document.querySelectorAll('.division-toggle button').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const division = e.target.dataset.division;
-                const parent = e.target.closest('.division-toggle');
-                parent.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
-                e.target.classList.add('active');
-                
-                loadLeagueResults(division);
-            });
-        });
+        // Dates built by hand in en-GB: never toLocaleDateString() without 'en-GB'.
+        const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-        // API functions
-        async function fetchApi(endpoint, params = {}) {
-            const queryString = new URLSearchParams(params).toString();
-            const url = `${API_URL}?endpoint=${endpoint}&${queryString}`;
-            
+        // "2026-10-23" or "2026-10-23 19:30:00" -> that calendar day as a local
+        // Date (new Date("2026-10-23") would be midnight UTC: the day before in
+        // some time zones), or null when it is not a date.
+        function parseDay(s) {
+            const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || ''));
+            if (!m) return null;
+            const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            return isNaN(d.getTime()) ? null : d;
+        }
+
+        // "Fri 23 Oct 2026". Options: { long: true } -> "Friday 23 October 2026"
+        // (group titles); { year: false } -> "Fri 23 Oct" (where the year is plain).
+        function formatDate(s, opts) {
+            const d = parseDay(s);
+            if (!d) return '';
+            const long = !!(opts && opts.long);
+            const day = long ? DAY_NAMES[d.getDay()] : DAY_NAMES[d.getDay()].slice(0, 3);
+            const month = long ? MONTH_NAMES[d.getMonth()] : MONTH_NAMES[d.getMonth()].slice(0, 3);
+            const text = day + ' ' + d.getDate() + ' ' + month;
+            return opts && opts.year === false ? text : text + ' ' + d.getFullYear();
+        }
+
+        // The Friday of the Monday-to-Sunday week a date falls in, as "YYYY-MM-DD".
+        // api.php stores the day a captain sent the score in (often the
+        // Saturday after a Friday match), so results are grouped by match week
+        // rather than shown with a misleading exact day.
+        function weekFriday(s) {
+            const d = parseDay(s);
+            if (!d) return '';
+            const fri = new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay() + 6) % 7 + 4);
+            const two = n => (n < 10 ? '0' : '') + n;
+            return fri.getFullYear() + '-' + two(fri.getMonth() + 1) + '-' + two(fri.getDate());
+        }
+
+        // Loading, empty and error messages in plain words. message is text we
+        // wrote: any API part of it goes through esc(). The error state offers
+        // Try again (data-retry for the list, data-retry-games inside a result).
+        function stateHtml(kind, message, retryAttr) {
+            const retry = kind === 'error'
+                ? '<button class="btn btn--secondary state__action" type="button" ' + (retryAttr || 'data-retry') + '>Try again</button>'
+                : '';
+            return '<div class="state state--' + kind + '" role="' + (kind === 'error' ? 'alert' : 'status') + '"><p>' + message + '</p>' + retry + '</div>';
+        }
+        function stateCard(kind, message) {
+            return '<div class="card card--flush">' + stateHtml(kind, message) + '</div>';
+        }
+
+        // A list from the API, or null when it could not be loaded (no network,
+        // a server error page, or an error object such as {success:false}).
+        async function getList(url) {
             try {
-                const response = await fetch(url);
-                return await response.json();
-            } catch (error) {
-                console.error('API Error:', error);
-                return [];
+                const res = await fetch(url, { credentials: 'same-origin' });
+                const data = await res.json();
+                return Array.isArray(data) ? data : null;
+            } catch (e) {
+                return null;
             }
         }
 
-        async function loadLeagueResults(division) {
-            const data = await fetchApi('league-results', { division });
-            const resultsList = document.getElementById('league-results-list');
-            resultsList.innerHTML = '';
-            
-            // Filter out matches involving "Bye" teams
-            const filteredData = data.filter(result => 
-                result.home_team !== 'Bye' && 
-                result.home_team !== 'Division A Bye' && 
-                result.away_team !== 'Bye' && 
-                result.away_team !== 'Division A Bye'
-            );
-            
-            // Group results by date
-            const resultsByDate = {};
-            filteredData.forEach(result => {
-                // Format the date for display
-                const matchDate = result.match_date ? new Date(result.match_date) : null;
-                const formattedDate = matchDate ? matchDate.toLocaleDateString('en-GB', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                }) : 'Date not available';
-                
-                if (!resultsByDate[formattedDate]) {
-                    resultsByDate[formattedDate] = [];
-                }
-                
-                resultsByDate[formattedDate].push(result);
+        // One result or game row. Screen readers get one plain sentence; the
+        // visual line is aria-hidden (its order is home, score, away, which
+        // reads oddly aloud). m: { home, away, homeScore, awayScore }.
+        // Escapes every name.
+        const TICK = '<svg class="icon match__tick" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10.5l4 4 8-9"/></svg>';
+
+        function matchLine(m) {
+            const played = m.homeScore != null && m.awayScore != null && m.homeScore !== '' && m.awayScore !== '';
+            const h = Number(m.homeScore), a = Number(m.awayScore);
+            const team = (name, side, won) => '<span class="match__team match__team--' + side + (won ? ' match__team--winner' : '') + '">'
+                + esc(name) + (won ? TICK : '') + '</span>';
+            if (!played) {
+                return '<span class="visually-hidden">' + esc(m.home) + ' versus ' + esc(m.away) + '</span>'
+                    + '<span class="match__line" aria-hidden="true">' + team(m.home, 'home', false)
+                    + '<span class="match__sep">v</span>' + team(m.away, 'away', false) + '</span>';
+            }
+            const said = esc(m.home) + ' ' + h + ', ' + esc(m.away) + ' ' + a + '.'
+                + (h > a ? ' ' + esc(m.home) + ' won.' : a > h ? ' ' + esc(m.away) + ' won.' : ' A draw.');
+            return '<span class="visually-hidden">' + said + '</span>'
+                + '<span class="match__line" aria-hidden="true">' + team(m.home, 'home', h > a)
+                + '<span class="match__score match__score--home">' + h + '</span>'
+                + '<span class="match__sep">-</span>'
+                + '<span class="match__score match__score--away">' + a + '</span>'
+                + team(m.away, 'away', a > h) + '</span>';
+        }
+
+        // One result. A walkover has no games, so it says why in words; every
+        // other result is a row that opens (the whole row is the button).
+        function resultRow(r) {
+            const line = matchLine({ home: r.home_team, away: r.away_team, homeScore: r.home_score, awayScore: r.away_score });
+            if (Number(r.is_walkover) === 1) {
+                const who = r.forfeit_team ? esc(r.forfeit_team) : 'One team';
+                return '<li><div class="match results-walkover">' + line
+                    + '<span class="match__meta"><span class="badge badge--warning">Walkover</span> ' + who + ' did not play, so no games were played.</span>'
+                    + '</div></li>';
+            }
+            return '<li><details class="disclosure disclosure--row" data-match-id="' + esc(r.match_id) + '">'
+                + '<summary class="disclosure__summary match" aria-expanded="false">' + line
+                + '<span class="match__meta"><span class="disclosure__when-closed">Show the games</span><span class="disclosure__when-open">Hide the games</span></span>'
+                + '</summary><div class="disclosure__body"></div></details></li>';
+        }
+
+        // Match weeks, newest first; results with no usable date come last
+        function render(rows) {
+            const weeks = {};
+            const order = [];
+            rows.forEach(r => {
+                const key = weekFriday(r.match_date);
+                if (!weeks[key]) { weeks[key] = []; order.push(key); }
+                weeks[key].push(r);
             });
-            
-            // Render results grouped by date
-            Object.keys(resultsByDate).sort((a, b) => {
-                // Sort dates in descending order (newest first)
-                const dateA = new Date(resultsByDate[a][0].match_date);
-                const dateB = new Date(resultsByDate[b][0].match_date);
-                return dateB - dateA;
-            }).forEach(date => {
-                // Create date header
-                const dateHeader = document.createElement('h3');
-                dateHeader.className = 'results-date-header';
-                dateHeader.textContent = date;
-                resultsList.appendChild(dateHeader);
-                
-                // Add results for this date
-                resultsByDate[date].forEach(result => {
-                    const resultCard = document.createElement('div');
-                    resultCard.className = 'fixture-card';
-                    resultCard.dataset.matchId = result.match_id;
-                    resultCard.innerHTML = `
-                        <div class="team-name home">${result.home_team}</div>
-                        <div class="score">${result.home_score} - ${result.away_score}${Number(result.is_walkover) === 1 ? '<br><span style="font-size:0.7em;font-weight:600;color:#c62828;">W/O</span>' : ''}</div>
-                        <div class="team-name away">${result.away_team}</div>
-                        <div class="expand-icon">&#9660;</div>
-                    `;
-                    resultsList.appendChild(resultCard);
-                    
-                    // Create expandable details section
-                    const detailsSection = document.createElement('div');
-                    detailsSection.className = 'match-details';
-                    detailsSection.dataset.matchId = result.match_id;
-                    detailsSection.innerHTML = `
-                        <div class="match-details-content">
-                            <div class="loading-indicator">Loading match details...</div>
-                        </div>
-                    `;
-                    // A forfeit has no games to break down: show why instead of
-                    // fetching an empty match-details payload.
-                    if (Number(result.is_walkover) === 1) {
-                        const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-                        detailsSection.querySelector('.match-details-content').innerHTML = `
-                            <p style="text-align:center;margin:10px 0;">
-                                <strong>Walkover:</strong> ${esc(result.forfeit_team || 'A team')} forfeited this fixture.<br>
-                                <span style="color:var(--dark-gray);font-size:0.9em;">No games were played, so no player statistics were recorded.</span>
-                            </p>`;
-                        loadedMatchDetails[result.match_id] = true;
-                    }
-                    resultsList.appendChild(detailsSection);
-                    
-                    // Add click event to toggle details
-                    resultCard.addEventListener('click', async () => {
-                        toggleMatchDetails(result.match_id);
+            order.sort((x, y) => (x === y ? 0 : x === '' ? 1 : y === '' ? -1 : x < y ? 1 : -1));
+            return order.map(key => '<div class="card card--flush results-week">'
+                + '<h2 class="group-title">' + (key ? 'Week of ' + formatDate(key, { long: true }) : 'Date not recorded') + '</h2>'
+                + '<ol class="match-list" role="list">' + weeks[key].map(resultRow).join('') + '</ol></div>').join('');
+        }
+
+        async function load(division) {
+            const box = document.getElementById('league-results-list');
+            const seq = ++loadSeq;
+            box.innerHTML = stateCard('loading', 'Loading the ' + DIVISIONS[division] + ' results...');
+            const data = await getList('api.php?endpoint=league-results&division=' + encodeURIComponent(division));
+            if (division !== current || seq !== loadSeq) return; // another division was chosen, or a newer load started
+            if (!data) {
+                box.innerHTML = stateCard('error', 'Sorry, the results could not be loaded just now. Please check your connection.');
+                return;
+            }
+            // Leave out matches against a "Bye"
+            const rows = data.filter(r => r && BYES.indexOf(r.home_team) < 0 && BYES.indexOf(r.away_team) < 0);
+            if (!rows.length) {
+                box.innerHTML = stateCard('empty', 'There are no results in the ' + DIVISIONS[division] + ' yet.');
+                return;
+            }
+            box.innerHTML = render(rows);
+        }
+
+        // The games of one result: doubles, singles, 180s and high finishes
+        function gamesHtml(d) {
+            const list = x => (Array.isArray(x) ? x : []);
+            const gameRows = (games, names) => '<ul class="match-list" role="list">' + games.map(g => {
+                const n = names(g);
+                return '<li><div class="match match--sm">' + matchLine({ home: n[0], away: n[1], homeScore: g.home_score, awayScore: g.away_score }) + '</div></li>';
+            }).join('') + '</ul>';
+            const statRows = rows => '<ul class="game-stats" role="list">' + rows.map(r => '<li class="game-stats__item">'
+                + '<span class="game-stats__name">' + esc(r.name) + '</span> <span class="game-stats__value">' + esc(r.value) + '</span></li>').join('') + '</ul>';
+            const doubles = list(d.doubles);
+            const singles = list(d.singles);
+            const finishes = list(d.highFinishes);
+            let html = '';
+            if (doubles.length) {
+                html += '<h3 class="subsection-title">Doubles</h3>'
+                    + gameRows(doubles, g => [(g.home_player1_name || '') + ' & ' + (g.home_player2_name || ''), (g.away_player1_name || '') + ' & ' + (g.away_player2_name || '')]);
+            }
+            if (singles.length) {
+                html += '<h3 class="subsection-title">Singles</h3>' + gameRows(singles, g => [g.home_player_name, g.away_player_name]);
+            }
+            // 180s: one line per player, with the number they threw in this match
+            const totals = [];
+            const byPlayer = {};
+            list(d.oneEighties).forEach(r => {
+                const key = r.player_id != null ? 'id' + r.player_id : 'name' + r.player_name;
+                if (!byPlayer[key]) { byPlayer[key] = { name: r.player_name, value: 0 }; totals.push(byPlayer[key]); }
+                byPlayer[key].value += Number(r.count) || 0;
+            });
+            if (totals.length) {
+                totals.sort((x, y) => y.value - x.value);
+                html += '<h3 class="subsection-title">180s</h3>' + statRows(totals);
+            }
+            if (finishes.length) {
+                const sorted = finishes.slice().sort((x, y) => Number(y.finish_value) - Number(x.finish_value));
+                html += '<h3 class="subsection-title">High finishes</h3>' + statRows(sorted.map(f => ({ name: f.player_name, value: f.finish_value })));
+            }
+            return html || stateHtml('empty', 'No game-by-game scores were recorded for this match.');
+        }
+
+        // Fetched once per match for the whole visit; a failed request is
+        // forgotten so Try again asks the server again.
+        function loadGames(matchId) {
+            const key = String(matchId);
+            if (!gamesCache[key]) {
+                gamesCache[key] = fetch('api.php?endpoint=match-details&match_id=' + encodeURIComponent(key), { credentials: 'same-origin' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (!data || !data.success) throw new Error('No details');
+                        return gamesHtml(data);
                     });
+                gamesCache[key].catch(() => { delete gamesCache[key]; });
+            }
+            return gamesCache[key];
+        }
+
+        // Load a result's games the first time its row is opened. <details>
+        // sends "toggle" without bubbling, so the list listens in the capture
+        // phase. The summary's aria-expanded follows the row.
+        function initGames(list) {
+            list.addEventListener('toggle', e => {
+                const row = e.target;
+                if (!row.classList || !row.classList.contains('disclosure--row')) return;
+                const summary = row.querySelector('summary');
+                if (summary) summary.setAttribute('aria-expanded', row.open ? 'true' : 'false');
+                if (!row.open || row.getAttribute('data-loaded') === 'true') return;
+                row.setAttribute('data-loaded', 'true');
+                const body = row.querySelector('.disclosure__body');
+                body.innerHTML = stateHtml('loading', 'Loading the games...');
+                loadGames(row.getAttribute('data-match-id')).then(html => {
+                    body.innerHTML = html;
+                }).catch(() => {
+                    row.removeAttribute('data-loaded'); // closing and opening the row tries again
+                    body.innerHTML = stateHtml('error', 'Sorry, the games could not be loaded just now.', 'data-retry-games');
                 });
+            }, true);
+            // Try again inside an opened row: focus moves to the row (the button
+            // goes away), then the row is reopened, which loads again
+            list.addEventListener('click', e => {
+                const retry = e.target.closest('[data-retry-games]');
+                const row = retry ? retry.closest('details') : null;
+                if (!row) return;
+                row.querySelector('summary').focus();
+                row.open = false;
+                row.open = true;
             });
         }
 
-        // Toggle match details visibility
-        async function toggleMatchDetails(matchId) {
-            const resultCard = document.querySelector(`.fixture-card[data-match-id="${matchId}"]`);
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            
-            if (!resultCard || !detailsSection) return;
-            
-            // Toggle expanded state
-            resultCard.classList.toggle('expanded');
-            
-            if (detailsSection.classList.contains('expanded')) {
-                // Collapse
-                detailsSection.classList.remove('expanded');
-            } else {
-                // Expand and load details if not already loaded
-                detailsSection.classList.add('expanded');
-                
-                if (!loadedMatchDetails[matchId]) {
-                    await loadMatchDetails(matchId);
-                }
-            }
-        }
-
-        // Load match details from API
-        async function loadMatchDetails(matchId) {
-            const detailsSection = document.querySelector(`.match-details[data-match-id="${matchId}"]`);
-            const contentDiv = detailsSection.querySelector('.match-details-content');
-            
+        // The division switch: "Showing:" line, the choice remembered
+        // (localStorage can throw: private mode, blocked storage), and late
+        // answers for a division that is no longer chosen are ignored.
+        function readSaved() {
             try {
-                // Fetch match details
-                const matchDetails = await fetchApi('match-details', { match_id: matchId });
-                
-                if (!matchDetails || !matchDetails.success) {
-                    contentDiv.innerHTML = `
-                        <div class="error-message">
-                            Failed to load match details. Please try again later.
-                        </div>
-                    `;
-                    return;
-                }
-                
-                // Store in cache to avoid redundant API calls
-                loadedMatchDetails[matchId] = matchDetails;
-                
-                // Render match details
-                renderMatchDetails(contentDiv, matchDetails);
-                
-            } catch (error) {
-                console.error('Error loading match details:', error);
-                contentDiv.innerHTML = `
-                    <div class="error-message">
-                        An error occurred while loading match details. Please try again later.
-                    </div>
-                `;
+                const v = window.localStorage.getItem(STORE_KEY);
+                return v === 'premier' || v === 'a' ? v : null;
+            } catch (e) {
+                return null;
             }
         }
+        function save(v) {
+            try { window.localStorage.setItem(STORE_KEY, v); } catch (e) { /* not remembered: fine */ }
+        }
 
-// Render match details content
-function renderMatchDetails(container, matchDetails) {
-    const match = matchDetails.match;
-    const division = match.division;
-    const matchType = match.match_type;
-    
-    let content = '';
-    
-    // Add doubles section if there are doubles results
-    if (matchDetails.doubles && matchDetails.doubles.length > 0) {
-        content += `
-            <div class="match-section">
-                <h4 class="match-header">Doubles Matches</h4>
-        `;
-        
-        matchDetails.doubles.forEach((doubles, index) => {
-            content += `
-                <div class="player-match">
-                    <div class="home-player">${doubles.home_player1_name} & ${doubles.home_player2_name}</div>
-                    <div class="match-score">${doubles.home_score}-${doubles.away_score}</div>
-                    <div class="away-player">${doubles.away_player1_name} & ${doubles.away_player2_name}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add singles section if there are singles results
-    if (matchDetails.singles && matchDetails.singles.length > 0) {
-        content += `
-            <div class="match-section">
-                <h4 class="match-header">Singles Matches</h4>
-        `;
-        
-        matchDetails.singles.forEach((singles, index) => {
-            content += `
-                <div class="player-match">
-                    <div class="home-player">${singles.home_player_name}</div>
-                    <div class="match-score">${singles.home_score}-${singles.away_score}</div>
-                    <div class="away-player">${singles.away_player_name}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add 180s section if there are any
-    if (matchDetails.oneEighties && matchDetails.oneEighties.length > 0) {
-        content += `
-            <div class="stats-section">
-                <h4>180s</h4>
-        `;
-        
-        matchDetails.oneEighties.forEach(oneEighty => {
-            content += `
-                <div class="stats-item">
-                    <div class="player-name">${oneEighty.player_name}</div>
-                    <div class="stat-value">${oneEighty.count}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // Add high finishes section if there are any
-    if (matchDetails.highFinishes && matchDetails.highFinishes.length > 0) {
-        content += `
-            <div class="stats-section">
-                <h4>High Finishes</h4>
-        `;
-        
-        // Sort high finishes by value (highest first)
-        const sortedFinishes = [...matchDetails.highFinishes].sort((a, b) => b.finish_value - a.finish_value);
-        
-        sortedFinishes.forEach(finish => {
-            content += `
-                <div class="stats-item">
-                    <div class="player-name">${finish.player_name}</div>
-                    <div class="stat-value">${finish.finish_value}</div>
-                </div>
-            `;
-        });
-        
-        content += `</div>`;
-    }
-    
-    // If no content was generated, show a message
-    if (!content) {
-        content = `<p class="error-message">No detailed results available for this match.</p>`;
-    }
-    
-    container.innerHTML = content;
-}
-        // Initially load the league results
-        loadLeagueResults(getCurrentDivision());
+        function show(division) {
+            current = division === 'a' ? 'a' : 'premier';
+            document.querySelectorAll('#league-results .segmented [data-division]').forEach(btn => {
+                btn.setAttribute('aria-pressed', btn.dataset.division === current ? 'true' : 'false');
+            });
+            document.getElementById('results-status').innerHTML = 'Showing: <strong>' + DIVISIONS[current] + '</strong>';
+            load(current);
+        }
 
+        document.querySelectorAll('#league-results .segmented [data-division]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const division = e.currentTarget.dataset.division; // currentTarget: the button holds a tick icon
+                if (division === current) return;
+                save(division);
+                show(division);
+            });
+        });
+
+        // "Try again" for the whole list: keyboard focus moves to the list,
+        // which stays in place while it reloads
+        const listBox = document.getElementById('league-results-list');
+        listBox.addEventListener('click', e => {
+            if (!e.target.closest('[data-retry]')) return;
+            listBox.setAttribute('tabindex', '-1');
+            listBox.focus();
+            load(current);
+        });
+        initGames(listBox);
+
+        show(readSaved() || 'premier');
+    })();
     </script>
 </body>
 </html>
